@@ -1,0 +1,83 @@
+
+/* ==================== 日记元数据标题样式 ==================== */
+.part-title {
+    font-family: 'Georgia', serif;
+    font-size: 32px;
+    color: #1d1d1f;
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f7;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* ==================== 章节标题样式 ==================== */
+.section-title {
+    font-family: 'Arial', sans-serif;
+    font-size: 24px;
+    color: #3498db;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-left: 5px solid #3498db;
+    background-color: #ecf0f1;
+    font-weight: 600;
+}
+
+/* ==================== 问题/提示文字样式 ==================== */
+.question-text {
+    font-family: 'Georgia', '微软雅黑', sans-serif;
+    font-size: 20px;
+    color: #64ACF5;
+    margin: 20px 0 10px 0;
+    font-weight: 600;
+    padding-left: 10px;
+    background-color: #f0f7ff;
+    border-radius: 6px;
+    padding: 10px 14px;
+}
+
+/* ==================== 验证/结果文字样式 ==================== */
+.result-text {
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    color: #27ae60;
+    margin: 15px 0;
+    padding: 12px 20px;
+    background-color: #d5f4e6;
+    border-radius: 8px;
+    border-left: 4px solid #27ae60;
+    font-weight: 500;
+}
+
+/* ==================== 普通文本样式 ==================== */
+.normal-text {
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: #1d1d1f;
+    line-height: 1.8;
+    margin: 10px 0;
+}
+
+/* ==================== Streamlit组件调整 ==================== */
+/* 调整 Radio 按钮的标签字体 */
+.stRadio > label {
+    font-family: 'Microsoft YaHei', sans-serif;
+    font-size: 16px;
+    color: #2c3e50;
+}
+/* 调整 Radio 选项容器的字体和间距 */
+.stRadio > div {
+    font-family: 'Microsoft YaHei', sans-serif;
+    font-size: 15px;
+    line-height: 2.0;
+}
+
+/* ==================== 整体页面样式 ==================== */
+.main {
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
