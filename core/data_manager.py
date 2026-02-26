@@ -11,8 +11,8 @@ from . import config as cfg
 def get_file_paths(date_obj):
     """
     根据日期动态生成存储路径
-    CSV: 年度存储 (D:\2026...\data\...)
-    Markdown: 按月自动归档 (D:\2026...\MM月\...)
+    CSV: 年度存储 (D:\\2026...\\data\\...)
+    Markdown: 按月自动归档 (D:\\2026...\\MM月\\...)
     """
     year = date_obj.year
     # 生成 "02月" 格式的文件夹名

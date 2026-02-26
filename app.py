@@ -93,35 +93,35 @@ with col1:
     st.markdown(f'<div class="question-text">{t.MOOD_INQUIRY}</div>', unsafe_allow_html=True)
     try:
         default_mood = int(float(summary_data.get("Mood", 4)))
-    except:
+    except (ValueError, TypeError):
         default_mood = 4
     mood_score = st.radio("Mood", t.MOOD_SCORE.keys(), index=default_mood-1, format_func=lambda x: t.MOOD_SCORE[x], label_visibility="collapsed")
     
     st.markdown(f'<div class="question-text">{t.FOCUS_TIME}</div>', unsafe_allow_html=True)
     try:
         default_focus = int(float(summary_data.get("Focus_Count", 0)))
-    except:
+    except (ValueError, TypeError):
         default_focus = 0
     focus_count = st.number_input("番茄钟", min_value=0, value=default_focus, label_visibility="collapsed")
     
     st.markdown(f'<div class="question-text">{t.MEDITATION_TIME}</div>', unsafe_allow_html=True)
     try:
         default_meditation = int(float(summary_data.get("Meditation_Minutes", 0)))
-    except:
+    except (ValueError, TypeError):
         default_meditation = 0
     meditation_minutes = st.number_input("静坐分钟", min_value=0, value=default_meditation, label_visibility="collapsed")
     
     st.markdown(f'<div class="question-text">{t.AI_TIME}</div>', unsafe_allow_html=True)
     try:
         default_ai_time = int(float(summary_data.get("AI_time", 0)))
-    except:
+    except (ValueError, TypeError):
         default_ai_time = 0
     ai_time = st.number_input("AI时间小时", min_value=0, value=default_ai_time, label_visibility="collapsed")
     
     st.markdown(f'<div class="question-text">{t.MASTURBATION_COUNT}</div>', unsafe_allow_html=True)
     try:
         default_masturb = int(float(summary_data.get("Masturbation_Count", 0)))
-    except:
+    except (ValueError, TypeError):
         default_masturb = 0
     masturbation_count = st.number_input("打飞机次数", min_value=0, value=default_masturb, label_visibility="collapsed")
 
@@ -129,7 +129,7 @@ with col2:
     st.markdown(f'<div class="question-text">{t.SLEEP_INQUIRY}</div>', unsafe_allow_html=True)
     try:
         default_sleep = int(float(summary_data.get("Sleep_Score", 4)))
-    except:
+    except (ValueError, TypeError):
         default_sleep = 4
     sleep_score = st.radio("Sleep", t.SLEEP_SCORE.keys(), index=default_sleep-1, format_func=lambda x: t.SLEEP_SCORE[x], label_visibility="collapsed")
     
@@ -146,7 +146,7 @@ with col2:
         t2 = datetime.strptime(str(waketime), "%H:%M")
         if t2 < t1: t2 += timedelta(days=1)
         duration = round((t2 - t1).seconds / 3600, 2)
-    except:
+    except (ValueError, TypeError):
         duration = 0.0
     st.markdown(f'<div class="result-text">✅ 睡眠时长: {duration} 小时</div>', unsafe_allow_html=True)
 
