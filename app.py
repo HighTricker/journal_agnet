@@ -101,48 +101,40 @@ for i, name in enumerate(["日", "一", "二", "三", "四", "五", "六"]):
             unsafe_allow_html=True
         )
 
-# ── 构建 6 行满格日历 ──
+# ── 构建日历（只显示本月日期） ──
 _cal = cal_module.Calendar(firstweekday=6)  # 周日为首列
 view_year = st.session_state.cal_year
 view_month = st.session_state.cal_month
 weeks = _cal.monthdatescalendar(view_year, view_month)
 
-# 不足 6 行用下月日期补满（固定高度，防止日历跳动）
-while len(weeks) < 6:
-    last_sat = weeks[-1][-1]
-    weeks.append([last_sat + timedelta(days=d) for d in range(1, 8)])
+# 月份分隔行
+st.sidebar.markdown(
+    f"<div style='text-align:center; font-size:11px; color:#aaa; "
+    f"border-bottom:1px solid #e0e0e0; margin:2px 0 1px 0; "
+    f"padding-bottom:2px;'>── {view_month}月 ──</div>",
+    unsafe_allow_html=True
+)
 
-# 渲染日历网格
-_seen_months = set()
-for week in weeks[:6]:
-    # 月份分隔行：首次出现某月的日期时，插入居中月份标签
-    # 跳过视图月份之前的月份（上月溢出日期不需要分隔行）
-    for d in week:
-        ym = (d.year, d.month)
-        if ym not in _seen_months:
-            _seen_months.add(ym)
-            if (d.year, d.month) < (view_year, view_month):
-                continue
-            st.sidebar.markdown(
-                f"<div style='text-align:center; font-size:11px; color:#aaa; "
-                f"border-bottom:1px solid #e0e0e0; margin:2px 0 1px 0; "
-                f"padding-bottom:2px;'>── {d.month}月 ──</div>",
-                unsafe_allow_html=True
-            )
+# 渲染日历网格：跳过整行都不属于本月的行，非本月日期留空白
+for week in weeks:
+    if not any(d.month == view_month for d in week):
+        continue
 
-    # 日期按钮行（7 列）
     cols = st.sidebar.columns(7)
     for i, day_date in enumerate(week):
         with cols[i]:
-            is_today = (day_date == today)
-            is_selected = (day_date == st.session_state.selected_date)
-            label = f"⊙{day_date.day}" if is_today else str(day_date.day)
-            btn_type = "primary" if is_selected else "secondary"
-            st.button(
-                label, key=f"d_{day_date}", type=btn_type,
-                on_click=_select_date, args=(day_date,),
-                use_container_width=True
-            )
+            if day_date.month != view_month:
+                st.write("")  # 非本月日期留空
+            else:
+                is_today = (day_date == today)
+                is_selected = (day_date == st.session_state.selected_date)
+                label = f"⊙{day_date.day}" if is_today else str(day_date.day)
+                btn_type = "primary" if is_selected else "secondary"
+                st.button(
+                    label, key=f"d_{day_date}", type=btn_type,
+                    on_click=_select_date, args=(day_date,),
+                    use_container_width=True
+                )
 
 # "回到今天" 快捷按钮
 st.sidebar.button(
