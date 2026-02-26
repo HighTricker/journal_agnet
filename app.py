@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import calendar as cal_module
 from datetime import datetime, timedelta
 from core import texts as t
 from core.data_manager import load_data_for_date, save_all_data
@@ -40,20 +41,114 @@ def get_diary_metadata(target_date):
 # 2. 侧边栏导航：选择日期
 # ==========================================
 st.sidebar.title(t.SIDEBAR_TITLE)
-
-date_options = {}
 today = datetime.now().date()
 
-# 生成日期选项：明天、今天、过去6天
-tmr = today + timedelta(days=1)
-date_options[f"🔮 明天 ({tmr})"] = tmr
-date_options[f"🌟 今天 ({today})"] = today
-for i in range(1, 7):
-    past_date = today - timedelta(days=i)
-    date_options[f"📅 {past_date}"] = past_date
+# session_state 初始化（首次执行时设定默认值，后续 rerun 保持用户选择）
+if 'selected_date' not in st.session_state:
+    st.session_state.selected_date = today
+if 'cal_year' not in st.session_state:
+    st.session_state.cal_year = today.year
+if 'cal_month' not in st.session_state:
+    st.session_state.cal_month = today.month
 
-selected_label = st.sidebar.radio("选择日期", list(date_options.keys()), index=1)
-current_date = date_options[selected_label]
+# 月份切换回调（on_click 在 rerun 前执行，确保状态先更新）
+def _prev_month():
+    if st.session_state.cal_month == 1:
+        st.session_state.cal_month = 12
+        st.session_state.cal_year -= 1
+    else:
+        st.session_state.cal_month -= 1
+
+def _next_month():
+    if st.session_state.cal_month == 12:
+        st.session_state.cal_month = 1
+        st.session_state.cal_year += 1
+    else:
+        st.session_state.cal_month += 1
+
+def _go_today():
+    st.session_state.selected_date = today
+    st.session_state.cal_year = today.year
+    st.session_state.cal_month = today.month
+
+def _select_date(d):
+    """选择日期，若跨月则同时切换日历视图"""
+    st.session_state.selected_date = d
+    if d.month != st.session_state.cal_month or d.year != st.session_state.cal_year:
+        st.session_state.cal_year = d.year
+        st.session_state.cal_month = d.month
+
+# ── 月份导航栏：◀ 2026年2月 ▶ ──
+nav_c1, nav_c2, nav_c3 = st.sidebar.columns([1, 3, 1])
+with nav_c1:
+    st.button("◀", on_click=_prev_month, key="cal_prev")
+with nav_c2:
+    st.markdown(
+        f"<div style='text-align:center; font-weight:bold; padding:4px 0; font-size:15px;'>"
+        f"{st.session_state.cal_year}年{st.session_state.cal_month}月</div>",
+        unsafe_allow_html=True
+    )
+with nav_c3:
+    st.button("▶", on_click=_next_month, key="cal_next")
+
+# ── 星期标题行：日 一 二 三 四 五 六 ──
+header_cols = st.sidebar.columns(7)
+for i, name in enumerate(["日", "一", "二", "三", "四", "五", "六"]):
+    with header_cols[i]:
+        st.markdown(
+            f"<div style='text-align:center; font-size:12px; font-weight:bold; "
+            f"color:#666;'>{name}</div>",
+            unsafe_allow_html=True
+        )
+
+# ── 构建 6 行满格日历 ──
+_cal = cal_module.Calendar(firstweekday=6)  # 周日为首列
+view_year = st.session_state.cal_year
+view_month = st.session_state.cal_month
+weeks = _cal.monthdatescalendar(view_year, view_month)
+
+# 不足 6 行用下月日期补满（固定高度，防止日历跳动）
+while len(weeks) < 6:
+    last_sat = weeks[-1][-1]
+    weeks.append([last_sat + timedelta(days=d) for d in range(1, 8)])
+
+# 渲染日历网格
+_seen_months = set()
+for week in weeks[:6]:
+    # 月份分隔行：首次出现某月的日期时，插入居中月份标签
+    for d in week:
+        ym = (d.year, d.month)
+        if ym not in _seen_months:
+            _seen_months.add(ym)
+            st.sidebar.markdown(
+                f"<div style='text-align:center; font-size:11px; color:#aaa; "
+                f"border-bottom:1px solid #e0e0e0; margin:2px 0 1px 0; "
+                f"padding-bottom:2px;'>── {d.month}月 ──</div>",
+                unsafe_allow_html=True
+            )
+
+    # 日期按钮行（7 列）
+    cols = st.sidebar.columns(7)
+    for i, day_date in enumerate(week):
+        with cols[i]:
+            is_today = (day_date == today)
+            is_selected = (day_date == st.session_state.selected_date)
+            label = f"⊙{day_date.day}" if is_today else str(day_date.day)
+            btn_type = "primary" if is_selected else "secondary"
+            st.button(
+                label, key=f"d_{day_date}", type=btn_type,
+                on_click=_select_date, args=(day_date,),
+                use_container_width=True
+            )
+
+# "回到今天" 快捷按钮
+st.sidebar.button(
+    "📍 回到今天", on_click=_go_today,
+    key="cal_today", use_container_width=True
+)
+
+# 最终日期（后续所有代码直接使用 current_date，无需任何改动）
+current_date = st.session_state.selected_date
 
 # ==========================================
 # 3. 数据加载：从 CSV 读取历史数据

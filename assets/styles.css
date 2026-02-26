@@ -75,6 +75,22 @@
     line-height: 2.0;
 }
 
+/* ==================== 侧边栏月历样式 ==================== */
+/* 日历按钮紧凑化 */
+[data-testid="stSidebar"] .stButton > button {
+    padding: 4px 2px !important;
+    min-height: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    border-radius: 6px !important;
+    margin: 1px 0 !important;
+}
+
+/* 缩小日历列间距 */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
+    gap: 4px !important;
+}
+
 /* ==================== 整体页面样式 ==================== */
 .main {
     background-color: #f8f9fa;
