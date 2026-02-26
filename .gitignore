@@ -1,6 +1,4 @@
 __pycache__/
 *.pyc
 *.lnk
-data/
-diary_output/
 .claude/

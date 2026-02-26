@@ -1,3 +1,3 @@
-cd /d D:\你的项目目录路径
+cd /d E:\journal_agnet
 streamlit run app.py
 pause

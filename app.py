@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
-import texts as t
-from data_manager import load_data_for_date, save_all_data
+from core import texts as t
+from core.data_manager import load_data_for_date, save_all_data
 
 # ==========================================
 # 0. 基础页面配置
@@ -14,7 +14,7 @@ def load_css(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-load_css('styles.css')
+load_css('assets/styles.css')
 
 # ==========================================
 # 1. 核心逻辑函数：负责日记编号与星期计算

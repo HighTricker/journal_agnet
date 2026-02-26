@@ -3,9 +3,9 @@
 import pandas as pd
 import os
 from datetime import datetime
-import texts as t
-import template as tp
-import config as cfg 
+from . import texts as t
+from . import template as tp
+from . import config as cfg
 
 
 def get_file_paths(date_obj):
@@ -14,8 +14,6 @@ def get_file_paths(date_obj):
     CSV: 年度存储 (D:\2026...\data\...)
     Markdown: 按月自动归档 (D:\2026...\MM月\...)
     """
-    import config as cfg
-    
     year = date_obj.year
     # 生成 "02月" 格式的文件夹名
     month_folder_name = f"{date_obj.month:02d}月" 
@@ -177,7 +175,7 @@ def save_all_data(date_obj, summary_dict, tasks_df, time_df):
     # --- 4. 生成 Markdown 成品 ---
     generate_markdown(date_obj, summary_dict, tasks_df, time_df, paths["markdown"])
 
-import md_template as mdt
+from . import md_template as mdt
 from datetime import datetime
 
 def generate_markdown(date_obj, summary, tasks_df, time_df, file_path):
