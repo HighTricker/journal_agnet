@@ -150,6 +150,15 @@ with col2:
         duration = 0.0
     st.markdown(f'<div class="result-text">✅ 睡眠时长: {duration} 小时</div>', unsafe_allow_html=True)
 
+    st.markdown('<div class="question-text">睡眠状况/梦境</div>', unsafe_allow_html=True)
+    sleep_dreams = st.text_area(
+        "睡眠状况/梦境",
+        value=str(summary_data.get("Reflect_Sleep_Dreams", "")),
+        height=100,
+        placeholder="回忆睡眠情况，有无起夜、醒来，有没有梦，如果有梦，梦是什么",
+        label_visibility="collapsed"
+    )
+
 # ==========================================
 # 6. 核心看板：任务与时间 (这里定义了出错的变量)
 # ==========================================
@@ -245,6 +254,7 @@ if st.button("💾 保存并生成日记 (Save & Generate)", type="primary", use
         "Meditation_Minutes": meditation_minutes,
         "AI_Time": ai_time,
         "Masturbation_Count": masturbation_count,
+        "Reflect_Sleep_Dreams": sleep_dreams,
         **reflection_inputs
     }
     
