@@ -12,7 +12,8 @@
 - Web 框架：Streamlit
 - 数据处理：Pandas
 - 数据存储：CSV（原始数据）+ Markdown（成品输出）
-- 启动方式：`streamlit run diary.py`（或使用 `启动日记系统.bat`）
+- 启动方式：`streamlit run diary.py`
+- 数据路径：通过环境变量 `JOURNAL_BASE_DIR` 配置，默认 `./journal_data/`
 - 测试：`python -m pytest tests/ -v`（当前 72 个测试）
 
 ## 项目结构
@@ -45,7 +46,7 @@ journal_agnet/
 ├── CLAUDE.md
 ├── TODO.md
 ├── .gitignore
-└── 启动日记系统.bat
+└── requirements.txt
 ```
 
 ## 核心功能模块

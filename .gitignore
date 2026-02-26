@@ -2,3 +2,23 @@ __pycache__/
 *.pyc
 *.lnk
 .claude/
+
+# IDE
+.vscode/
+
+# Windows 启动脚本（含本地路径）
+*.bat
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 环境变量
+.env
+
+# 本地数据（CSV + Markdown 产出）
+journal_data/
+
+# pytest
+.pytest_cache/
