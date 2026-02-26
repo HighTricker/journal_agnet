@@ -14,7 +14,9 @@
 - 数据存储：CSV（原始数据）+ Markdown（成品输出）
 - 启动方式：`streamlit run diary.py`
 - 数据路径：通过环境变量 `JOURNAL_BASE_DIR` 配置，默认 `./journal_data/`
+- 依赖管理：`pip install -r requirements.txt`
 - 测试：`python -m pytest tests/ -v`（当前 72 个测试）
+- 仓库：https://github.com/HighTricker/journal_agnet
 
 ## 项目结构
 ```
