@@ -116,10 +116,13 @@ while len(weeks) < 6:
 _seen_months = set()
 for week in weeks[:6]:
     # 月份分隔行：首次出现某月的日期时，插入居中月份标签
+    # 跳过视图月份之前的月份（上月溢出日期不需要分隔行）
     for d in week:
         ym = (d.year, d.month)
         if ym not in _seen_months:
             _seen_months.add(ym)
+            if (d.year, d.month) < (view_year, view_month):
+                continue
             st.sidebar.markdown(
                 f"<div style='text-align:center; font-size:11px; color:#aaa; "
                 f"border-bottom:1px solid #e0e0e0; margin:2px 0 1px 0; "
