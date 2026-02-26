@@ -3,7 +3,11 @@ import pandas as pd
 import calendar as cal_module
 from datetime import datetime, timedelta
 from core import texts as t
+from core import weekly_texts as wt
+from core import monthly_texts as mt
 from core.data_manager import load_data_for_date, save_all_data
+from core.weekly_data_manager import get_week_info, load_weekly_data
+from core.monthly_data_manager import get_month_info, load_monthly_data
 
 # ==========================================
 # 0. 基础页面配置
@@ -248,6 +252,63 @@ with col2:
         placeholder="回忆睡眠情况，有无起夜、醒来，有没有梦，如果有梦，梦是什么",
         label_visibility="collapsed"
     )
+
+# ==========================================
+# 5.5 周目标 & 月目标展示区
+# ==========================================
+
+def _render_goals(tasks_df, category_col, plan_col, status_col):
+    """将任务 DataFrame 按分类分组，渲染为 Markdown 字符串"""
+    # 过滤掉计划事项为空的行
+    valid = tasks_df[tasks_df[plan_col].astype(str).str.strip() != ""].copy()
+    if valid.empty:
+        return None
+
+    lines = []
+    for category in valid[category_col].unique():
+        cat_df = valid[valid[category_col] == category]
+        lines.append(f"**{category}**")
+        for _, row in cat_df.iterrows():
+            plan = str(row[plan_col]).strip()
+            status = str(row[status_col]).strip()
+            # 状态 emoji：有效值直接显示，空值或 None 不显示
+            if status in ("✅", "❌", "⚠️"):
+                lines.append(f"&nbsp;&nbsp;· {plan} &ensp;{status}")
+            else:
+                lines.append(f"&nbsp;&nbsp;· {plan}")
+        lines.append("")  # 分类间空行
+    return "\n".join(lines)
+
+# 获取当前周和月的 key
+_wk_key, _wk_year, _wk_num, _, _ = get_week_info(current_date)
+_mk_key, _mk_year, _mk_month, _, _ = get_month_info(current_date)
+
+# 加载周记和月记的任务数据
+_, _, weekly_tasks_df = load_weekly_data(_wk_key, _wk_year)
+_, monthly_tasks_df = load_monthly_data(_mk_key, _mk_year)
+
+# 渲染目标 Markdown
+_weekly_goals_md = _render_goals(weekly_tasks_df, wt.COL_WT_CATEGORY, wt.COL_WT_PLAN, wt.COL_WT_STATUS)
+_monthly_goals_md = _render_goals(monthly_tasks_df, mt.COL_MT_CATEGORY, mt.COL_MT_PLAN, mt.COL_MT_STATUS)
+
+goal_left, goal_right = st.columns(2)
+with goal_left:
+    st.markdown(f'<div class="goal-section">', unsafe_allow_html=True)
+    st.markdown(f"📋 **本周目标 · {_wk_key}**")
+    if _weekly_goals_md:
+        st.markdown(_weekly_goals_md, unsafe_allow_html=True)
+    else:
+        st.caption("暂无周目标，去周记页面添加")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with goal_right:
+    st.markdown(f'<div class="goal-section">', unsafe_allow_html=True)
+    st.markdown(f"📅 **本月目标 · {_mk_month}月**")
+    if _monthly_goals_md:
+        st.markdown(_monthly_goals_md, unsafe_allow_html=True)
+    else:
+        st.caption("暂无月目标，去月记页面添加")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
 # 6. 核心看板：任务与时间 (这里定义了出错的变量)
