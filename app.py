@@ -165,6 +165,11 @@ with tab_task:
         num_rows="dynamic",
         use_container_width=True,
         column_config={
+            "Date": st.column_config.TextColumn(
+                "日期", disabled=True, default=str(current_date)
+            ),
+            t.COL_TASK_NAME: st.column_config.TextColumn("计划事项"),
+            t.COL_TASK_ACTUAL: st.column_config.TextColumn("实际完成"),
             t.COL_TASK_STATUS: st.column_config.SelectboxColumn("状态", options=["None", "✅", "❌", "⚠️"]),
             t.COL_TASK_REASON: st.column_config.TextColumn("原因/备注", width="large")
         },
@@ -213,8 +218,13 @@ for key, meta in t.REFLECTIONS_MAP.items():
 st.divider()
 if st.button("💾 保存并生成日记 (Save & Generate)", type="primary", use_container_width=True):
         
-    # 新增：任务为空时插入占位行
-    if edited_tasks.empty or edited_tasks[t.COL_TASK_NAME].str.strip().eq("").all():
+    # 第一步：清理空行（去除 data_editor dynamic 模式产生的幽灵行）
+    edited_tasks = edited_tasks[
+        edited_tasks[t.COL_TASK_NAME].fillna("").astype(str).str.strip() != ""
+    ]
+
+    # 第二步：如果清理后没有有效任务，插入占位行
+    if edited_tasks.empty:
         edited_tasks = pd.DataFrame([{
             "Date": str(current_date),
             t.COL_TASK_NAME: "此日未作安排",

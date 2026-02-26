@@ -90,42 +90,47 @@ def load_data_for_date(date_obj):
     summary_data = {}
     if os.path.exists(paths["summary"]):
         df = pd.read_csv(paths["summary"], encoding='utf-8-sig')
+        df["Date"] = df["Date"].astype(str)
         df = df[df["Date"] == date_str]
         if not df.empty:
-            # 将 numpy 类型转换为原生 python 类型，防止报错
-            summary_data = df.iloc[0].to_dict()
+            # 将 numpy 类型转换为原生 python 类型，并清理 NaN
+            summary_data = {k: ("" if pd.isna(v) else v)
+                           for k, v in df.iloc[0].to_dict().items()}
     
     # --- 2. 加载任务 (Tasks) ---
     if os.path.exists(paths["tasks"]):
         df_tasks = pd.read_csv(paths["tasks"], encoding='utf-8-sig')
+        df_tasks["Date"] = df_tasks["Date"].astype(str)
         # 强制转为字符串，防止空值报错
-        cols_to_str = [t.COL_TASK_NAME, t.COL_TASK_ACTUAL, t.COL_TASK_REASON]
+        cols_to_str = [t.COL_TASK_NAME, t.COL_TASK_ACTUAL, t.COL_TASK_REASON, t.COL_TASK_STATUS]
         for col in cols_to_str:
              if col in df_tasks.columns:
                 df_tasks[col] = df_tasks[col].fillna("").astype(str)
-        
-        # 筛选当日
-        current_tasks = df_tasks[df_tasks["Date"] == date_str]
+
+        # 筛选当日，保留 Date 列（UI 中设为只读 + 自动填充）
+        # reset_index 确保 index 从 0 连续编号，避免 data_editor 新增行 index 重复
+        current_tasks = df_tasks[df_tasks["Date"] == date_str].reset_index(drop=True)
     else:
-        # 如果文件不存在，创建空的DataFrame结构
+        # 如果文件不存在，创建空的 DataFrame 结构（含 Date 列）
         current_tasks = pd.DataFrame(columns=["Date", t.COL_TASK_NAME, t.COL_TASK_ACTUAL, t.COL_TASK_STATUS, t.COL_TASK_REASON])
 
     # --- 3. 加载时间轴 (Time Log) ---
     if os.path.exists(paths["time"]):
         df_time = pd.read_csv(paths["time"], encoding='utf-8-sig')
+        df_time["Date"] = df_time["Date"].astype(str)
         # 强制转为字符串
-        cols_to_str_time = [t.COL_TIME_PLAN, t.COL_TIME_ACTUAL, t.COL_TIME_NOTE]
+        cols_to_str_time = [t.COL_TIME_PLAN, t.COL_TIME_ACTUAL, t.COL_TIME_NOTE, t.COL_TIME_STATUS]
         for col in cols_to_str_time:
             if col in df_time.columns:
                 df_time[col] = df_time[col].fillna("").astype(str)
-        
-        current_time = df_time[df_time["Date"] == date_str]
-        
+
+        current_time = df_time[df_time["Date"] == date_str].drop(columns=["Date"])
+
         # 如果当日无数据，加载默认模板
         if current_time.empty:
-            current_time = get_default_time_schedule(date_str)
+            current_time = get_default_time_schedule(date_str).drop(columns=["Date"])
     else:
-        current_time = get_default_time_schedule(date_str)
+        current_time = get_default_time_schedule(date_str).drop(columns=["Date"])
 
     return summary_data, current_tasks, current_time
 
@@ -142,6 +147,7 @@ def save_all_data(date_obj, summary_dict, tasks_df, time_df):
     
     if os.path.exists(paths["summary"]):
         df_old = pd.read_csv(paths["summary"], encoding='utf-8-sig')
+        df_old["Date"] = df_old["Date"].astype(str)
         # 删除旧的当日数据 (覆盖更新逻辑)
         df_old = df_old[df_old["Date"] != date_str]
         # 追加新的
@@ -151,10 +157,21 @@ def save_all_data(date_obj, summary_dict, tasks_df, time_df):
     df_final.to_csv(paths["summary"], index=False, encoding='utf-8-sig')
     
     # --- 2. 保存任务 (Tasks) ---
-    tasks_df["Date"] = date_str # 确保所有行都有日期
-    
+    tasks_df = tasks_df.fillna("")  # 防止 NaN 写入 CSV
+    # 清理空行：移除任务名为空白的幽灵行（data_editor dynamic 模式可能产生）
+    tasks_df = tasks_df[tasks_df[t.COL_TASK_NAME].astype(str).str.strip() != ""]
+    if tasks_df.empty:
+        tasks_df = pd.DataFrame([{
+            t.COL_TASK_NAME: "此日未作安排",
+            t.COL_TASK_ACTUAL: "",
+            t.COL_TASK_STATUS: "",
+            t.COL_TASK_REASON: ""
+        }])
+    tasks_df["Date"] = date_str  # 确保所有行都有日期
+
     if os.path.exists(paths["tasks"]):
         df_old = pd.read_csv(paths["tasks"], encoding='utf-8-sig')
+        df_old["Date"] = df_old["Date"].astype(str)
         df_old = df_old[df_old["Date"] != date_str]
         df_final = pd.concat([df_old, tasks_df], ignore_index=True)
     else:
@@ -162,10 +179,12 @@ def save_all_data(date_obj, summary_dict, tasks_df, time_df):
     df_final.to_csv(paths["tasks"], index=False, encoding='utf-8-sig')
 
     # --- 3. 保存时间轴 (Time) ---
+    time_df = time_df.fillna("")  # 防止 NaN 写入 CSV
     time_df["Date"] = date_str
-    
+
     if os.path.exists(paths["time"]):
         df_old = pd.read_csv(paths["time"], encoding='utf-8-sig')
+        df_old["Date"] = df_old["Date"].astype(str)
         df_old = df_old[df_old["Date"] != date_str]
         df_final = pd.concat([df_old, time_df], ignore_index=True)
     else:

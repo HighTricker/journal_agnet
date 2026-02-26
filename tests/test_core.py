@@ -1,6 +1,7 @@
 """核心函数的基础单元测试"""
 import os
 import pytest
+import pandas as pd
 from datetime import datetime, date
 from unittest.mock import patch, MagicMock
 
@@ -139,3 +140,291 @@ class TestDefaultTimeSchedule:
         df = get_default_time_schedule("2026-03-15")
         last_slot = df.iloc[-1][t.COL_TIME_SLOT]
         assert last_slot.endswith("24:00")
+
+
+# ==========================================
+# 4. load_data_for_date 返回数据的 Date 列行为
+# ==========================================
+class TestLoadDataDateHandling:
+    """任务表应保留 Date 列（自动填充），时间表应 drop Date 列"""
+
+    def _make_paths(self, tmp_path):
+        """构造临时路径字典"""
+        return {
+            "tasks": str(tmp_path / "tasks.csv"),
+            "time": str(tmp_path / "time.csv"),
+            "summary": str(tmp_path / "summary.csv"),
+            "markdown": str(tmp_path / "diary.md"),
+        }
+
+    def test_tasks_has_date_column(self, tmp_path):
+        """任务表应包含 Date 列，且多条记录不丢失"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        # 写入含 2 条任务的 CSV
+        df = pd.DataFrame([
+            {"Date": "2026-03-15", t.COL_TASK_NAME: "任务A", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "✅", t.COL_TASK_REASON: ""},
+            {"Date": "2026-03-15", t.COL_TASK_NAME: "任务B", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "", t.COL_TASK_REASON: ""},
+        ])
+        df.to_csv(paths["tasks"], index=False, encoding="utf-8-sig")
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, tasks, _ = load_data_for_date(date(2026, 3, 15))
+
+        assert "Date" in tasks.columns
+        assert len(tasks) == 2
+
+    def test_tasks_empty_has_date_column(self, tmp_path):
+        """空任务表也应包含 Date 列"""
+        paths = self._make_paths(tmp_path)
+        # tasks CSV 不存在
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, tasks, _ = load_data_for_date(date(2026, 3, 15))
+
+        assert "Date" in tasks.columns
+        assert tasks.empty
+
+    def test_time_no_date_column(self, tmp_path):
+        """从 CSV 加载的时间表不应包含 Date 列（48行太冗余）"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        df = pd.DataFrame([
+            {"Date": "2026-03-15", t.COL_TIME_SLOT: "08:00-08:30",
+             t.COL_TIME_PLAN: "工作", t.COL_TIME_ACTUAL: "",
+             t.COL_TIME_STATUS: "", t.COL_TIME_NOTE: ""},
+        ])
+        df.to_csv(paths["time"], index=False, encoding="utf-8-sig")
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, _, time_df = load_data_for_date(date(2026, 3, 15))
+
+        assert "Date" not in time_df.columns
+
+    def test_default_time_schedule_drop_date(self, tmp_path):
+        """默认时间模板经 load 返回后也不含 Date"""
+        paths = self._make_paths(tmp_path)
+        # time CSV 不存在，走 get_default_time_schedule 路径
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, _, time_df = load_data_for_date(date(2026, 3, 15))
+
+        assert "Date" not in time_df.columns
+        assert len(time_df) == 48
+
+
+# ==========================================
+# 6. Bug 2 回归：空行清理与多任务保存
+# ==========================================
+class TestEmptyRowCleaning:
+    """Bug 2 回归：save_all_data 应过滤空行，保留有效任务"""
+
+    def _make_paths(self, tmp_path):
+        return {
+            "tasks": str(tmp_path / "tasks.csv"),
+            "time": str(tmp_path / "time.csv"),
+            "summary": str(tmp_path / "summary.csv"),
+            "markdown": str(tmp_path / "diary.md"),
+        }
+
+    def test_ghost_rows_not_saved(self, tmp_path):
+        """含幽灵空行的 DataFrame 保存后，CSV 只保留有效行"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        # 模拟 data_editor 产生的含空行数据
+        tasks = pd.DataFrame([
+            {t.COL_TASK_NAME: "有效任务", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "✅", t.COL_TASK_REASON: ""},
+            {t.COL_TASK_NAME: "", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "", t.COL_TASK_REASON: ""},
+            {t.COL_TASK_NAME: "  ", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "", t.COL_TASK_REASON: ""},
+        ])
+        time = pd.DataFrame([{
+            t.COL_TIME_SLOT: "08:00-08:30", t.COL_TIME_PLAN: "工作",
+            t.COL_TIME_ACTUAL: "", t.COL_TIME_STATUS: "", t.COL_TIME_NOTE: "",
+        }])
+        summary = {"Mood": 4}
+
+        with patch("core.data_manager.get_file_paths", return_value=paths), \
+             patch("core.data_manager.generate_markdown"):
+            from core.data_manager import save_all_data
+            save_all_data(date(2026, 3, 15), summary, tasks, time)
+
+        saved = pd.read_csv(paths["tasks"], encoding="utf-8-sig")
+        # 只保留 1 条有效任务，空行和纯空格行都被过滤
+        assert len(saved) == 1
+        assert saved.iloc[0][t.COL_TASK_NAME] == "有效任务"
+
+    def test_all_empty_becomes_placeholder(self, tmp_path):
+        """全空行保存后应变为 '此日未作安排' 占位行"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        tasks = pd.DataFrame([
+            {t.COL_TASK_NAME: "", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "", t.COL_TASK_REASON: ""},
+        ])
+        time = pd.DataFrame([{
+            t.COL_TIME_SLOT: "08:00-08:30", t.COL_TIME_PLAN: "工作",
+            t.COL_TIME_ACTUAL: "", t.COL_TIME_STATUS: "", t.COL_TIME_NOTE: "",
+        }])
+        summary = {"Mood": 4}
+
+        with patch("core.data_manager.get_file_paths", return_value=paths), \
+             patch("core.data_manager.generate_markdown"):
+            from core.data_manager import save_all_data
+            save_all_data(date(2026, 3, 15), summary, tasks, time)
+
+        saved = pd.read_csv(paths["tasks"], encoding="utf-8-sig")
+        assert len(saved) == 1
+        assert saved.iloc[0][t.COL_TASK_NAME] == "此日未作安排"
+
+    def test_multi_task_roundtrip(self, tmp_path):
+        """3 个任务 save → load 后仍是 3 个（端到端回归）"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        tasks = pd.DataFrame([
+            {t.COL_TASK_NAME: "任务1", t.COL_TASK_ACTUAL: "完成",
+             t.COL_TASK_STATUS: "✅", t.COL_TASK_REASON: ""},
+            {t.COL_TASK_NAME: "任务2", t.COL_TASK_ACTUAL: "",
+             t.COL_TASK_STATUS: "❌", t.COL_TASK_REASON: "没时间"},
+            {t.COL_TASK_NAME: "任务3", t.COL_TASK_ACTUAL: "部分",
+             t.COL_TASK_STATUS: "⚠️", t.COL_TASK_REASON: ""},
+        ])
+        time = pd.DataFrame([{
+            t.COL_TIME_SLOT: "08:00-08:30", t.COL_TIME_PLAN: "工作",
+            t.COL_TIME_ACTUAL: "", t.COL_TIME_STATUS: "", t.COL_TIME_NOTE: "",
+        }])
+        summary = {"Mood": 4}
+
+        with patch("core.data_manager.get_file_paths", return_value=paths), \
+             patch("core.data_manager.generate_markdown"):
+            from core.data_manager import save_all_data
+            save_all_data(date(2026, 3, 15), summary, tasks, time)
+
+        # 再次 load 回来验证
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, loaded_tasks, _ = load_data_for_date(date(2026, 3, 15))
+
+        assert len(loaded_tasks) == 3
+        assert list(loaded_tasks[t.COL_TASK_NAME]) == ["任务1", "任务2", "任务3"]
+
+
+# ==========================================
+# 5. Bug 3 回归：NaN 值应被清理为空字符串
+# ==========================================
+class TestNaNHandling:
+    """Bug 3 回归：NaN 值应被清理为空字符串"""
+
+    def _make_paths(self, tmp_path):
+        return {
+            "tasks": str(tmp_path / "tasks.csv"),
+            "time": str(tmp_path / "time.csv"),
+            "summary": str(tmp_path / "summary.csv"),
+            "markdown": str(tmp_path / "diary.md"),
+        }
+
+    def test_summary_nan_cleaned(self, tmp_path):
+        """summary_data 中的 NaN 应被替换为空字符串"""
+        paths = self._make_paths(tmp_path)
+        # 写入含空值的 summary CSV
+        df = pd.DataFrame([{
+            "Date": "2026-03-15", "Mood": 4,
+            "Reflect_AI_Usage": None, "Sleep_Bedtime": None,
+        }])
+        df.to_csv(paths["summary"], index=False, encoding="utf-8-sig")
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            summary, _, _ = load_data_for_date(date(2026, 3, 15))
+
+        # 不应有任何 NaN 值
+        for k, v in summary.items():
+            assert not pd.isna(v), f"summary['{k}'] 仍为 NaN"
+
+    def test_task_status_no_nan(self, tmp_path):
+        """任务表 Status 列的 NaN 应被替换为空字符串"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        df = pd.DataFrame([
+            {"Date": "2026-03-15", t.COL_TASK_NAME: "任务A",
+             t.COL_TASK_ACTUAL: None, t.COL_TASK_STATUS: None,
+             t.COL_TASK_REASON: None},
+        ])
+        df.to_csv(paths["tasks"], index=False, encoding="utf-8-sig")
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, tasks, _ = load_data_for_date(date(2026, 3, 15))
+
+        assert tasks.iloc[0][t.COL_TASK_STATUS] == ""
+        assert tasks.iloc[0][t.COL_TASK_REASON] == ""
+
+    def test_time_status_no_nan(self, tmp_path):
+        """时间表 Status 列的 NaN 应被替换为空字符串"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        df = pd.DataFrame([
+            {"Date": "2026-03-15", t.COL_TIME_SLOT: "08:00-08:30",
+             t.COL_TIME_PLAN: "工作", t.COL_TIME_ACTUAL: None,
+             t.COL_TIME_STATUS: None, t.COL_TIME_NOTE: None},
+        ])
+        df.to_csv(paths["time"], index=False, encoding="utf-8-sig")
+
+        with patch("core.data_manager.get_file_paths", return_value=paths):
+            from core.data_manager import load_data_for_date
+            _, _, time_df = load_data_for_date(date(2026, 3, 15))
+
+        assert time_df.iloc[0][t.COL_TIME_STATUS] == ""
+        assert time_df.iloc[0][t.COL_TIME_NOTE] == ""
+
+    def test_nan_not_written_to_csv(self, tmp_path):
+        """save_all_data 写入的 CSV 不应包含 NaN"""
+        from core import texts as t
+
+        paths = self._make_paths(tmp_path)
+        # 构造含 NaN 的任务 DataFrame
+        tasks = pd.DataFrame([{
+            t.COL_TASK_NAME: "测试任务",
+            t.COL_TASK_ACTUAL: None,
+            t.COL_TASK_STATUS: None,
+            t.COL_TASK_REASON: None,
+        }])
+        time = pd.DataFrame([{
+            t.COL_TIME_SLOT: "08:00-08:30",
+            t.COL_TIME_PLAN: "工作",
+            t.COL_TIME_ACTUAL: None,
+            t.COL_TIME_STATUS: None,
+            t.COL_TIME_NOTE: None,
+        }])
+        summary = {"Mood": 4, "Reflect_AI_Usage": None}
+
+        with patch("core.data_manager.get_file_paths", return_value=paths), \
+             patch("core.data_manager.generate_markdown"):
+            from core.data_manager import save_all_data
+            save_all_data(date(2026, 3, 15), summary, tasks, time)
+
+        # 读回 CSV 原始文本，确认无 "nan" 字面量
+        # 注意：空字段写入 CSV 后是空字符串（逗号间无内容），
+        # pandas 读回时会变成 NaN，但关键是不能出现 "nan" 文本
+        with open(paths["tasks"], "r", encoding="utf-8-sig") as f:
+            tasks_content = f.read()
+        assert "nan" not in tasks_content.lower(), f"tasks CSV 中出现 nan 文本: {tasks_content}"
+
+        with open(paths["time"], "r", encoding="utf-8-sig") as f:
+            time_content = f.read()
+        assert "nan" not in time_content.lower(), f"time CSV 中出现 nan 文本: {time_content}"
