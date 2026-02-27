@@ -70,13 +70,26 @@ def _next_month():
     else:
         st.session_state.cal_month += 1
 
+def _clear_widget_cache():
+    """切换日期时清除 widget 缓存，确保新日期数据能正确加载"""
+    keys_to_remove = [k for k in st.session_state
+                      if k.startswith(("task_editor_", "time_editor_",
+                                       "mood_", "focus_", "meditation_",
+                                       "ai_time_", "masturb_", "sleep_score_",
+                                       "bedtime_", "waketime_", "dreams_",
+                                       "reflect_"))]
+    for k in keys_to_remove:
+        del st.session_state[k]
+
 def _go_today():
+    _clear_widget_cache()
     st.session_state.selected_date = today
     st.session_state.cal_year = today.year
     st.session_state.cal_month = today.month
 
 def _select_date(d):
     """选择日期，若跨月则同时切换日历视图"""
+    _clear_widget_cache()
     st.session_state.selected_date = d
     if d.month != st.session_state.cal_month or d.year != st.session_state.cal_year:
         st.session_state.cal_year = d.year
@@ -154,6 +167,7 @@ current_date = st.session_state.selected_date
 # ==========================================
 summary_data, tasks_df, time_df = load_data_for_date(current_date)
 
+
 # ==========================================
 # 4. 页面渲染：元数据展示 (编号/日期/星期/阿克苏所在地)
 # ==========================================
@@ -189,35 +203,35 @@ with col1:
         default_mood = int(float(summary_data.get("Mood", 4)))
     except (ValueError, TypeError):
         default_mood = 4
-    mood_score = st.radio("Mood", t.MOOD_SCORE.keys(), index=default_mood-1, format_func=lambda x: t.MOOD_SCORE[x], label_visibility="collapsed")
+    mood_score = st.radio("Mood", t.MOOD_SCORE.keys(), index=default_mood-1, format_func=lambda x: t.MOOD_SCORE[x], label_visibility="collapsed", key=f"mood_{current_date}")
     
     st.markdown(f'<div class="question-text">{t.FOCUS_TIME}</div>', unsafe_allow_html=True)
     try:
         default_focus = int(float(summary_data.get("Focus_Count", 0)))
     except (ValueError, TypeError):
         default_focus = 0
-    focus_count = st.number_input("番茄钟", min_value=0, value=default_focus, label_visibility="collapsed")
+    focus_count = st.number_input("番茄钟", min_value=0, value=default_focus, label_visibility="collapsed", key=f"focus_{current_date}")
     
     st.markdown(f'<div class="question-text">{t.MEDITATION_TIME}</div>', unsafe_allow_html=True)
     try:
         default_meditation = int(float(summary_data.get("Meditation_Minutes", 0)))
     except (ValueError, TypeError):
         default_meditation = 0
-    meditation_minutes = st.number_input("静坐分钟", min_value=0, value=default_meditation, label_visibility="collapsed")
+    meditation_minutes = st.number_input("静坐分钟", min_value=0, value=default_meditation, label_visibility="collapsed", key=f"meditation_{current_date}")
     
     st.markdown(f'<div class="question-text">{t.AI_TIME}</div>', unsafe_allow_html=True)
     try:
         default_ai_time = int(float(summary_data.get("AI_time", 0)))
     except (ValueError, TypeError):
         default_ai_time = 0
-    ai_time = st.number_input("AI时间小时", min_value=0, value=default_ai_time, label_visibility="collapsed")
+    ai_time = st.number_input("AI时间小时", min_value=0, value=default_ai_time, label_visibility="collapsed", key=f"ai_time_{current_date}")
     
     st.markdown(f'<div class="question-text">{t.MASTURBATION_COUNT}</div>', unsafe_allow_html=True)
     try:
         default_masturb = int(float(summary_data.get("Masturbation_Count", 0)))
     except (ValueError, TypeError):
         default_masturb = 0
-    masturbation_count = st.number_input("打飞机次数", min_value=0, value=default_masturb, label_visibility="collapsed")
+    masturbation_count = st.number_input("打飞机次数", min_value=0, value=default_masturb, label_visibility="collapsed", key=f"masturb_{current_date}")
 
 with col2:
     st.markdown(f'<div class="question-text">{t.SLEEP_INQUIRY}</div>', unsafe_allow_html=True)
@@ -225,15 +239,15 @@ with col2:
         default_sleep = int(float(summary_data.get("Sleep_Score", 4)))
     except (ValueError, TypeError):
         default_sleep = 4
-    sleep_score = st.radio("Sleep", t.SLEEP_SCORE.keys(), index=default_sleep-1, format_func=lambda x: t.SLEEP_SCORE[x], label_visibility="collapsed")
+    sleep_score = st.radio("Sleep", t.SLEEP_SCORE.keys(), index=default_sleep-1, format_func=lambda x: t.SLEEP_SCORE[x], label_visibility="collapsed", key=f"sleep_score_{current_date}")
     
     c_s1, c_s2 = st.columns(2)
     with c_s1:
         st.markdown(f'<div class="question-text">{t.BEDTIME}</div>', unsafe_allow_html=True)
-        bedtime = st.text_input("入睡", value=str(summary_data.get("Sleep_Bedtime", "23:00")), label_visibility="collapsed")
+        bedtime = st.text_input("入睡", value=str(summary_data.get("Sleep_Bedtime", "22:00")), label_visibility="collapsed", key=f"bedtime_{current_date}")
     with c_s2:
         st.markdown(f'<div class="question-text">{t.WAKE_UP_TIME}</div>', unsafe_allow_html=True)
-        waketime = st.text_input("起床", value=str(summary_data.get("Sleep_Waketime", "08:00")), label_visibility="collapsed")
+        waketime = st.text_input("起床", value=str(summary_data.get("Sleep_Waketime", "06:00")), label_visibility="collapsed", key=f"waketime_{current_date}")
     
     try:
         t1 = datetime.strptime(str(bedtime), "%H:%M")
@@ -250,7 +264,8 @@ with col2:
         value=str(summary_data.get("Reflect_Sleep_Dreams", "")),
         height=100,
         placeholder="回忆睡眠情况，有无起夜、醒来，有没有梦，如果有梦，梦是什么",
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key=f"dreams_{current_date}"
     )
 
 # ==========================================
@@ -334,7 +349,7 @@ with tab_task:
             t.COL_TASK_REASON: st.column_config.TextColumn("原因/备注", width="large")
         },
         hide_index=True,
-        key="task_editor"
+        key=f"task_editor_{current_date}"
     )
     
     reasons = " ".join(edited_tasks[t.COL_TASK_REASON].astype(str).tolist())
@@ -354,7 +369,7 @@ with tab_time:
             t.COL_TIME_SLOT: st.column_config.TextColumn("⏰ 时间段", disabled=True),
             t.COL_TIME_STATUS: st.column_config.SelectboxColumn("状态", options=["None", "✅", "❌", "⚠️"]),
         },
-        key="time_editor"
+        key=f"time_editor_{current_date}"
     )
 
 # ==========================================
@@ -365,11 +380,12 @@ reflection_inputs = {}
 for key, meta in t.REFLECTIONS_MAP.items():
     st.markdown(f'<div class="question-text">{meta["title"]}</div>', unsafe_allow_html=True)
     reflection_inputs[f"Reflect_{key}"] = st.text_area(
-        meta["title"], 
-        value=str(summary_data.get(f"Reflect_{key}", "")), 
-        height=100 if key != "Deep_Reflections" else 200, 
-        placeholder=meta["ph"], 
-        label_visibility="collapsed"
+        meta["title"],
+        value=str(summary_data.get(f"Reflect_{key}", "")),
+        height=100 if key != "Deep_Reflections" else 200,
+        placeholder=meta["ph"],
+        label_visibility="collapsed",
+        key=f"reflect_{key}_{current_date}"
     )
 
 # ==========================================

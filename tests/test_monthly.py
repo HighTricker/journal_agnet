@@ -63,13 +63,13 @@ class TestDefaultMonthlyTasks:
     """get_default_monthly_tasks 的结构验证"""
 
     def test_row_count(self):
-        """4 个分类 × 3 行 = 12 行"""
+        """6 个分类 × 3 行 = 18 行"""
         from core.monthly_data_manager import get_default_monthly_tasks
         df = get_default_monthly_tasks("2026-03")
-        assert len(df) == 12
+        assert len(df) == 18
 
     def test_all_categories_covered(self):
-        """4 个分类都应有数据"""
+        """6 个分类都应有数据"""
         from core.monthly_data_manager import get_default_monthly_tasks
         from core.monthly_texts import TASK_CATEGORIES, COL_MT_CATEGORY
         df = get_default_monthly_tasks("2026-03")
