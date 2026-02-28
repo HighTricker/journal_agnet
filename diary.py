@@ -8,6 +8,8 @@ from core import monthly_texts as mt
 from core.data_manager import load_data_for_date, save_all_data
 from core.weekly_data_manager import get_week_info, load_weekly_data
 from core.monthly_data_manager import get_month_info, load_monthly_data
+from core.report_service import generate_report, send_email
+from core import report_config as rc
 
 # ==========================================
 # 0. 基础页面配置
@@ -158,6 +160,26 @@ st.sidebar.button(
     "📍 回到今天", on_click=_go_today,
     key="cal_today", use_container_width=True
 )
+
+# ── 行为建议报告按钮 ──
+st.sidebar.divider()
+if st.sidebar.button("📊 发送行为建议报告", key="send_report", use_container_width=True):
+    with st.sidebar:
+        status = st.status("正在生成报告...", expanded=True)
+        try:
+            status.write("📂 正在收集日记数据...")
+            status.write("🤖 正在让 AI 分析行为数据...")
+            report_text = generate_report()
+            status.write("📧 正在发送邮件...")
+            send_email(report_text)
+            status.update(label="报告已成功发送!", state="complete")
+            st.sidebar.success(f"✅ 报告已发送至 {rc.EMAIL_RECIPIENT}")
+        except ValueError as e:
+            status.update(label="配置错误", state="error")
+            st.sidebar.error(f"⚠️ 配置错误：{e}")
+        except RuntimeError as e:
+            status.update(label="发送失败", state="error")
+            st.sidebar.error(f"❌ {e}")
 
 # 最终日期（后续所有代码直接使用 current_date，无需任何改动）
 current_date = st.session_state.selected_date
