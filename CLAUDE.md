@@ -17,7 +17,7 @@
 - 依赖管理：`pip install -r requirements.txt`
 - AI 分析：Gemini API（`google-genai` SDK）
 - 邮件发送：Python `smtplib`（SMTP_SSL）
-- 测试：`python -m pytest tests/ -v`（当前 95 个测试）
+- 测试：`python -m pytest tests/ -v`（当前 103 个测试）
 - 仓库：https://github.com/HighTricker/journal_agnet
 
 ## 项目结构
@@ -40,12 +40,13 @@ journal_agnet/
 │   ├── monthly_texts.py      # 月记文案、任务分类、反思区块定义
 │   ├── monthly_data_manager.py # 月记数据处理：月信息计算、月数据聚合、CSV 读写
 │   ├── monthly_md_template.py # 月记 Markdown 模板生成器
-│   ├── report_config.py       # 行为报告配置：提示词模板、Gemini 模型名、邮箱设置
-│   ├── report_data_collector.py # 报告数据收集：从 CSV 收集并格式化数据
-│   └── report_service.py      # 报告服务：Gemini API 调用 + 邮件发送
+│   ├── report_config.py       # 行为报告配置：提示词模板、Gemini 模型名、邮箱设置、个人上下文路径
+│   ├── report_data_collector.py # 报告数据收集：从 CSV 收集并格式化数据 + 加载个人上下文
+│   ├── report_service.py      # 报告服务：Gemini API 调用 + 结构化 HTML 邮件发送
+│   └── kingsley_context.md    # 个人目标与执行基准（作为提示词上下文发送给 Gemini）
 ├── assets/
 │   └── styles.css            # Streamlit 自定义样式（日历紧凑化 + 目标卡片等）
-├── tests/                    # 测试目录（95 个测试：日记26 + 周记20 + 月记26 + 报告23）
+├── tests/                    # 测试目录（103 个测试：日记26 + 周记20 + 月记26 + 报告31）
 │   ├── test_core.py          # 日记核心功能测试
 │   ├── test_weekly.py        # 周记功能测试
 │   ├── test_monthly.py       # 月记功能测试
@@ -109,10 +110,11 @@ journal_agnet/
 
 ### 模块 F：AI 行为建议报告（diary.py 侧边栏 + core/report_*.py）
 - 侧边栏"📊 发送行为建议报告"按钮，`st.status` 分步进度展示
-- 流程：收集 CSV 数据 → Gemini API 分析 → 邮件发送报告
-- `report_config.py`：提示词模板（6 个占位符）、模型名 `gemini-3-flash-preview`、SMTP 配置
-- `report_data_collector.py`：从 8 张 CSV 表收集数据（daily_summary 全量 + time_log 近 7 天 + 周记/月记全量）
-- `report_service.py`：`generate_report()` → `send_email()` → `generate_and_send_report()`
+- 流程：收集 CSV 数据 + 个人上下文 → Gemini API 分析 → 结构化 HTML 邮件发送报告
+- `report_config.py`：提示词模板（7 个占位符含 personal_context）、模型名 `gemini-3-flash-preview`、SMTP 配置、个人上下文路径
+- `report_data_collector.py`：从 8 张 CSV 表收集数据 + `load_personal_context()` 加载 `kingsley_context.md`
+- `report_service.py`：`generate_report()` → `send_email()`（专业 HTML 模板：头部横幅 + 样式正文 + 页脚，邮件标题含日期）→ `generate_and_send_report()`
+- `kingsley_context.md`：个人北极星目标、年度心愿、核心任务、铁血纪律，作为 user prompt 的上下文数据
 - 敏感信息通过环境变量配置：`GEMINI_API_KEY`、`JOURNAL_SMTP_USER`、`JOURNAL_SMTP_PASSWORD`、`JOURNAL_EMAIL_TO`
 - 错误分层：`ValueError`（配置缺失）/ `RuntimeError`（运行时错误）
 

@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 from . import config as cfg
+from . import report_config as rc
 
 
 def _read_csv_safe(file_path):
@@ -120,6 +121,18 @@ def collect_reflections(year):
     return _df_to_text(df_reflect) if not df_reflect.empty else "暂无反思数据"
 
 
+def load_personal_context():
+    """加载个人上下文文件，返回文本内容。文件不存在时优雅降级。"""
+    path = rc.PERSONAL_CONTEXT_PATH
+    if not os.path.exists(path):
+        return "暂无个人目标数据"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return "个人目标数据读取失败"
+
+
 def collect_all_data():
     """
     主入口：收集所有数据，返回 dict，key 对应提示词模板占位符。
@@ -133,4 +146,5 @@ def collect_all_data():
         "weekly_data": collect_weekly_data(year),
         "monthly_data": collect_monthly_data(year),
         "reflections_summary": collect_reflections(year),
+        "personal_context": load_personal_context(),
     }

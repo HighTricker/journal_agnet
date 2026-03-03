@@ -20,11 +20,12 @@ class TestReportConfig:
         assert isinstance(GEMINI_MODEL, str)
 
     def test_prompt_template_has_all_placeholders(self):
-        """提示词模板应包含所有 6 个数据占位符"""
+        """提示词模板应包含所有 7 个数据占位符"""
         from core.report_config import REPORT_USER_PROMPT_TEMPLATE
         required_keys = [
             "daily_summary", "tasks_data", "time_data",
-            "weekly_data", "monthly_data", "reflections_summary"
+            "weekly_data", "monthly_data", "reflections_summary",
+            "personal_context"
         ]
         for key in required_keys:
             assert f"{{{key}}}" in REPORT_USER_PROMPT_TEMPLATE, \
@@ -115,14 +116,16 @@ class TestDataCollector:
     @patch("core.report_data_collector.collect_weekly_data", return_value="weekly")
     @patch("core.report_data_collector.collect_monthly_data", return_value="monthly")
     @patch("core.report_data_collector.collect_reflections", return_value="reflections")
+    @patch("core.report_data_collector.load_personal_context", return_value="context")
     def test_collect_all_data_returns_complete_dict(self, *mocks):
-        """collect_all_data 应返回包含所有 6 个 key 的字典"""
+        """collect_all_data 应返回包含所有 7 个 key 的字典"""
         from core.report_data_collector import collect_all_data
         result = collect_all_data()
         assert isinstance(result, dict)
         expected_keys = [
             "daily_summary", "tasks_data", "time_data",
-            "weekly_data", "monthly_data", "reflections_summary"
+            "weekly_data", "monthly_data", "reflections_summary",
+            "personal_context"
         ]
         for key in expected_keys:
             assert key in result, f"缺少 key: {key}"
@@ -153,6 +156,7 @@ class TestGeminiAPI:
             "daily_summary": "test", "tasks_data": "test",
             "time_data": "test", "weekly_data": "test",
             "monthly_data": "test", "reflections_summary": "test",
+            "personal_context": "test",
         }
         mock_response = MagicMock()
         mock_response.text = "# 行为分析报告\n这是测试报告内容。"
@@ -199,6 +203,7 @@ class TestGeminiAPI:
             "daily_summary": "test", "tasks_data": "test",
             "time_data": "test", "weekly_data": "test",
             "monthly_data": "test", "reflections_summary": "test",
+            "personal_context": "test",
         }
         mock_response = MagicMock()
         mock_response.text = ""
@@ -331,3 +336,91 @@ class TestMarkdownToHtml:
         from core.report_service import _markdown_to_simple_html
         result = _markdown_to_simple_html("测试")
         assert 'charset="utf-8"' in result
+
+    def test_html_has_header_banner(self):
+        """HTML 应包含头部横幅"""
+        from core.report_service import _markdown_to_simple_html
+        result = _markdown_to_simple_html("测试内容")
+        assert "量化日记 - AI 行为建议报告" in result
+        assert "生成日期" in result
+
+    def test_html_has_footer(self):
+        """HTML 应包含页脚"""
+        from core.report_service import _markdown_to_simple_html
+        result = _markdown_to_simple_html("测试内容")
+        assert "Journal Agent" in result
+
+    def test_html_has_styled_headings(self):
+        """h2/h3 应有颜色样式"""
+        from core.report_service import _markdown_to_simple_html
+        result = _markdown_to_simple_html("## 标题\n### 子标题")
+        # 验证 CSS 中定义了 h2/h3 的颜色
+        assert "h2" in result
+        assert "h3" in result
+        assert "#283593" in result  # h2 颜色
+        assert "#3949ab" in result  # h3 颜色
+
+    def test_email_subject_contains_date(self):
+        """邮件标题应包含当天日期"""
+        from core.report_service import send_email
+        from email import message_from_string
+        from email.header import decode_header
+        today_str = date.today().strftime('%Y-%m-%d')
+        with patch("core.report_service.smtplib.SMTP_SSL") as mock_smtp_cls:
+            mock_server = MagicMock()
+            mock_smtp_cls.return_value.__enter__ = MagicMock(return_value=mock_server)
+            mock_smtp_cls.return_value.__exit__ = MagicMock(return_value=False)
+            with patch("core.report_config.SMTP_USER", "test@163.com"), \
+                 patch("core.report_config.SMTP_PASSWORD", "abc123"), \
+                 patch("core.report_config.EMAIL_RECIPIENT", "recv@example.com"):
+                send_email("测试报告")
+            # 解析邮件，解码 Subject 头（中文会被 base64 编码）
+            call_args = mock_server.sendmail.call_args
+            msg_str = call_args[0][2]
+            msg = message_from_string(msg_str)
+            raw_subject = msg["Subject"]
+            decoded_parts = decode_header(raw_subject)
+            subject = "".join(
+                part.decode(enc or "utf-8") if isinstance(part, bytes) else part
+                for part, enc in decoded_parts
+            )
+            assert today_str in subject
+
+
+# ==========================================
+# 6. 个人上下文加载测试
+# ==========================================
+
+class TestPersonalContext:
+    """个人上下文文件加载测试"""
+
+    def test_personal_context_path_exists(self):
+        """PERSONAL_CONTEXT_PATH 应指向有效路径"""
+        from core.report_config import PERSONAL_CONTEXT_PATH
+        assert PERSONAL_CONTEXT_PATH.endswith("kingsley_context.md")
+        # 当前项目中文件应存在
+        assert os.path.exists(PERSONAL_CONTEXT_PATH)
+
+    def test_load_personal_context_success(self):
+        """正常读取文件应返回非空内容"""
+        from core.report_data_collector import load_personal_context
+        result = load_personal_context()
+        assert result
+        assert len(result) > 0
+        assert "暂无" not in result
+        assert "失败" not in result
+
+    def test_load_personal_context_file_not_found(self, tmp_path):
+        """文件不存在时应返回降级文本"""
+        from core.report_data_collector import load_personal_context
+        fake_path = str(tmp_path / "nonexistent.md")
+        with patch("core.report_config.PERSONAL_CONTEXT_PATH", fake_path):
+            result = load_personal_context()
+        assert result == "暂无个人目标数据"
+
+    def test_load_personal_context_encoding(self):
+        """应正确读取 UTF-8 中文内容"""
+        from core.report_data_collector import load_personal_context
+        result = load_personal_context()
+        # kingsley_context.md 包含中文关键词
+        assert "目标" in result or "纪律" in result

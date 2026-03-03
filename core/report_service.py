@@ -4,6 +4,7 @@
 import os
 import re
 import smtplib
+from datetime import date
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from . import report_config as rc
@@ -60,7 +61,7 @@ def generate_report():
 # ==================== 邮件发送 ====================
 
 def _markdown_to_simple_html(md_text):
-    """将 Markdown 文本简单转换为 HTML，用于邮件显示"""
+    """将 Markdown 文本转换为带专业样式的 HTML 邮件"""
     html = md_text
     # 标题转换（### → h3, ## → h2, # → h1）
     html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
@@ -74,11 +75,54 @@ def _markdown_to_simple_html(md_text):
     html = re.sub(r'^---+$', r'<hr>', html, flags=re.MULTILINE)
     # 换行
     html = html.replace('\n', '<br>\n')
-    # 包裹 HTML
-    return (
-        '<html><head><meta charset="utf-8"></head>'
-        f'<body style="font-family: sans-serif; line-height: 1.6;">{html}</body></html>'
-    )
+
+    today_str = date.today().strftime("%Y-%m-%d")
+
+    return f'''\
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; padding:0; background-color:#f4f6f9; font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9; padding:20px 0;">
+    <tr><td align="center">
+      <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%;">
+        <!-- 头部横幅 -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#1a237e,#283593); padding:32px 40px; border-radius:12px 12px 0 0; text-align:center;">
+            <h1 style="margin:0; color:#ffffff; font-size:24px; font-weight:700; letter-spacing:1px;">
+              量化日记 - AI 行为建议报告
+            </h1>
+            <p style="margin:8px 0 0; color:rgba(255,255,255,0.8); font-size:14px;">
+              生成日期：{today_str}
+            </p>
+          </td>
+        </tr>
+        <!-- 正文内容 -->
+        <tr>
+          <td style="background-color:#ffffff; padding:32px 40px; line-height:1.8; font-size:15px; color:#333333;">
+            <style>
+              h1 {{ color:#1a237e; font-size:22px; margin:28px 0 12px; padding-bottom:8px; border-bottom:2px solid #1a237e; }}
+              h2 {{ color:#283593; font-size:19px; margin:24px 0 10px; padding-bottom:6px; border-bottom:1px solid #c5cae9; }}
+              h3 {{ color:#3949ab; font-size:16px; margin:20px 0 8px; }}
+              li {{ margin:4px 0; padding-left:4px; border-left:3px solid #7986cb; padding-left:8px; list-style:none; }}
+              strong {{ color:#1a237e; }}
+              hr {{ border:none; height:2px; background:linear-gradient(to right,#c5cae9,#7986cb,#c5cae9); margin:24px 0; }}
+            </style>
+            {html}
+          </td>
+        </tr>
+        <!-- 页脚 -->
+        <tr>
+          <td style="background-color:#f4f6f9; padding:20px 40px; text-align:center; border-radius:0 0 12px 12px; border-top:1px solid #e0e0e0;">
+            <p style="margin:0; color:#9e9e9e; font-size:12px;">
+              由 Journal Agent 自动生成 · Powered by Gemini
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>'''
 
 
 def send_email(report_content):
@@ -103,7 +147,7 @@ def send_email(report_content):
 
     # 构建邮件（纯文本 + HTML 双版本）
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "量化日记 - AI 行为建议报告"
+    msg["Subject"] = f"量化日记 - AI 行为建议报告（{date.today().strftime('%Y-%m-%d')}）"
     msg["From"] = rc.SMTP_USER
     msg["To"] = rc.EMAIL_RECIPIENT
 
