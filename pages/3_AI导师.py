@@ -1,4 +1,6 @@
+import uuid
 import streamlit as st
+from agent.model_config import MODELS, DEFAULT_MODEL_KEY
 
 # ==========================================
 # 0. 页面配置
@@ -22,11 +24,9 @@ st.caption("基于你的日记和量化数据，提供个性化行为分析与�
 # 2. 初始化 Agent（仅首次加载）
 # ==========================================
 @st.cache_resource
-def get_agent():
-    from agent.agent import agent
-    return agent
-
-agent = get_agent()
+def get_agent(model_key: str):
+    from agent.agent import build_agent
+    return build_agent(model_key)
 
 # ==========================================
 # 3. 初始化聊天历史
@@ -35,16 +35,39 @@ if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
 
 if "thread_id" not in st.session_state:
-    import uuid
     st.session_state.thread_id = str(uuid.uuid4())
+
+if "selected_model_key" not in st.session_state:
+    st.session_state.selected_model_key = DEFAULT_MODEL_KEY
 
 # ==========================================
 # 4. 侧边栏：操作按钮
 # ==========================================
 st.sidebar.title("AI 导师")
 
+# 模型选择下拉框
+model_options = {cfg.display_name: key for key, cfg in MODELS.items()}
+selected_display = st.sidebar.selectbox(
+    "选择模型",
+    list(model_options.keys()),
+    index=list(model_options.values()).index(st.session_state.selected_model_key),
+)
+new_key = model_options[selected_display]
+
+if new_key != st.session_state.selected_model_key:
+    st.session_state.selected_model_key = new_key
+    st.session_state.chat_messages = []
+    st.session_state.thread_id = str(uuid.uuid4())
+    get_agent.clear()
+    st.rerun()
+
+try:
+    agent = get_agent(st.session_state.selected_model_key)
+except ValueError as e:
+    st.error(f"模型初始化失败：{e}")
+    st.stop()
+
 if st.sidebar.button("🔄 新建对话", use_container_width=True):
-    import uuid
     st.session_state.chat_messages = []
     st.session_state.thread_id = str(uuid.uuid4())
     st.rerun()

@@ -15,6 +15,8 @@
 7. ~~发送行为建议报告：侧边栏按钮一键收集 CSV 数据 → Gemini API 分析 → 邮件发送报告。(2026-02-28)~~ ✅ 已完成：report_config + report_data_collector + report_service + 23 个测试
 8. ~~加载个人上下文 kingsley_context.md 作为提示词一部分发送给 Gemini，让 AI 结合个人目标给出更精准建议。(2026-03-03)~~ ✅ 已完成：report_config 新增路径常量 + 模板新增 personal_context 占位符 + report_data_collector 新增 load_personal_context()
 9. ~~结构化邮件格式：专业 HTML 模板（头部横幅 + 分节卡片 + 页脚）+ 邮件标题加日期。(2026-03-03)~~ ✅ 已完成：重写 _markdown_to_simple_html() + 邮件 Subject 带日期
+10. ~~AI 导师页面添加模型选择下拉框 + system prompt 数据访问指南。(2026-03-07)~~ ✅ 已完成：model_config.py 模型注册表 + build_agent 工厂函数 + 侧边栏下拉框切换 + system prompt 动态注入日期 + period 格式规范
+11. Qwen 模型工具调用可靠性调试：文件目录识别问题，Gemini 正常但 Qwen 不稳定。(2026-03-07) ⚠️ 待调试
 
 ## 已完成
 - Bug 1/2/3 + 功能需求 1：修复多任务丢失、Date自动填充、NaN显示、列表包裹等核心bug (2026-02-26)
@@ -26,3 +28,4 @@
 - GitHub 公开仓库准备：移除硬编码路径、环境变量化 config、补充 .gitignore/README/requirements.txt (2026-02-26)
 - 功能需求 7：AI 行为建议报告（Gemini API + 163 邮箱发送），含 23 个单元测试 (2026-02-28)
 - 功能需求 8+9：个人上下文提示词 + 结构化邮件格式，新增 8 个测试（共 103 个）(2026-03-03)
+- 功能需求 10：AI 导师多模型切换（Gemini + Qwen）+ system prompt 数据访问指南 + 动态日期注入 (2026-03-07)

@@ -15,7 +15,8 @@
 - 启动方式：`streamlit run diary.py`
 - 数据路径：通过环境变量 `JOURNAL_BASE_DIR` 配置，默认 `./journal_data/`
 - 依赖管理：`pip install -r requirements.txt`
-- AI 分析：Gemini API（`google-genai` SDK）
+- AI 分析：Gemini API（`google-genai` SDK）+ 通义千问（DashScope OpenAI 兼容 API）
+- AI 对话：LangChain Agent（`langchain` + `langgraph`），支持多模型切换
 - 邮件发送：Python `smtplib`（SMTP_SSL）
 - 测试：`python -m pytest tests/ -v`（当前 103 个测试）
 - 仓库：https://github.com/HighTricker/journal_agnet
@@ -27,6 +28,13 @@ journal_agnet/
 ├── pages/                    # Streamlit 多页面
 │   ├── 1_周记.py             # 周记页面（习惯追踪 + 周任务 + 周反思）
 │   └── 2_月记.py             # 月记页面（月任务 + 月反思 + 数据聚合）
+├── agent/                    # AI 对话 Agent 模块
+│   ├── __init__.py
+│   ├── model_config.py       # 模型配置中心：ModelConfig 数据类 + MODELS 注册表 + DEFAULT_MODEL_KEY
+│   ├── agent.py              # Agent 工厂：build_agent(model_key) + 动态注入日期到 system prompt
+│   └── tools.py              # 5 个 LangChain 工具：read_diary / read_csv_data / save_advice_report / generate_schedule / send_email
+├── prompts/
+│   └── system_prompt.md      # Agent system prompt（含 {today} 等占位符，运行时动态替换）
 ├── core/                     # 所有业务模块
 │   ├── __init__.py
 │   ├── config.py             # 路径配置，基础目录定义
@@ -46,6 +54,7 @@ journal_agnet/
 │   └── kingsley_context.md    # 个人目标与执行基准（作为提示词上下文发送给 Gemini）
 ├── assets/
 │   └── styles.css            # Streamlit 自定义样式（日历紧凑化 + 目标卡片等）
+├── .env.example              # 环境变量配置模板（GEMINI_API_KEY / DASHSCOPE_API_KEY 等）
 ├── tests/                    # 测试目录（103 个测试：日记26 + 周记20 + 月记26 + 报告31）
 │   ├── test_core.py          # 日记核心功能测试
 │   ├── test_weekly.py        # 周记功能测试
@@ -118,6 +127,19 @@ journal_agnet/
 - 敏感信息通过环境变量配置：`GEMINI_API_KEY`、`JOURNAL_SMTP_USER`、`JOURNAL_SMTP_PASSWORD`、`JOURNAL_EMAIL_TO`
 - 错误分层：`ValueError`（配置缺失）/ `RuntimeError`（运行时错误）
 
+### 模块 G：AI 导师对话（pages/3_AI导师.py + agent/）
+- 基于 LangChain Agent + LangGraph 的多轮对话界面
+- **多模型支持**：侧边栏下拉框切换模型，当前支持 Gemini 3 Flash Preview + Qwen 3.5 Plus
+- `agent/model_config.py`：`ModelConfig` 数据类 + `MODELS` 注册表，未来加模型只改此文件
+- `agent/agent.py`：`build_agent(model_key)` 工厂函数，`_build_system_prompt()` 动态注入当天日期（{today}/{weekday}/{current_week}/{current_month}）
+- `agent/tools.py`：5 个工具（read_diary / read_csv_data / save_advice_report / generate_schedule / send_email）
+- `prompts/system_prompt.md`：含"数据访问指南"段落（工作流、period 参数格式规范表、典型分析流程）
+- Gemini 走 `google_genai` provider（`GEMINI_API_KEY`），Qwen 走 DashScope OpenAI 兼容 API（`DASHSCOPE_API_KEY`）
+- 模型切换时清空对话历史 + 清除 `@st.cache_resource` 缓存 + 生成新 thread_id
+- 快捷指令：分析今天 / 安排明天 / 发送周报 / 本周习惯
+- **已知问题**：Qwen 模型的工具调用可靠性不如 Gemini，可能出现不调工具或参数传错的情况，待后续调试
+- 敏感信息通过环境变量配置：`GEMINI_API_KEY`、`DASHSCOPE_API_KEY`
+
 ### 模块 E：数据持久化
 - **保存触发**：用户点击"💾 保存并生成日记"按钮（日记/周记/月记各自独立）
 - **CSV 写入**：Upsert 模式（覆盖同主键旧数据，不重复追加）
@@ -163,3 +185,4 @@ journal_agnet/
 - 完善现有核心功能的稳定性
 - 修复已知 bug，优化用户体验
 - 不急于加新功能，先把基础打扎实
+- **AI 导师对话**：Gemini 模型基本可用，Qwen 模型工具调用待调试（文件目录识别问题）
