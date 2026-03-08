@@ -388,6 +388,7 @@ with tab_time:
         use_container_width=True,
         hide_index=True,
         column_config={
+            "Date": st.column_config.TextColumn("📅 日期", disabled=True),
             t.COL_TIME_SLOT: st.column_config.TextColumn("⏰ 时间段", disabled=True),
             t.COL_TIME_STATUS: st.column_config.SelectboxColumn("状态", options=["None", "✅", "❌", "⚠️"]),
         },

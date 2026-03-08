@@ -132,7 +132,7 @@ journal_agnet/
 - **多模型支持**：侧边栏下拉框切换模型，当前支持 Gemini 3 Flash Preview + Qwen 3.5 Plus
 - `agent/model_config.py`：`ModelConfig` 数据类 + `MODELS` 注册表，未来加模型只改此文件
 - `agent/agent.py`：`build_agent(model_key)` 工厂函数，`_build_system_prompt()` 动态注入当天日期（{today}/{weekday}/{current_week}/{current_month}）
-- `agent/tools.py`：5 个工具（read_diary / read_csv_data / save_advice_report / generate_schedule / send_email）
+- `agent/tools.py`：6 个工具（read_diary / read_csv_data / save_advice_report / generate_schedule / add_task / send_email）
 - `prompts/system_prompt.md`：含"数据访问指南"段落（工作流、period 参数格式规范表、典型分析流程）
 - Gemini 走 `google_genai` provider（`GEMINI_API_KEY`），Qwen 走 DashScope OpenAI 兼容 API（`DASHSCOPE_API_KEY`）
 - 模型切换时清空对话历史 + 清除 `@st.cache_resource` 缓存 + 生成新 thread_id

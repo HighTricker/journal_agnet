@@ -18,7 +18,12 @@
 10. ~~AI 导师页面添加模型选择下拉框 + system prompt 数据访问指南。(2026-03-07)~~ ✅ 已完成：model_config.py 模型注册表 + build_agent 工厂函数 + 侧边栏下拉框切换 + system prompt 动态注入日期 + period 格式规范
 11. Qwen 模型工具调用可靠性调试：文件目录识别问题，Gemini 正常但 Qwen 不稳定。(2026-03-07) ⚠️ 待调试
 12. ~~添加 DeepSeek 模型到 AI 导师下拉框 + 修复 Gemini env_key 命名不一致。(2026-03-08)~~ ✅ 已完成：model_config.py 新增 DeepSeek 注册 + Gemini env_key 改为 GOOGLE_API_KEY + requirements.txt 添加 langchain-deepseek
-
+13. ~~修复邮件页脚 "Powered by Gemini" 硬编码，改为动态显示当前模型名称。(2026-03-08)~~ ✅ 已完成：report_service 加 powered_by 参数 + Agent send_email 工具传入 model_name
+14. ~~修复 generate_schedule 工具时间格式不规范，改为生成完整48行标准时间段 + Upsert 模式。(2026-03-08)~~ ✅ 已完成：_normalize_time_slot 规范化 + 复用 get_default_time_schedule 模板 + Upsert 写入
+15. ~~修复 Streamlit 前端时间表不展示 Date 列，恢复日期列显示在最左侧。(2026-03-08)~~ ✅ 已完成：data_manager 不再 drop Date 列 + diary.py column_config 添加 Date 列
+16. ~~新增 add_task 工具，解析 "HH:MM-HH:MM - 任务内容" 格式写入 tasks_log CSV。(2026-03-08)~~ ✅ 已完成：agent/tools.py 新增 add_task + agent.py 注册工具
+17. ~~修复 add_task 写入带 Markdown checkbox 前缀（- [ ]）的问题。(2026-03-08)~~ ✅ 已完成：_strip_markdown_prefix 清理 checkbox/bullet/编号前缀
+18. ~~修复 generate_schedule 写入带 ,✅, 状态标记的问题 + system prompt 新增工具格式规范。(2026-03-08)~~ ✅ 已完成：_clean_plan_text 分离计划/状态/备注 + system_prompt.md 新增工具调用格式规范
 ## 已完成
 - Bug 1/2/3 + 功能需求 1：修复多任务丢失、Date自动填充、NaN显示、列表包裹等核心bug (2026-02-26)
 - 额外修复：CSV 数据格式统一（编码、日期格式、整行引号）、column_config 补全防止值被包成 list (2026-02-26)
@@ -31,3 +36,5 @@
 - 功能需求 8+9：个人上下文提示词 + 结构化邮件格式，新增 8 个测试（共 103 个）(2026-03-03)
 - 功能需求 10：AI 导师多模型切换（Gemini + Qwen）+ system prompt 数据访问指南 + 动态日期注入 (2026-03-07)
 - 功能需求 12：添加 DeepSeek 模型支持 + 修复 Gemini env_key 为 GOOGLE_API_KEY (2026-03-08)
+- 需求 13-16：邮件页脚动态模型名 + generate_schedule 重写 + 时间表 Date 列恢复 + add_task 工具 (2026-03-08)
+- 需求 17-18：add_task 清理 Markdown 前缀 + generate_schedule 分离状态标记 + system prompt 格式规范 (2026-03-08)

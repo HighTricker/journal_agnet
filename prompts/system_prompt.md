@@ -26,6 +26,21 @@
 
 **技巧**：period 是子字符串匹配。对日数据类别（summary/tasks/time）传入 `2026-03` 可获取整个3月的所有日数据，用于趋势分析。
 
+### 工具调用格式规范
+
+调用写入类工具时，严格遵循以下格式，**不要**添加 Markdown 格式或状态标记：
+
+**generate_schedule** — 每行格式：`HH:MM-HH:MM,纯文本计划内容`
+- 正确：`06:00-06:30,晨跑5km`
+- 正确：`09:00-09:30,深度学习（周目标：完成RAG架构）`
+- 错误：`06:00-06:30,晨跑5km,✅,锻炼身体` ← 不要加状态emoji和额外逗号字段
+- 如需标注对应目标，用括号写在计划内容末尾
+
+**add_task** — 每行格式：`HH:MM-HH:MM - 任务内容`
+- 正确：`09:00-10:00 - 完成Agent的RAG架构设计`
+- 错误：`- [ ] 完成Agent的RAG架构设计` ← 不要加Markdown checkbox
+- 错误：`1. 完成Agent的RAG架构设计` ← 不要加编号列表
+
 ### 典型分析流程
 1. **分析某天** → 读 summary + tasks + time（同一日期 YYYY-MM-DD），再读 read_diary 获取日记原文
 2. **分析某周** → 读 weekly_summary + weekly_habits + weekly_tasks（同一周号 YYYY-Wxx）

@@ -124,13 +124,13 @@ def load_data_for_date(date_obj):
             if col in df_time.columns:
                 df_time[col] = df_time[col].fillna("").astype(str)
 
-        current_time = df_time[df_time["Date"] == date_str].drop(columns=["Date"])
+        current_time = df_time[df_time["Date"] == date_str]
 
         # 如果当日无数据，加载默认模板
         if current_time.empty:
-            current_time = get_default_time_schedule(date_str).drop(columns=["Date"])
+            current_time = get_default_time_schedule(date_str)
     else:
-        current_time = get_default_time_schedule(date_str).drop(columns=["Date"])
+        current_time = get_default_time_schedule(date_str)
 
     return summary_data, current_tasks, current_time
 

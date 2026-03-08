@@ -60,7 +60,7 @@ def generate_report():
 
 # ==================== 邮件发送 ====================
 
-def _markdown_to_simple_html(md_text):
+def _markdown_to_simple_html(md_text, powered_by="Gemini"):
     """将 Markdown 文本转换为带专业样式的 HTML 邮件"""
     html = md_text
     # 标题转换（### → h3, ## → h2, # → h1）
@@ -114,7 +114,7 @@ def _markdown_to_simple_html(md_text):
         <tr>
           <td style="background-color:#f4f6f9; padding:20px 40px; text-align:center; border-radius:0 0 12px 12px; border-top:1px solid #e0e0e0;">
             <p style="margin:0; color:#9e9e9e; font-size:12px;">
-              由 Journal Agent 自动生成 · Powered by Gemini
+              由 Journal Agent 自动生成 · Powered by {powered_by}
             </p>
           </td>
         </tr>
@@ -125,7 +125,7 @@ def _markdown_to_simple_html(md_text):
 </html>'''
 
 
-def send_email(report_content):
+def send_email(report_content, powered_by="Gemini"):
     """
     将报告内容通过邮件发送。
     异常：
@@ -156,7 +156,7 @@ def send_email(report_content):
     msg.attach(part_text)
 
     # HTML 版本（优先展示）
-    html_content = _markdown_to_simple_html(report_content)
+    html_content = _markdown_to_simple_html(report_content, powered_by=powered_by)
     part_html = MIMEText(html_content, "html", "utf-8")
     msg.attach(part_html)
 

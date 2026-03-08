@@ -190,8 +190,8 @@ class TestLoadDataDateHandling:
         assert "Date" in tasks.columns
         assert tasks.empty
 
-    def test_time_no_date_column(self, tmp_path):
-        """从 CSV 加载的时间表不应包含 Date 列（48行太冗余）"""
+    def test_time_has_date_column(self, tmp_path):
+        """从 CSV 加载的时间表应保留 Date 列（前端展示用）"""
         from core import texts as t
 
         paths = self._make_paths(tmp_path)
@@ -206,10 +206,10 @@ class TestLoadDataDateHandling:
             from core.data_manager import load_data_for_date
             _, _, time_df = load_data_for_date(date(2026, 3, 15))
 
-        assert "Date" not in time_df.columns
+        assert "Date" in time_df.columns
 
-    def test_default_time_schedule_drop_date(self, tmp_path):
-        """默认时间模板经 load 返回后也不含 Date"""
+    def test_default_time_schedule_has_date(self, tmp_path):
+        """默认时间模板经 load 返回后也保留 Date 列"""
         paths = self._make_paths(tmp_path)
         # time CSV 不存在，走 get_default_time_schedule 路径
 
@@ -217,7 +217,7 @@ class TestLoadDataDateHandling:
             from core.data_manager import load_data_for_date
             _, _, time_df = load_data_for_date(date(2026, 3, 15))
 
-        assert "Date" not in time_df.columns
+        assert "Date" in time_df.columns
         assert len(time_df) == 48
 
 
