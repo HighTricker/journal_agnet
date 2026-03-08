@@ -1,6 +1,7 @@
 import uuid
 import streamlit as st
 from agent.model_config import MODELS, DEFAULT_MODEL_KEY
+from core.config import SIDEBAR_NAV_HTML
 
 # ==========================================
 # 0. 页面配置
@@ -43,6 +44,7 @@ if "selected_model_key" not in st.session_state:
 # ==========================================
 # 4. 侧边栏：操作按钮
 # ==========================================
+st.sidebar.markdown(SIDEBAR_NAV_HTML, unsafe_allow_html=True)
 st.sidebar.title("AI 导师")
 
 # 模型选择下拉框

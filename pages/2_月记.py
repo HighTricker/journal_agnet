@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from core import monthly_texts as mt
+from core.config import SIDEBAR_NAV_HTML
 from core.monthly_data_manager import (
     get_month_info, load_monthly_data, save_monthly_data, aggregate_monthly_data,
 )
@@ -30,6 +31,7 @@ if 'monthly_ref_date' not in st.session_state:
 # ==========================================
 # 2. 侧边栏导航
 # ==========================================
+st.sidebar.markdown(SIDEBAR_NAV_HTML, unsafe_allow_html=True)
 st.sidebar.title(mt.SIDEBAR_TITLE)
 
 # 月切换回调

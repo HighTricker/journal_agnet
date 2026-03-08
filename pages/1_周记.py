@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from core import weekly_texts as wt
+from core.config import SIDEBAR_NAV_HTML
 from core.weekly_data_manager import (
     get_week_info, load_weekly_data, save_weekly_data, aggregate_daily_data,
 )
@@ -29,6 +30,7 @@ if 'weekly_ref_date' not in st.session_state:
 # ==========================================
 # 2. 侧边栏导航
 # ==========================================
+st.sidebar.markdown(SIDEBAR_NAV_HTML, unsafe_allow_html=True)
 st.sidebar.title(wt.SIDEBAR_TITLE)
 
 # 周切换回调
@@ -62,15 +64,18 @@ with nav_c3:
 st.sidebar.button("📍 回到本周", on_click=_go_this_week,
                   key="go_this_week", use_container_width=True)
 
-# 本周 7 天列表
+# 本周 7 天列表（点击跳转日记页 / Ctrl+点击在新标签页打开）
 st.sidebar.markdown("---")
-st.sidebar.markdown("**本周日期**")
+st.sidebar.markdown("**本周日期**（点击查看日记）")
 weekday_names = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 for i in range(7):
     day = monday + timedelta(days=i)
     marker = " ← 今天" if day == today else ""
+    date_str = day.strftime('%Y-%m-%d')
     st.sidebar.markdown(
-        f"- {weekday_names[i]} {day.month}/{day.day}{marker}"
+        f'- {weekday_names[i]} <a href="/?date={date_str}" target="_self">'
+        f'{day.month}/{day.day}</a>{marker}',
+        unsafe_allow_html=True
     )
 
 # ==========================================
@@ -240,7 +245,7 @@ for key, meta in wt.WEEKLY_REFLECTIONS.items():
     reflection_inputs[key] = st.text_area(
         meta["title"],
         value=str(summary_data.get(key, "")),
-        height=120,
+        height=meta.get("height", 120),
         placeholder=meta["ph"],
         label_visibility="collapsed",
     )

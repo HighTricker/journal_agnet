@@ -25,9 +25,10 @@
 ```
 journal_agnet/
 ├── diary.py                  # 日记主页面（日历导航 + 量化数据 + 目标展示 + 任务看板 + 反思）
-├── pages/                    # Streamlit 多页面
+├── pages/                    # Streamlit 多页面（均含自定义导航，支持 Ctrl+点击新标签页）
 │   ├── 1_周记.py             # 周记页面（习惯追踪 + 周任务 + 周反思）
-│   └── 2_月记.py             # 月记页面（月任务 + 月反思 + 数据聚合）
+│   ├── 2_月记.py             # 月记页面（月任务 + 月反思 + 数据聚合）
+│   └── 3_AI导师.py           # AI 导师对话页面（多模型切换 + LangChain Agent）
 ├── agent/                    # AI 对话 Agent 模块
 │   ├── __init__.py
 │   ├── model_config.py       # 模型配置中心：ModelConfig 数据类 + MODELS 注册表 + DEFAULT_MODEL_KEY
@@ -37,7 +38,7 @@ journal_agnet/
 │   └── system_prompt.md      # Agent system prompt（含 {today}/{model_name} 等占位符 + 工具调用格式规范）
 ├── core/                     # 所有业务模块
 │   ├── __init__.py
-│   ├── config.py             # 路径配置，基础目录定义
+│   ├── config.py             # 路径配置、基础目录定义、SIDEBAR_NAV_HTML 自定义导航
 │   ├── data_manager.py       # 日记数据处理，CSV 读写和 Markdown 生成
 │   ├── texts.py              # 日记 UI 文案、评分定义、坏习惯关键词库
 │   ├── template.py           # 日程模板，48 个时间段的默认安排
@@ -53,7 +54,7 @@ journal_agnet/
 │   ├── report_service.py      # 报告服务：Gemini API 调用 + 结构化 HTML 邮件发送
 │   └── kingsley_context.md    # 个人目标与执行基准（作为提示词上下文发送给 Gemini）
 ├── assets/
-│   └── styles.css            # Streamlit 自定义样式（日历紧凑化 + 目标卡片等）
+│   └── styles.css            # Streamlit 自定义样式（日历紧凑化 + link_button紧凑化 + 目标卡片 + 隐藏默认导航 + 自定义导航样式）
 ├── .env.example              # 环境变量配置模板（GOOGLE_API_KEY / DASHSCOPE_API_KEY / DEEPSEEK_API_KEY）
 ├── tests/                    # 测试目录（103 个测试：日记26 + 周记20 + 月记26 + 报告31）
 │   ├── test_core.py          # 日记核心功能测试
@@ -71,11 +72,20 @@ journal_agnet/
 
 ### 模块 A：侧边栏月历导航（diary.py）
 - 月历网格：`calendar` 模块 + `st.columns(7)`，周日为首列
-- 月份切换：◀▶ 按钮切换月份，"回到今天"快捷按钮
+- 日期按钮使用 `st.link_button`（生成真正的 `<a>` 标签，支持 Ctrl+点击在新标签页打开）
+- URL 参数传日期：`/?date=YYYY-MM-DD`，页面加载时解析 `st.query_params['date']` 设置选中日期
+- 月份切换：◀▶ 按钮切换月份，"回到今天"快捷按钮（同为 link_button）
 - ⊙今天标记 + primary 按钮高亮选中日期
 - 只显示本月日期，非本月位置留空白
 - session_state 管理：`selected_date`, `cal_year`, `cal_month`
 - 日记编号系统：以 2026-02-18 = No.1100 为锚点，按日期差值递推
+
+### 模块 H：自定义页面导航（全局）
+- 隐藏 Streamlit 默认侧边栏导航（CSS `display: none`），替换为标准 HTML `<a>` 链接
+- 导航 HTML 定义在 `core/config.py` 的 `SIDEBAR_NAV_HTML` 常量，4 个页面共享
+- 所有页面侧边栏顶部渲染导航：`st.sidebar.markdown(SIDEBAR_NAV_HTML, unsafe_allow_html=True)`
+- 普通点击在当前标签页导航（`target="_self"`），Ctrl+点击在新标签页打开（浏览器原生行为）
+- 新增页面时只需修改 `core/config.py` 中的 `SIDEBAR_NAV_HTML`
 
 ### 模块 B：主界面工作流（diary.py，从上到下）
 
@@ -108,7 +118,8 @@ journal_agnet/
 - 数据聚合：从 daily_summary 自动计算心情/睡眠/番茄钟等统计
 - 习惯追踪：6 个默认习惯 + 动态增删行，按周一~周日打卡
 - 任务分类：工作、运动、读书/学习、生活事务
-- 7 个反思区块
+- 7 个反思区块，"本周的所思所想"输入框高度 400px（通过 `weekly_texts.py` 的 `height` 字段配置）
+- 侧边栏 7 天日期为 HTML 链接，点击跳转日记页，Ctrl+点击在新标签页打开
 
 ### 模块 D：月记（pages/2_月记.py）
 - 二表设计：monthly_summary / monthly_tasks（主键：Month，格式 "2026-03"）

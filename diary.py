@@ -10,6 +10,7 @@ from core.weekly_data_manager import get_week_info, load_weekly_data
 from core.monthly_data_manager import get_month_info, load_monthly_data
 from core.report_service import generate_report, send_email
 from core import report_config as rc
+from core.config import SIDEBAR_NAV_HTML
 
 # ==========================================
 # 0. 基础页面配置
@@ -46,8 +47,35 @@ def get_diary_metadata(target_date):
 # ==========================================
 # 2. 侧边栏导航：选择日期
 # ==========================================
+st.sidebar.markdown(SIDEBAR_NAV_HTML, unsafe_allow_html=True)
 st.sidebar.title(t.SIDEBAR_TITLE)
 today = datetime.now().date()
+
+def _clear_widget_cache():
+    """切换日期时清除 widget 缓存，确保新日期数据能正确加载"""
+    keys_to_remove = [k for k in st.session_state
+                      if k.startswith(("task_editor_", "time_editor_",
+                                       "mood_", "focus_", "meditation_",
+                                       "ai_time_", "masturb_", "sleep_score_",
+                                       "bedtime_", "waketime_", "dreams_",
+                                       "reflect_"))]
+    for k in keys_to_remove:
+        del st.session_state[k]
+
+# 支持 URL 参数指定日期（从周记链接 / Ctrl+点击新标签页跳转）
+if 'date' in st.query_params:
+    try:
+        param_date = datetime.strptime(
+            st.query_params['date'], '%Y-%m-%d'
+        ).date()
+        if st.session_state.get('selected_date') != param_date:
+            _clear_widget_cache()
+        st.session_state.selected_date = param_date
+        st.session_state.cal_year = param_date.year
+        st.session_state.cal_month = param_date.month
+        del st.query_params['date']
+    except ValueError:
+        pass
 
 # session_state 初始化（首次执行时设定默认值，后续 rerun 保持用户选择）
 if 'selected_date' not in st.session_state:
@@ -71,31 +99,6 @@ def _next_month():
         st.session_state.cal_year += 1
     else:
         st.session_state.cal_month += 1
-
-def _clear_widget_cache():
-    """切换日期时清除 widget 缓存，确保新日期数据能正确加载"""
-    keys_to_remove = [k for k in st.session_state
-                      if k.startswith(("task_editor_", "time_editor_",
-                                       "mood_", "focus_", "meditation_",
-                                       "ai_time_", "masturb_", "sleep_score_",
-                                       "bedtime_", "waketime_", "dreams_",
-                                       "reflect_"))]
-    for k in keys_to_remove:
-        del st.session_state[k]
-
-def _go_today():
-    _clear_widget_cache()
-    st.session_state.selected_date = today
-    st.session_state.cal_year = today.year
-    st.session_state.cal_month = today.month
-
-def _select_date(d):
-    """选择日期，若跨月则同时切换日历视图"""
-    _clear_widget_cache()
-    st.session_state.selected_date = d
-    if d.month != st.session_state.cal_month or d.year != st.session_state.cal_year:
-        st.session_state.cal_year = d.year
-        st.session_state.cal_month = d.month
 
 # ── 月份导航栏：◀ 2026年2月 ▶ ──
 nav_c1, nav_c2, nav_c3 = st.sidebar.columns([1, 3, 1])
@@ -149,16 +152,16 @@ for week in weeks:
                 is_selected = (day_date == st.session_state.selected_date)
                 label = f"⊙{day_date.day}" if is_today else str(day_date.day)
                 btn_type = "primary" if is_selected else "secondary"
-                st.button(
-                    label, key=f"d_{day_date}", type=btn_type,
-                    on_click=_select_date, args=(day_date,),
-                    use_container_width=True
+                st.link_button(
+                    label, url=f"/?date={day_date}",
+                    type=btn_type,
+                    use_container_width=True,
                 )
 
 # "回到今天" 快捷按钮
-st.sidebar.button(
-    "📍 回到今天", on_click=_go_today,
-    key="cal_today", use_container_width=True
+st.sidebar.link_button(
+    "📍 回到今天", url=f"/?date={today}",
+    use_container_width=True,
 )
 
 # ── 行为建议报告按钮 ──

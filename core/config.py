@@ -32,6 +32,16 @@ PATH_WEEKLY_TASKS = os.path.join(BASE_DIR, "data", "weekly_tasks")
 PATH_MONTHLY_SUMMARY = os.path.join(BASE_DIR, "data", "monthly_summary")
 PATH_MONTHLY_TASKS = os.path.join(BASE_DIR, "data", "monthly_tasks")
 
+# --- 自定义侧边栏导航 HTML（替代 Streamlit 默认导航，支持 Ctrl+点击新标签页） ---
+SIDEBAR_NAV_HTML = '''
+<div class="custom-nav">
+    <a href="/" target="_self">📝 日记</a>
+    <a href="/周记" target="_self">📊 周记</a>
+    <a href="/月记" target="_self">📅 月记</a>
+    <a href="/AI导师" target="_self">🤖 AI导师</a>
+</div>
+'''
+
 # --- 自动创建年度数据文件夹 ---
 # 注意：Markdown 文件夹会根据日期在 data_manager.py 中动态创建
 for path in [PATH_TASKS, PATH_TIME, PATH_SUMMARY,
