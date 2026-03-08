@@ -24,7 +24,7 @@ _register(ModelConfig(
     display_name="Gemini 3 Flash Preview",
     provider="google_genai",
     model_name="gemini-3-flash-preview",
-    env_key="GEMINI_API_KEY",
+    env_key="GOOGLE_API_KEY",
 ))
 
 _register(ModelConfig(
@@ -34,6 +34,14 @@ _register(ModelConfig(
     model_name="qwen3.5-plus-2026-02-15",
     env_key="DASHSCOPE_API_KEY",
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+))
+
+_register(ModelConfig(
+    key="deepseek",
+    display_name="DeepSeek Chat",
+    provider="deepseek",
+    model_name="deepseek-chat",
+    env_key="DEEPSEEK_API_KEY",
 ))
 
 DEFAULT_MODEL_KEY = "gemini"
