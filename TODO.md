@@ -24,6 +24,7 @@
 16. ~~新增 add_task 工具，解析 "HH:MM-HH:MM - 任务内容" 格式写入 tasks_log CSV。(2026-03-08)~~ ✅ 已完成：agent/tools.py 新增 add_task + agent.py 注册工具
 17. ~~修复 add_task 写入带 Markdown checkbox 前缀（- [ ]）的问题。(2026-03-08)~~ ✅ 已完成：_strip_markdown_prefix 清理 checkbox/bullet/编号前缀
 18. ~~修复 generate_schedule 写入带 ,✅, 状态标记的问题 + system prompt 新增工具格式规范。(2026-03-08)~~ ✅ 已完成：_clean_plan_text 分离计划/状态/备注 + system_prompt.md 新增工具调用格式规范
+19. ~~修复模型身份认知错误：选 DeepSeek 却自称 Gemini + 邮件页脚始终显示 Gemini。(2026-03-08)~~ ✅ 已完成：system prompt 注入 {model_name} + send_email 自动使用当前模型名
 ## 已完成
 - Bug 1/2/3 + 功能需求 1：修复多任务丢失、Date自动填充、NaN显示、列表包裹等核心bug (2026-02-26)
 - 额外修复：CSV 数据格式统一（编码、日期格式、整行引号）、column_config 补全防止值被包成 list (2026-02-26)
@@ -38,3 +39,4 @@
 - 功能需求 12：添加 DeepSeek 模型支持 + 修复 Gemini env_key 为 GOOGLE_API_KEY (2026-03-08)
 - 需求 13-16：邮件页脚动态模型名 + generate_schedule 重写 + 时间表 Date 列恢复 + add_task 工具 (2026-03-08)
 - 需求 17-18：add_task 清理 Markdown 前缀 + generate_schedule 分离状态标记 + system prompt 格式规范 (2026-03-08)
+- 需求 19：修复模型身份认知 + 邮件页脚自动跟随当前模型（system prompt 注入 model_name + tools 全局变量）(2026-03-08)

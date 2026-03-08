@@ -8,6 +8,9 @@ from core.data_manager import get_default_time_schedule
 from core.report_service import send_email as _send_email_impl
 from core import texts as t
 
+# 当前模型名称，由 agent.py 的 build_agent() 在构建时设置
+_current_model_name = "Gemini"
+
 
 # 文件夹名 → 文件名的映射
 CSV_FILE_MAP = {
@@ -274,16 +277,16 @@ def add_task(date: str, tasks: str) -> str:
     return f"已向 {date} 添加 {len(new_rows)} 条任务到 {file_path}"
 
 
-@tool("send_email", description="将行为建议报告通过邮件发送给用户，使用专业HTML邮件模板，页脚显示当前模型名称")
-def send_email(content: str, model_name: str = "Gemini") -> str:
+@tool("send_email", description="将行为建议报告通过邮件发送给用户，使用专业HTML邮件模板")
+def send_email(content: str) -> str:
     """发送行为建议邮件，复用已有的专业HTML邮件模板。
+    邮件页脚会自动显示当前使用的模型名称。
 
     Args:
         content: 邮件正文内容（markdown格式，会自动转为HTML）
-        model_name: 当前使用的AI模型名称，用于邮件页脚显示（如 Gemini、DeepSeek、Qwen）
     """
     try:
-        _send_email_impl(content, powered_by=model_name)
+        _send_email_impl(content, powered_by=_current_model_name)
         return "邮件已发送成功"
     except ValueError as e:
         return f"邮箱配置错误: {e}"
