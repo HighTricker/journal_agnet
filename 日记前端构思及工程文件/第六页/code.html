@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Serenity - Life Reflection &amp; Records</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#eceef0",
+              "surface-tint": "#3755c3",
+              "on-surface-variant": "#444653",
+              "on-primary-fixed-variant": "#173bab",
+              "inverse-surface": "#2d3133",
+              "surface-dim": "#d8dadc",
+              "on-secondary-container": "#576676",
+              "on-tertiary-fixed": "#380d00",
+              "tertiary": "#611e00",
+              "surface-container-low": "#f2f4f6",
+              "secondary-fixed": "#d5e4f8",
+              "inverse-on-surface": "#eff1f3",
+              "on-background": "#191c1e",
+              "tertiary-fixed": "#ffdbce",
+              "on-primary-container": "#a8b8ff",
+              "surface-bright": "#f7f9fb",
+              "on-secondary-fixed": "#0e1d2b",
+              "secondary-fixed-dim": "#b9c8db",
+              "on-tertiary-container": "#ffa583",
+              "primary-fixed-dim": "#b8c4ff",
+              "outline": "#757684",
+              "tertiary-fixed-dim": "#ffb59a",
+              "primary": "#00288e",
+              "surface": "#f7f9fb",
+              "on-tertiary-fixed-variant": "#802a00",
+              "secondary-container": "#d5e4f8",
+              "inverse-primary": "#b8c4ff",
+              "on-error-container": "#93000a",
+              "on-tertiary": "#ffffff",
+              "surface-container-high": "#e6e8ea",
+              "on-surface": "#191c1e",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "error": "#ba1a1a",
+              "on-secondary-fixed-variant": "#3a4858",
+              "surface-variant": "#e0e3e5",
+              "primary-fixed": "#dde1ff",
+              "on-primary-fixed": "#001453",
+              "primary-container": "#1e40af",
+              "secondary": "#516070",
+              "on-primary": "#ffffff",
+              "background": "#f7f9fb",
+              "outline-variant": "#c4c5d5",
+              "tertiary-container": "#872d00",
+              "surface-container-highest": "#e0e3e5",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      body { font-family: 'Manrope', sans-serif; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container">
+<!-- TopAppBar -->
+<header class="bg-[#f7f9fb] dark:bg-slate-900/80 backdrop-blur-xl docked full-width top-0 sticky z-50">
+<div class="flex justify-center items-center w-full px-8 py-6 max-w-7xl mx-auto">
+<nav class="flex items-center gap-12">
+<a class="text-[#00288e] dark:text-blue-400 font-semibold border-b-2 border-[#00288e] dark:border-blue-400 pb-1" href="#">日记</a>
+<a class="text-[#191c1e]/60 dark:text-slate-400 hover:text-[#00288e] dark:hover:text-blue-300 transition-colors" href="#">周记</a>
+<a class="text-[#191c1e]/60 dark:text-slate-400 hover:text-[#00288e] dark:hover:text-blue-300 transition-colors" href="#">月记</a>
+<a class="text-[#191c1e]/60 dark:text-slate-400 hover:text-[#00288e] dark:hover:text-blue-300 transition-colors" href="#">AI导师</a>
+</nav>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-8 py-12">
+<div class="space-y-12">
+<!-- Text Records Grid -->
+<section>
+<h2 class="text-sm font-bold uppercase tracking-widest text-primary mb-6 opacity-80">Text Records</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- AI Usage -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="hub">hub</span>
+<h3 class="font-bold text-on-surface text-sm">AI是如何使用</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Utilized LLM for architectural brainstorming and code refactoring. The logic flow improved significantly.</p>
+</div>
+<!-- Reading Thoughts -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="auto_stories">auto_stories</span>
+<h3 class="font-bold text-on-surface text-sm">读书感受</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Currently exploring "Digital Minimalism". The concept of high-quality leisure resonates deeply with my current burnout.</p>
+</div>
+<!-- Meditation Feelings -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="spa">spa</span>
+<h3 class="font-bold text-on-surface text-sm">静坐感受</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Focus on the breath felt heavy at first, then transitioned into a weightless clarity. 15 minutes of pure silence.</p>
+</div>
+<!-- Well Done -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="done_all">done_all</span>
+<h3 class="font-bold text-on-surface text-sm">做得好的动作</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Maintained a steady work-rest cycle and successfully bypassed mindless social media scrolling today.</p>
+</div>
+<!-- Improvements -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="trending_up">trending_up</span>
+<h3 class="font-bold text-on-surface text-sm">需改进的动作</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Need to improve water intake and reduce caffeine after 2 PM to avoid late-night restlessness.</p>
+</div>
+<!-- Words to Self -->
+<div class="bg-surface-container-lowest p-6 min-h-[175px] rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="favorite">favorite</span>
+<h3 class="font-bold text-on-surface text-sm">给自己的话</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed line-clamp-4">Be patient with the progress. The forest doesn't grow in a day, and neither does a new habit.</p>
+</div>
+</div>
+</section>
+<!-- Ideas & Inspiration -->
+<section>
+<h2 class="text-sm font-bold uppercase tracking-widest text-primary mb-6 opacity-80">Ideas &amp; Inspiration</h2>
+<div class="relative">
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-8 text-on-surface placeholder:text-outline/40 focus:ring-2 focus:ring-primary/20 min-h-[240px] text-lg leading-relaxed shadow-sm transition-shadow hover:shadow-md" placeholder="A spark of thought, a sudden realization..."></textarea>
+<div class="absolute bottom-6 right-6 flex gap-2">
+<span class="material-symbols-outlined text-outline/30" data-icon="lightbulb">lightbulb</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-10 right-10 w-16 h-16 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-[60]">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300" data-icon="add">add</span>
+</button>
+<!-- Bottom Nav for Mobile visibility -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-safe pt-3 bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl z-50 border-t border-[#c4c5d5]/15">
+<div class="flex flex-col items-center justify-center text-[#191c1e]/40 opacity-70">
+<span class="material-symbols-outlined" data-icon="home_app_logo">home_app_logo</span>
+<span class="font-manrope text-[10px] uppercase mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#00288e] scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="font-manrope text-[10px] uppercase mt-1">Journal</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#191c1e]/40 opacity-70">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-manrope text-[10px] uppercase mt-1">Insights</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#191c1e]/40 opacity-70">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-manrope text-[10px] uppercase mt-1">Profile</span>
+</div>
+</nav>
+</body></html>

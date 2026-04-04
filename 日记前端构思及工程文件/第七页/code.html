@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Serenity Diary | AI Reflection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline": "#757684",
+              "on-primary-container": "#a8b8ff",
+              "tertiary-fixed-dim": "#ffb59a",
+              "surface-container-highest": "#e0e3e5",
+              "inverse-on-surface": "#eff1f3",
+              "on-tertiary": "#ffffff",
+              "surface-container": "#eceef0",
+              "surface-bright": "#f7f9fb",
+              "secondary-container": "#d5e4f8",
+              "surface-tint": "#3755c3",
+              "tertiary-fixed": "#ffdbce",
+              "primary": "#00288e",
+              "secondary-fixed-dim": "#b9c8db",
+              "on-error-container": "#93000a",
+              "primary-fixed": "#dde1ff",
+              "on-primary-fixed": "#001453",
+              "on-tertiary-fixed-variant": "#802a00",
+              "surface-container-high": "#e6e8ea",
+              "on-background": "#191c1e",
+              "inverse-primary": "#b8c4ff",
+              "outline-variant": "#c4c5d5",
+              "on-tertiary-container": "#ffa583",
+              "on-primary": "#ffffff",
+              "secondary-fixed": "#d5e4f8",
+              "on-error": "#ffffff",
+              "primary-fixed-dim": "#b8c4ff",
+              "on-secondary": "#ffffff",
+              "on-tertiary-fixed": "#380d00",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#444653",
+              "inverse-surface": "#2d3133",
+              "on-primary-fixed-variant": "#173bab",
+              "background": "#f7f9fb",
+              "primary-container": "#1e40af",
+              "on-secondary-fixed-variant": "#3a4858",
+              "surface-dim": "#d8dadc",
+              "tertiary-container": "#872d00",
+              "tertiary": "#611e00",
+              "surface-variant": "#e0e3e5",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#f7f9fb",
+              "error": "#ba1a1a",
+              "surface-container-low": "#f2f4f6",
+              "on-secondary-container": "#576676",
+              "on-surface": "#191c1e",
+              "on-secondary-fixed": "#0e1d2b",
+              "secondary": "#516070"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4c5d5; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8b8ff; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopAppBar Execution from JSON -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-50 bg-[#f7f9fb] dark:bg-slate-950 no-border"><div class="flex-1 flex justify-center"><nav class="flex gap-8 items-center"><a class="text-[#00288e] font-semibold font-headline text-sm tracking-tight transition-colors" href="#">日记</a><a class="text-[#191c1e]/60 font-headline text-sm tracking-tight hover:bg-[#f2f4f6] dark:hover:bg-slate-900 transition-colors p-2 rounded-xl" href="#">周记</a><a class="text-[#191c1e]/60 font-headline text-sm tracking-tight hover:bg-[#f2f4f6] dark:hover:bg-slate-900 transition-colors p-2 rounded-xl" href="#">月记</a><a class="text-[#191c1e]/60 font-headline text-sm tracking-tight hover:bg-[#f2f4f6] dark:hover:bg-slate-900 transition-colors p-2 rounded-xl" href="#">AI导师</a></nav></div></header>
+<main class="max-w-[1440px] mx-auto min-h-[calc(100vh-80px)] p-6 md:p-10 flex gap-10">
+<!-- Left Pane (Sub-sidebar) -->
+<aside class="hidden lg:flex flex-col w-72 shrink-0 gap-10">
+<!-- Model Selection Module -->
+<section class="flex flex-col gap-5">
+<h3 class="text-sm font-extrabold uppercase tracking-widest text-on-surface/40 px-2">Model Selection</h3>
+<div class="flex flex-col gap-2">
+<button class="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest text-primary font-bold shadow-sm border-l-4 border-primary transition-all">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-sm">GPT-4 Sage</span>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container-low text-on-surface/70 transition-all group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">auto_awesome</span>
+<span class="text-sm">Claude Creative</span>
+</button>
+</div>
+</section>
+<!-- Quick Commands Module -->
+<section class="flex flex-col gap-5">
+<h3 class="text-sm font-extrabold uppercase tracking-widest text-on-surface/40 px-2">Quick Commands</h3>
+<div class="grid grid-cols-1 gap-3">
+<button class="flex items-center gap-3 p-4 rounded-xl bg-secondary-container/30 hover:bg-secondary-container/60 text-on-secondary-container transition-all text-left">
+<span class="material-symbols-outlined text-primary text-[20px]">summarize</span>
+<span class="text-sm font-medium">Summarize Day</span>
+</button>
+<button class="flex items-center gap-3 p-4 rounded-xl bg-secondary-container/30 hover:bg-secondary-container/60 text-on-secondary-container transition-all text-left">
+<span class="material-symbols-outlined text-primary text-[20px]">mood</span>
+<span class="text-sm font-medium">Sentiment Analysis</span>
+</button>
+<button class="flex items-center gap-3 p-4 rounded-xl bg-secondary-container/30 hover:bg-secondary-container/60 text-on-secondary-container transition-all text-left">
+<span class="material-symbols-outlined text-primary text-[20px]">lightbulb</span>
+<span class="text-sm font-medium">Idea Generation</span>
+</button>
+</div>
+</section>
+<!-- Aesthetic Illustration Placeholder -->
+</aside>
+<!-- Right Pane (Main Chat Area) -->
+<section class="flex-1 flex flex-col bg-surface-container-low rounded-[2rem] overflow-hidden relative border border-outline-variant/10 shadow-xl shadow-primary/5">
+<!-- Chat Header -->
+<div class="px-8 py-6 flex items-center justify-between glass-effect border-b border-outline-variant/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div>
+<h2 class="font-bold text-on-surface leading-tight">GPT-4 Sage Reflection</h2>
+<p class="text-xs text-on-surface/50">Active now • Mindful Guide</p>
+</div>
+</div>
+</div>
+<!-- Messages Stream -->
+<div class="flex-1 overflow-y-auto p-8 space-y-10">
+<!-- Date Marker -->
+<div class="flex justify-center">
+<span class="px-4 py-1 rounded-full bg-surface-variant/30 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">Today, October 24</span>
+</div>
+<!-- AI Message -->
+<div class="flex gap-4 max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary text-[18px]">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="bg-surface-container-lowest p-5 rounded-2xl rounded-tl-none shadow-sm text-on-surface/90 leading-relaxed text-sm">
+                            Good morning. I've been reflecting on your entry from last night regarding the new project. It seems you're balancing excitement with a bit of apprehension. How are you feeling about the first milestone today?
+                        </div>
+<span class="text-[10px] text-on-surface/40 ml-1">9:41 AM</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex gap-4 max-w-[85%] ml-auto flex-row-reverse">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-1">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a young woman with a calm expression in soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMCeKId5JijpFyhg5OZOImGLjyX87ZVAdLVXIQyniLOpbR1vz1QclAtZzRjxju5uxkyxOx4GgwcKTbZ0RvBYqlgfZsA7kZHrtSTHqzCWW58FU4XTbb2kR0_fVhOYwkFRxCOWSOMhdnuk_PmStU7YOjyv86gn0tk3XZ9vQMVmPoHffyvw9_5lpEtaH7s6G_1lRiZk4_GMqMyTy-om8SmpQtL7srqu-RlOXjnExkX2VwWk2se4HSHkewuzNFgTNjxMpNUt5JdA4L2ME"/>
+</div>
+<div class="flex flex-col items-end gap-2">
+<div class="bg-gradient-to-br from-primary to-primary-container p-5 rounded-2xl rounded-tr-none text-white leading-relaxed text-sm shadow-md">
+                            I'm actually feeling more focused this morning. I think writing it down helped clear the mental clutter. I'd like to break down the first milestone into smaller, more manageable tasks. Can you help me with that?
+                        </div>
+<span class="text-[10px] text-on-surface/40 mr-1">9:43 AM</span>
+</div>
+</div>
+<!-- AI Message with Analysis Content -->
+<div class="flex gap-4 max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-primary text-[18px]">auto_awesome</span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-surface-container-lowest p-5 rounded-2xl rounded-tl-none shadow-sm text-on-surface/90 leading-relaxed text-sm">
+                            Certainly. Based on your previous goals, here is a suggested flow for today. Remember to take small breaks between each focused block to maintain that clarity.
+                        </div>
+<!-- Structured Response Component -->
+<div class="bg-surface-container-highest/30 rounded-2xl p-6 border border-outline-variant/10 space-y-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary">checklist</span>
+<span class="font-bold text-sm">Task Decomposition</span>
+</div>
+<div class="space-y-3">
+<div class="flex gap-3 items-start">
+<div class="w-5 h-5 rounded border border-primary/30 mt-0.5"></div>
+<p class="text-xs text-on-surface/80">Audit existing documentation for technical gaps (45 mins)</p>
+</div>
+<div class="flex gap-3 items-start">
+<div class="w-5 h-5 rounded border border-primary/30 mt-0.5"></div>
+<p class="text-xs text-on-surface/80">Draft initial architecture diagram (60 mins)</p>
+</div>
+<div class="flex gap-3 items-start">
+<div class="w-5 h-5 rounded border border-primary/30 mt-0.5"></div>
+<p class="text-xs text-on-surface/80">Schedule sync with the design team (15 mins)</p>
+</div>
+</div>
+</div>
+<span class="text-[10px] text-on-surface/40 ml-1">9:44 AM</span>
+</div>
+</div>
+</div>
+<!-- Bottom Input Area -->
+<div class="p-8 pt-2">
+<div class="relative group">
+<div class="absolute inset-0 bg-primary/5 blur-xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+<div class="relative flex items-end gap-3 p-3 bg-surface-container-lowest border border-outline-variant/20 rounded-[1.5rem] shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface/40 transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-1 resize-none min-h-[44px] max-h-40 font-body placeholder:text-on-surface/30" placeholder="Share your thoughts or ask for guidance..." rows="1"></textarea>
+<div class="flex gap-1">
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface/40 transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+<p class="text-center text-[10px] text-on-surface/30 mt-4 tracking-wide font-medium">Serenity AI may provide creative suggestions. Journaling remains a personal journey.</p>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom Navigation (Conditional per instructions) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest border-t border-outline-variant/10 flex items-center justify-around px-4 z-50">
+<button class="flex flex-col items-center gap-1 text-on-surface/40">
+<span class="material-symbols-outlined text-[22px]">edit_note</span>
+<span class="text-[10px] font-bold">Entry</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="text-[10px] font-bold">Sage</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface/40">
+<span class="material-symbols-outlined text-[22px]">history</span>
+<span class="text-[10px] font-bold">History</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface/40">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-[10px] font-bold">Settings</span>
+</button>
+</nav>
+</body></html>

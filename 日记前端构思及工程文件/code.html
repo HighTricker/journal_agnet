@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Digital Sanctuary - Holistic Life Planner</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface": "#191c1e",
+              "surface-container-high": "#e6e8ea",
+              "error": "#ba1a1a",
+              "on-secondary": "#ffffff",
+              "surface-container-low": "#f2f4f6",
+              "secondary": "#516070",
+              "background": "#f7f9fb",
+              "on-tertiary-container": "#ffa583",
+              "on-secondary-fixed": "#0e1d2b",
+              "surface": "#f7f9fb",
+              "primary-fixed": "#dde1ff",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#2d3133",
+              "on-primary-container": "#a8b8ff",
+              "inverse-primary": "#b8c4ff",
+              "inverse-on-surface": "#eff1f3",
+              "on-background": "#191c1e",
+              "tertiary-container": "#872d00",
+              "surface-container-highest": "#e0e3e5",
+              "secondary-fixed-dim": "#b9c8db",
+              "secondary-fixed": "#d5e4f8",
+              "on-error-container": "#93000a",
+              "surface-bright": "#f7f9fb",
+              "surface-container": "#eceef0",
+              "on-primary-fixed-variant": "#173bab",
+              "surface-container-lowest": "#ffffff",
+              "surface-variant": "#e0e3e5",
+              "tertiary": "#611e00",
+              "outline": "#757684",
+              "on-tertiary-fixed": "#380d00",
+              "on-error": "#ffffff",
+              "error-container": "#ffdad6",
+              "on-primary-fixed": "#001453",
+              "surface-dim": "#d8dadc",
+              "on-primary": "#ffffff",
+              "outline-variant": "#c4c5d5",
+              "on-surface-variant": "#444653",
+              "surface-tint": "#3755c3",
+              "tertiary-fixed": "#ffdbce",
+              "on-tertiary-fixed-variant": "#802a00",
+              "on-secondary-fixed-variant": "#3a4858",
+              "primary-container": "#1e40af",
+              "secondary-container": "#d5e4f8",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-secondary-container": "#576676",
+              "primary": "#00288e",
+              "primary-fixed-dim": "#b8c4ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+    <style>
+        body { font-family: 'Manrope', sans-serif; background-color: #f7f9fb; color: #191c1e; line-height: 1.6; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c4c5d5; border-radius: 10px; }
+        .scale-98-on-click:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="bg-background antialiased text-on-surface">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // Shared Components
+        const TopAppBar = () => {
+            const navigate = useNavigate();
+            const location = useLocation();
+            const activeClass = "text-[#00288e] dark:text-blue-400 font-bold border-b-2 border-[#00288e] dark:border-blue-400 pb-1";
+            const inactiveClass = "text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all";
+
+            return (
+                <header class="fixed top-0 w-full z-50 bg-[#f7f9fb]/80 backdrop-blur-xl dark:bg-slate-950/80">
+                    <div class="flex justify-between items-center px-8 h-20 max-w-7xl mx-auto">
+                        <div class="text-xl font-bold tracking-tight text-[#191c1e] dark:text-slate-100 cursor-pointer" onClick={() => navigate('/')}>Serenity</div>
+                        <nav class="hidden md:flex items-center gap-8">
+                            <Link to="/" class={location.pathname === '/' ? activeClass : inactiveClass}>Schedule</Link>
+                            <Link to="/journal" class={location.pathname === '/journal' ? activeClass : inactiveClass}>Journal</Link>
+                            <Link to="/reflections" class={location.pathname === '/reflections' ? activeClass : inactiveClass}>Reflections</Link>
+                            <Link to="/weekly" class={location.pathname === '/weekly' ? activeClass : inactiveClass}>Reviews</Link>
+                            <Link to="/ai" class={location.pathname === '/ai' ? activeClass : inactiveClass}>AI Sage</Link>
+                        </nav>
+                        <div class="flex items-center gap-4 text-[#191c1e] dark:text-slate-400">
+                            <button class="material-symbols-outlined hover:text-[#00288e] transition-colors">settings</button>
+                            <div class="w-10 h-10 rounded-full bg-secondary-container overflow-hidden">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-UVALCWLrlP0EDbcTrRCcLbVP2E4rnqjo3R-uvmeekCToCUrojUG6Oe6iVfHcVyDZ-72mtS24x1BgUMdyjLfehYVgMaisOJ4VuuPxqAhVVonTYlOIglIJqpB6BvFFtHSdM2b16LHdP6XBTznBgHGgQPv_p2utsT0KM5P30puyeQQmOXqI2s0MWU4UFgpP4zG8BFpAR98nWILOKIbc3luXgsRBt_XZW5foIg-7LWAy_ad1aBmWdb-P58-zsydnK8LRiG9QGRjHGqM" class="w-full h-full object-cover" />
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
+        };
+
+        const BottomNavBar = () => {
+            const location = useLocation();
+            const navigate = useNavigate();
+            const navItems = [
+                { icon: 'home_storage', label: 'Home', path: '/' },
+                { icon: 'edit_note', label: 'Journal', path: '/journal' },
+                { icon: 'equalizer', label: 'Reflect', path: '/reflections' },
+                { icon: 'psychology', label: 'Sage', path: '/ai' }
+            ];
+
+            return (
+                <nav class="md:hidden fixed bottom-0 left-0 w-full h-16 flex justify-around items-center px-6 pb-safe bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 shadow-[0_-4px_20px_0_rgba(25,28,30,0.05)]">
+                    {navItems.map(item => (
+                        <div 
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            class={`flex flex-col items-center justify-center transition-transform active:scale-90 ${location.pathname === item.path ? 'text-[#00288e]' : 'text-slate-500'}`}
+                        >
+                            <span class="material-symbols-outlined text-2xl" style={{ fontVariationSettings: location.pathname === item.path ? "'FILL' 1" : "'FILL' 0" }}>{item.icon}</span>
+                            <span class="text-[11px] font-medium">{item.label}</span>
+                        </div>
+                    ))}
+                </nav>
+            );
+        };
+
+        // Screen 1: Dashboard / Schedule
+        const DashboardScreen = () => {
+            return (
+                <main class="pt-28 pb-20 px-6 max-w-7xl mx-auto min-h-screen">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                        <div class="md:col-span-3 space-y-8">
+                            <section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                                <h3 class="text-xs font-extrabold uppercase tracking-widest text-secondary mb-4">Monthly Goals</h3>
+                                <div class="space-y-4">
+                                    <div class="group">
+                                        <div class="flex justify-between items-end mb-2">
+                                            <span class="text-sm font-semibold">Finish Manuscript</span>
+                                            <span class="text-[10px] text-secondary">75%</span>
+                                        </div>
+                                        <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
+                                            <div class="h-full bg-primary w-3/4 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <div class="group">
+                                        <div class="flex justify-between items-end mb-2">
+                                            <span class="text-sm font-semibold">Morning Yoga 20/30</span>
+                                            <span class="text-[10px] text-secondary">66%</span>
+                                        </div>
+                                        <div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden">
+                                            <div class="h-full bg-primary w-2/3 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="bg-primary text-on-primary p-6 rounded-xl shadow-xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-widest opacity-80">Today's Goals</h3>
+                                    <span class="text-[10px] px-2 py-0.5 bg-white/20 rounded-full">3 Left</span>
+                                </div>
+                                <div class="space-y-4">
+                                    {["Deep Work: Design UI", "Weekly Team Sync"].map(t => (
+                                        <label key={t} class="flex items-center gap-3 cursor-pointer group">
+                                            <div class="w-5 h-5 border-2 border-white/30 rounded flex items-center justify-center group-hover:border-white transition-colors">
+                                                <input class="hidden" type="checkbox"/>
+                                                <span class="material-symbols-outlined text-xs hidden group-hover:block">check</span>
+                                            </div>
+                                            <span class="text-sm font-medium">{t}</span>
+                                        </label>
+                                    ))}
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <div class="w-5 h-5 border-2 border-white/30 rounded flex items-center justify-center group-hover:border-white transition-colors">
+                                            <div class="bg-white rounded w-full h-full flex items-center justify-center">
+                                                <span class="material-symbols-outlined text-xs text-primary block" style={{fontVariationSettings: "'FILL' 1"}}>check</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-sm font-medium opacity-60 line-through">Drink 2L Water</span>
+                                    </label>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="md:col-span-6 space-y-8">
+                            <section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
+                                <div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+                                    <div>
+                                        <h2 class="text-2xl font-extrabold tracking-tight text-on-surface">Daily Schedule</h2>
+                                        <p class="text-xs text-secondary mt-1">Wednesday, October 24</p>
+                                    </div>
+                                    <button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg text-sm font-bold hover:opacity-80">Add Block</button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-surface-container-low/50">
+                                                <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-secondary">Time</th>
+                                                <th class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-secondary">Plan</th>
+                                                <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-secondary text-right">Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-outline-variant/10">
+                                            <tr class="hover:bg-surface-container-low transition-colors">
+                                                <td class="px-8 py-5 text-sm font-bold text-primary">08:00 - 09:30</td>
+                                                <td class="px-4 py-5 text-sm">Morning Routine</td>
+                                                <td class="px-8 py-5 text-xs italic text-secondary text-right">Felt energized</td>
+                                            </tr>
+                                            <tr class="bg-primary/5">
+                                                <td class="px-8 py-5 text-sm font-bold text-primary">09:30 - 12:00</td>
+                                                <td class="px-4 py-5 text-sm font-semibold">Deep Work: Dashboard</td>
+                                                <td class="px-8 py-5 text-xs italic text-secondary text-right">In Progress</td>
+                                            </tr>
+                                            <tr class="hover:bg-surface-container-low transition-colors">
+                                                <td class="px-8 py-5 text-sm font-bold text-primary">12:00 - 13:00</td>
+                                                <td class="px-4 py-5 text-sm">Lunch Break</td>
+                                                <td class="px-8 py-5 text-xs italic text-secondary text-right">Walk in the park</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="px-8 py-6 bg-surface-container-low/30">
+                                    <div class="relative h-48 rounded-lg overflow-hidden">
+                                        <img class="w-full h-full object-cover grayscale-[20%]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKTRrH9PtGB0yraEIcTZTKiuOarkpNGDWWlGAN6_rQe3o0ammHNPm1swohmSPA8WPW-nmGYGAJy1bbjzbr9G-PDGAr2LvCeNscPfGk4OG5KqNNIpOfYHY_w-u25567q9gBqsZmYEdi7z3ntoLzy9pZh6T2mQBeVnv5WOQ56XpW5mu4ge3SYwxTkxOFkq9tZh5bVHXhkrEOTXpmwLjw0llyYYUOb08ngX0SzYeZF_qe_GS85snnc5FPa_keWojeqNrr-oQi2lJB44A" />
+                                        <div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+                                        <div class="absolute bottom-4 left-6 right-6 text-white text-lg font-bold tracking-tight">"The secret of your future is hidden in your daily routine."</div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="md:col-span-3 space-y-8">
+                            <section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-xs font-extrabold uppercase tracking-widest text-secondary">October 2023</h3>
+                                    <div class="flex gap-2">
+                                        <span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary">chevron_left</span>
+                                        <span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary">chevron_right</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-7 gap-y-2 text-center text-[10px] font-black text-secondary mb-2">
+                                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                                </div>
+                                <div class="grid grid-cols-7 gap-y-3 text-center">
+                                    {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                                        <span key={day} class={`text-xs font-semibold ${day === 24 ? 'text-white bg-primary rounded-full w-6 h-6 flex items-center justify-center mx-auto' : 'flex items-center justify-center h-6'}`}>{day}</span>
+                                    ))}
+                                </div>
+                            </section>
+                            <section class="bg-secondary-container/30 p-6 rounded-xl relative overflow-hidden group">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-primary text-xl" style={{fontVariationSettings: "'FILL' 1"}}>auto_awesome</span>
+                                    <h3 class="text-xs font-extrabold uppercase tracking-widest text-on-secondary-container">AI Insights</h3>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="p-3 bg-white/60 rounded-lg border border-white/40 shadow-sm">
+                                        <p class="text-xs font-bold text-primary mb-1">Focus Optimization</p>
+                                        <p class="text-[13px] leading-relaxed">Your focus peaks between 10 AM and 11:30 AM. Move your "Dashboard UI" task here.</p>
+                                    </div>
+                                    <button class="w-full py-2.5 text-[11px] font-black uppercase tracking-widest text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">Refresh Insights</button>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </main>
+            );
+        };
+
+        // Screen 2: Journal / Detailed Record
+        const JournalScreen = () => {
+            return (
+                <main class="max-w-7xl mx-auto pt-28 px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20">
+                    <div class="lg:col-span-4 flex flex-col gap-8">
+                        <section>
+                            <h2 class="text-xl font-bold mb-6 tracking-tight text-on-surface">Life Data Records</h2>
+                            <div class="grid grid-cols-2 gap-4">
+                                {[
+                                    { icon: 'sentiment_satisfied', label: 'Mood', val: 'Calm', sub: '心情' },
+                                    { icon: 'timer', label: 'Pomo', val: '8 Units', sub: '番茄钟' },
+                                    { icon: 'self_improvement', label: 'Zen', val: '45 Min', sub: '静坐时间' },
+                                    { icon: 'psychology', label: 'AI', val: '2.5 Hrs', sub: 'AI时间' }
+                                ].map(card => (
+                                    <div key={card.label} class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-40 group hover:shadow-lg transition-all border border-outline-variant/10">
+                                        <div class="flex justify-between items-start">
+                                            <span class="material-symbols-outlined text-primary text-3xl">{card.icon}</span>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-outline">{card.label}</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-on-surface-variant">{card.sub}</p>
+                                            <p class="text-2xl font-bold text-primary">{card.val}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                        <section class="bg-primary-container/10 p-6 rounded-2xl border border-primary/5">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-lg font-bold tracking-tight text-primary">Sleep Stats</h2>
+                                <span class="material-symbols-outlined text-primary" style={{fontVariationSettings: "'FILL' 1"}}>bedtime</span>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-end border-b border-primary/10 pb-2">
+                                    <span class="text-sm text-on-surface-variant">Duration</span>
+                                    <span class="text-xl font-bold">7h 24m</span>
+                                </div>
+                                <div class="pt-2">
+                                    <div class="h-2 w-full bg-secondary-container rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary w-[82%] rounded-full"></div>
+                                    </div>
+                                    <p class="text-[11px] mt-2 text-outline uppercase tracking-wider font-bold">Recovery Score: 82%</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="lg:col-span-8 flex flex-col gap-8">
+                        <section class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant/10">
+                            <div class="flex items-center gap-3 mb-8">
+                                <span class="material-symbols-outlined text-primary text-3xl">edit_note</span>
+                                <h2 class="text-2xl font-extrabold tracking-tight text-on-surface">Text Records</h2>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                {[
+                                    { t: "AI Usage", d: "AI是如何使用" },
+                                    { t: "Reading", d: "读书感受" },
+                                    { t: "Meditation", d: "静坐感受" },
+                                    { t: "Well Done", d: "做得好的动作" },
+                                    { t: "Improvement", d: "需改进的动作" },
+                                    { t: "To Self", d: "给自己的话" }
+                                ].map(box => (
+                                    <div key={box.t} class="p-5 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all">
+                                        <p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">{box.t}</p>
+                                        <p class="text-sm text-on-surface-variant leading-relaxed">{box.d}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div class="mb-8">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="material-symbols-outlined text-primary-container">lightbulb</span>
+                                    <h3 class="font-bold text-on-surface uppercase text-xs tracking-[0.2em]">Ideas & Inspiration</h3>
+                                </div>
+                                <textarea class="w-full bg-surface p-6 rounded-2xl border-l-4 border-primary shadow-inner italic text-on-surface-variant leading-loose min-h-[120px]" placeholder="想法与灵感..."></textarea>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            );
+        };
+
+        // Screen 4: Reflections Grid
+        const ReflectionsScreen = () => {
+            return (
+                <main class="max-w-5xl mx-auto px-8 py-28 mb-20">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-primary mb-6 opacity-80">Text Records Archive</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            { icon: 'hub', label: 'AI是如何使用', content: 'Utilized LLM for architectural brainstorming. Logic flow improved.' },
+                            { icon: 'auto_stories', label: '读书感受', content: 'Exploring Digital Minimalism. Resonates deeply with burnout.' },
+                            { icon: 'spa', label: '静坐感受', content: 'Transitioned into a weightless clarity. 15 minutes of silence.' },
+                            { icon: 'done_all', label: '做得好的动作', content: 'Maintained steady work-rest cycle and bypassed social media.' },
+                            { icon: 'trending_up', label: '需改进的动作', content: 'Need to improve water intake and reduce late-day caffeine.' },
+                            { icon: 'favorite', label: '给自己的话', content: 'Be patient. The forest doesn’t grow in a day.' }
+                        ].map(item => (
+                            <div key={item.label} class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all shadow-sm">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="material-symbols-outlined text-primary text-lg">{item.icon}</span>
+                                    <h3 class="font-bold text-on-surface text-sm">{item.label}</h3>
+                                </div>
+                                <p class="text-on-surface-variant text-sm leading-relaxed">{item.content}</p>
+                            </div>
+                        ))}
+                    </div>
+                </main>
+            );
+        };
+
+        // Screen 3/5: Weekly/Monthly Reviews
+        const ReviewScreen = ({ period = "Weekly" }) => {
+            return (
+                <main class="pt-32 pb-24 px-6 max-w-4xl mx-auto space-y-16 mb-20">
+                    <section class="space-y-2 text-center">
+                        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface">{period} Review: Oct 2023</h1>
+                        <p class="text-on-surface-variant/70 font-medium">Reflecting on patterns of your journey.</p>
+                    </section>
+                    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                            { icon: 'timer', label: 'Focus Hours', val: '34.5', unit: 'hrs', trend: '+12%', color: 'text-green-600' },
+                            { icon: 'mood', label: 'Avg. Mood', val: 'Calm', unit: '/8.2', trend: 'Stable', color: 'text-primary' },
+                            { icon: 'bedtime', label: 'Sleep Score', val: '88', unit: '/100', trend: '-3 pts', color: 'text-error' }
+                        ].map(metric => (
+                            <div key={metric.label} class="p-8 rounded-xl bg-surface-container-lowest shadow-sm">
+                                <span class="material-symbols-outlined text-primary text-3xl mb-4">{metric.icon}</span>
+                                <p class="text-sm font-medium text-on-surface-variant">{metric.label}</p>
+                                <p class="text-3xl font-bold">{metric.val}<span class="text-lg font-normal text-on-surface-variant ml-1">{metric.unit}</span></p>
+                                <p class={`text-xs font-bold mt-2 ${metric.color}`}>{metric.trend}</p>
+                            </div>
+                        ))}
+                    </section>
+                    <section class="bg-surface-container-low p-10 rounded-2xl">
+                        <h3 class="text-2xl font-bold tracking-tight text-center mb-6">Key Reflection</h3>
+                        <textarea class="w-full bg-surface-container-lowest border-none rounded-xl p-6 text-on-surface focus:ring-2 focus:ring-primary text-lg" placeholder="What did you learn about yourself this week?" rows="5"></textarea>
+                        <div class="mt-6 flex justify-end">
+                            <button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center gap-2 scale-98-on-click">
+                                <span>Save Review</span>
+                                <span class="material-symbols-outlined text-sm">send</span>
+                            </button>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        // Screen 7: AI Sage Chat
+        const AISageScreen = () => {
+            const [input, setInput] = useState("");
+            return (
+                <main class="max-w-[1440px] mx-auto min-h-[calc(100vh-80px)] p-6 md:p-10 flex gap-10 mt-20 mb-20">
+                    <aside class="hidden lg:flex flex-col w-72 shrink-0 gap-10">
+                        <section class="flex flex-col gap-5">
+                            <h3 class="text-sm font-extrabold uppercase tracking-widest text-on-surface/40 px-2">Model Selection</h3>
+                            <div class="flex flex-col gap-2">
+                                <button class="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest text-primary font-bold shadow-sm border-l-4 border-primary transition-all">
+                                    <span class="material-symbols-outlined">psychology</span>
+                                    <span class="text-sm">GPT-4 Sage</span>
+                                </button>
+                                <button class="flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container-low text-on-surface/70 transition-all group">
+                                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">auto_awesome</span>
+                                    <span class="text-sm">Claude Creative</span>
+                                </button>
+                            </div>
+                        </section>
+                        <section class="flex flex-col gap-5">
+                            <h3 class="text-sm font-extrabold uppercase tracking-widest text-on-surface/40 px-2">Quick Commands</h3>
+                            <div class="grid grid-cols-1 gap-3">
+                                {['Summarize Day', 'Sentiment Analysis', 'Idea Generation'].map(cmd => (
+                                    <button key={cmd} class="flex items-center gap-3 p-4 rounded-xl bg-secondary-container/30 hover:bg-secondary-container/60 text-on-secondary-container transition-all text-left">
+                                        <span class="material-symbols-outlined text-primary text-[20px]">flash_on</span>
+                                        <span class="text-sm font-medium">{cmd}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </section>
+                    </aside>
+                    <section class="flex-1 flex flex-col bg-surface-container-low rounded-[2rem] overflow-hidden relative border border-outline-variant/10 shadow-xl shadow-primary/5">
+                        <div class="px-8 py-6 flex items-center justify-between glass-card border-b border-outline-variant/5">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-white">
+                                    <span class="material-symbols-outlined text-[20px]">psychology</span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-on-surface leading-tight">GPT-4 Sage Reflection</h2>
+                                    <p class="text-xs text-on-surface/50">Active now • Mindful Guide</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+                            <div class="flex justify-center"><span class="px-4 py-1 rounded-full bg-surface-variant/30 text-[10px] font-bold uppercase tracking-widest text-on-surface/40">Today, October 24</span></div>
+                            <div class="flex gap-4 max-w-[85%]">
+                                <div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center shrink-0 mt-1"><span class="material-symbols-outlined text-primary text-[18px]">auto_awesome</span></div>
+                                <div class="bg-surface-container-lowest p-5 rounded-2xl rounded-tl-none shadow-sm text-on-surface/90 text-sm">
+                                    Good morning. I've been reflecting on your entry. It seems you're balancing excitement with apprehension. How are you feeling about the first milestone today?
+                                </div>
+                            </div>
+                            <div class="flex gap-4 max-w-[85%] ml-auto flex-row-reverse">
+                                <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center shrink-0 mt-1"><span class="material-symbols-outlined text-white text-[18px]">person</span></div>
+                                <div class="bg-gradient-to-br from-primary to-primary-container p-5 rounded-2xl rounded-tr-none text-white text-sm shadow-md">
+                                    I'm feeling focused. Writing it down helped. I'd like to break down the first milestone into manageable tasks.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-8 pt-2">
+                            <div class="relative flex items-end gap-3 p-3 bg-surface-container-lowest border border-outline-variant/20 rounded-[1.5rem] shadow-sm">
+                                <textarea 
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-1 resize-none min-h-[44px] max-h-40" 
+                                    placeholder="Share your thoughts..." 
+                                    rows="1"
+                                ></textarea>
+                                <button class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+                                    <span class="material-symbols-outlined text-[20px]" style={{fontVariationSettings: "'FILL' 1"}}>send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            );
+        };
+
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <div class="min-h-screen bg-background">
+                        <TopAppBar />
+                        
+                        <Routes>
+                            <Route path="/" element={<DashboardScreen />} />
+                            <Route path="/journal" element={<JournalScreen />} />
+                            <Route path="/reflections" element={<ReflectionsScreen />} />
+                            <Route path="/weekly" element={<ReviewScreen period="Weekly" />} />
+                            <Route path="/ai" element={<AISageScreen />} />
+                        </Routes>
+
+                        <BottomNavBar />
+                        
+                        {/* Global FAB */}
+                        <button class="fixed bottom-24 right-8 md:bottom-10 md:right-10 w-16 h-16 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-[60]">
+                            <span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
+                        </button>
+                    </div>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -22,3 +22,7 @@ journal_data/
 
 # pytest
 .pytest_cache/
+
+# 前端
+journal-frontend/node_modules/
+journal-frontend/dist/

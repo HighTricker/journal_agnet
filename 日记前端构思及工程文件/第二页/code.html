@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Daily Life Record - Serenity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline": "#757684",
+              "error": "#ba1a1a",
+              "surface-variant": "#e0e3e5",
+              "on-secondary-fixed": "#0e1d2b",
+              "tertiary-fixed-dim": "#ffb59a",
+              "surface-container-low": "#f2f4f6",
+              "outline-variant": "#c4c5d5",
+              "secondary-fixed": "#d5e4f8",
+              "on-tertiary-fixed-variant": "#802a00",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed-variant": "#3a4858",
+              "error-container": "#ffdad6",
+              "primary-fixed": "#dde1ff",
+              "tertiary-fixed": "#ffdbce",
+              "tertiary-container": "#872d00",
+              "tertiary": "#611e00",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "surface-container": "#eceef0",
+              "surface-bright": "#f7f9fb",
+              "on-primary-container": "#a8b8ff",
+              "inverse-surface": "#2d3133",
+              "surface-container-high": "#e6e8ea",
+              "on-background": "#191c1e",
+              "on-surface": "#191c1e",
+              "secondary-fixed-dim": "#b9c8db",
+              "surface-container-highest": "#e0e3e5",
+              "primary-fixed-dim": "#b8c4ff",
+              "on-primary-fixed": "#001453",
+              "on-primary-fixed-variant": "#173bab",
+              "background": "#f7f9fb",
+              "on-secondary": "#ffffff",
+              "surface-tint": "#3755c3",
+              "surface": "#f7f9fb",
+              "on-tertiary-container": "#ffa583",
+              "on-error": "#ffffff",
+              "surface-dim": "#d8dadc",
+              "on-tertiary-fixed": "#380d00",
+              "inverse-on-surface": "#eff1f3",
+              "secondary-container": "#d5e4f8",
+              "on-surface-variant": "#444653",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-container": "#576676",
+              "primary": "#00288e",
+              "inverse-primary": "#b8c4ff",
+              "secondary": "#516070",
+              "primary-container": "#1e40af"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#f7f9fb] dark:bg-slate-950 font-['Manrope'] antialiased leading-[1.6]">
+<div class="flex justify-between items-center px-8 h-20 max-w-7xl mx-auto">
+<nav class="md:flex items-center gap-8 mx-auto flex">
+<a class="text-[#00288e] dark:text-blue-400 font-bold border-b-2 border-[#00288e] dark:border-blue-400 pb-1 hover:opacity-100 transition-all active:scale-95 duration-200" href="#">日记</a>
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">周记</a>
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">月记</a>
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">AI导师</a>
+</nav>
+</div>
+</header>
+<main class="max-w-7xl mx-auto pt-28 px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Life Data -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<section>
+<h2 class="text-xl font-bold mb-6 tracking-tight text-on-surface">Life Data Records</h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Mood Card -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl flex flex-col h-auto group border border-outline-variant/10 col-span-2 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-primary text-3xl">sentiment_satisfied</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">心情</span>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">😊</span>
+<span class="text-[11px] font-medium text-on-surface-variant">超赞</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">🙂</span>
+<span class="text-[11px] font-medium text-on-surface-variant">开心</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">😐</span>
+<span class="text-[11px] font-medium text-on-surface-variant">一般</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">🙁</span>
+<span class="text-[11px] font-medium text-on-surface-variant">低落</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">☹️</span>
+<span class="text-[11px] font-medium text-on-surface-variant">难过</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md hover:-translate-y-0.5">
+<span class="text-2xl mb-1">😫</span>
+<span class="text-[11px] font-medium text-on-surface-variant">极差</span>
+</button>
+</div>
+</div>
+<!-- Pomodoro Card -->
+<div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-40 group hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl">timer</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Pomo</span>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant text-center">番茄钟 (25分钟/个)</p>
+<div class="h-12 overflow-hidden relative mt-1">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">6</p>
+<p class="text-lg opacity-30">7</p>
+<p class="text-2xl font-bold text-primary">8</p>
+<p class="text-lg opacity-30">9</p>
+<p class="text-lg opacity-30">10</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Meditation Card -->
+<div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-40 group hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl">self_improvement</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">Zen</span>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant text-center">静坐时间 (分钟)</p>
+<div class="h-12 overflow-hidden relative mt-1">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">43</p>
+<p class="text-lg opacity-30">44</p>
+<p class="text-2xl font-bold text-primary">45</p>
+<p class="text-lg opacity-30">46</p>
+<p class="text-lg opacity-30">47</p>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Time Card -->
+<div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-40 group hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl">psychology</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">AI</span>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant text-center">AI时间 (小时)</p>
+<div class="h-12 overflow-hidden relative mt-1">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">1.5</p>
+<p class="text-lg opacity-30">2.0</p>
+<p class="text-2xl font-bold text-primary">2.5</p>
+<p class="text-lg opacity-30">3.0</p>
+<p class="text-lg opacity-30">3.5</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sleep Section -->
+<section class="bg-primary-container/10 p-6 rounded-2xl border border-primary/5">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold tracking-tight text-primary">Sleep Section</h2>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-2">入睡时间</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest px-4 py-2 rounded-lg border border-primary/10 w-full justify-center">
+<div class="h-10 overflow-hidden relative w-10">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">22</p>
+<p class="text-xl font-bold text-primary">23</p>
+<p class="text-lg opacity-30">00</p>
+</div>
+</div>
+<span class="text-lg font-bold text-primary">:</span>
+<div class="h-10 overflow-hidden relative w-10">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">29</p>
+<p class="text-xl font-bold text-primary">30</p>
+<p class="text-lg opacity-30">31</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-2">起床时间</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest px-4 py-2 rounded-lg border border-primary/10 w-full justify-center">
+<div class="h-10 overflow-hidden relative w-10">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">06</p>
+<p class="text-xl font-bold text-primary">07</p>
+<p class="text-lg opacity-30">08</p>
+</div>
+</div>
+<span class="text-lg font-bold text-primary">:</span>
+<div class="h-10 overflow-hidden relative w-10">
+<div class="flex flex-col items-center gap-1 scroll-smooth overflow-y-auto h-full no-scrollbar">
+<p class="text-lg opacity-30">59</p>
+<p class="text-xl font-bold text-primary">00</p>
+<p class="text-lg opacity-30">01</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-primary/10">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-4 block text-center">睡眠质量</span>
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">😊</span>
+<span class="text-[10px] font-medium text-on-surface-variant">超赞</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">🙂</span>
+<span class="text-[10px] font-medium text-on-surface-variant">开心</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">😐</span>
+<span class="text-[10px] font-medium text-on-surface-variant">一般</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">🙁</span>
+<span class="text-[10px] font-medium text-on-surface-variant">低落</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">☹️</span>
+<span class="text-[10px] font-medium text-on-surface-variant">难过</span>
+</button>
+<button class="flex flex-col items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg hover:border-primary/30 transition-all">
+<span class="text-xl mb-0.5">😫</span>
+<span class="text-[10px] font-medium text-on-surface-variant">极差</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Text Records -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<section class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant/10 h-full flex flex-col">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary-container text-3xl">edit_note</span>
+<h2 class="text-2xl font-extrabold tracking-tight text-on-surface">Text Records</h2>
+</div>
+<!-- 6 Small Boxes Grid - Increased Height -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">AI Usage</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">AI是如何使用</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">Reading</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">读书感受</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">Meditation</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">静坐感受</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">Well Done</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">做的好的动作</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">Improvement</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">需改进的动作</p>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-transparent hover:border-primary/20 transition-all flex flex-col min-h-[140px]">
+<p class="text-[11px] font-bold text-primary uppercase mb-2 tracking-widest">To Self</p>
+<p class="text-sm text-on-surface-variant leading-relaxed">给自己的话</p>
+</div>
+</div>
+<!-- Ideas & Inspiration -->
+<div class="mb-8">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary-container">lightbulb</span>
+<h3 class="font-bold text-on-surface uppercase text-xs tracking-[0.2em]">Ideas &amp; Inspiration</h3>
+</div>
+<div class="w-full bg-surface p-6 rounded-2xl border-l-4 border-primary shadow-inner italic text-on-surface-variant leading-loose min-h-[180px]">
+                    想法与灵感... 
+                    <span class="text-outline/30 block mt-4">Begin typing your flashes of brilliance...</span>
+</div>
+</div>
+<!-- Thoughts & Insights - Increased Height by 25% (from 280px to 350px) -->
+<div class="flex-grow flex flex-col">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary-container">auto_awesome</span>
+<h3 class="font-bold text-on-surface uppercase text-xs tracking-[0.2em]">Thoughts &amp; Insights</h3>
+</div>
+<div class="w-full bg-surface p-8 rounded-2xl border-t border-outline-variant/20 text-on-surface leading-loose h-[350px] overflow-hidden">
+                    思考与感悟...
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 opacity-40 select-none">
+<div class="h-4 bg-surface-container-highest rounded w-3/4"></div>
+<div class="h-4 bg-surface-container-highest rounded w-1/2"></div>
+<div class="h-4 bg-surface-container-highest rounded w-full"></div>
+<div class="h-4 bg-surface-container-highest rounded w-2/3"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around items-center px-6 pb-safe bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl h-20 shadow-[0_-4px_20px_rgba(25,28,30,0.03)] z-50">
+<a class="flex flex-col items-center justify-center text-[#00288e] dark:text-blue-400 font-bold scale-110" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Today</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 opacity-70 hover:text-[#1e40af] transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Journal</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 opacity-70 hover:text-[#1e40af] transition-colors" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 opacity-70 hover:text-[#1e40af] transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Account</span>
+</a>
+</nav>
+<!-- Floating Action Button for Entry -->
+<div class="fixed bottom-24 right-8 md:bottom-8 z-40">
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full shadow-2xl flex items-center justify-center active:scale-95 transition-transform hover:shadow-primary/30">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</body></html>

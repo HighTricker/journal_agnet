@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  /* ========== 主色系 (Primary) ========== */
+  --color-primary: #00288e; /* 主色调：深海蓝，用于按钮、链接、选中态等核心交互元素 */
+  --color-on-primary: #ffffff; /* 主色上的文字/图标颜色：白色，确保在深蓝背景上可读 */
+  --color-primary-container: #1e40af; /* 主色容器/卡片背景：中深蓝，用于强调卡片或芯片的填充色 */
+  --color-on-primary-container: #a8b8ff; /* 主色容器上的文字/图标颜色：浅蓝紫，确保在中深蓝背景上可读 */
+  --color-primary-fixed: #dde1ff; /* 主色固定色调：极浅蓝紫，不随主题变化，用于固定强调区域 */
+  --color-primary-fixed-dim: #b8c4ff; /* 主色固定色调暗化版本：浅蓝紫，用于固定强调区域的次级元素 */
+  --color-on-primary-fixed: #001453; /* 主色固定色调上的文字颜色：极深蓝，确保在浅蓝紫背景上可读 */
+  --color-on-primary-fixed-variant: #173bab; /* 主色固定色调上的变体文字颜色：中深蓝，用于次级文字 */
+  --color-inverse-primary: #b8c4ff; /* 主色反转色：浅蓝紫，用于深色区域中的主色调元素（如 Snackbar） */
+
+  /* ========== 次色系 (Secondary) ========== */
+  --color-secondary: #516070; /* 次色调：灰蓝色，用于次要按钮、筛选芯片等辅助交互元素 */
+  --color-on-secondary: #ffffff; /* 次色上的文字/图标颜色：白色 */
+  --color-secondary-container: #d5e4f8; /* 次色容器/卡片背景：浅灰蓝，用于次级卡片、导航项选中态 */
+  --color-on-secondary-container: #576676; /* 次色容器上的文字/图标颜色：中灰蓝 */
+  --color-secondary-fixed: #d5e4f8; /* 次色固定色调：浅灰蓝，不随主题变化 */
+  --color-secondary-fixed-dim: #b9c8db; /* 次色固定色调暗化版本：中浅灰蓝 */
+  --color-on-secondary-fixed: #0e1d2b; /* 次色固定色调上的文字颜色：极深灰蓝 */
+  --color-on-secondary-fixed-variant: #3a4858; /* 次色固定色调上的变体文字颜色：深灰蓝 */
+
+  /* ========== 三级色系 (Tertiary) ========== */
+  --color-tertiary: #611e00; /* 三级色调：深棕橙，用于补充强调、区分不同功能区域 */
+  --color-on-tertiary: #ffffff; /* 三级色上的文字/图标颜色：白色 */
+  --color-tertiary-container: #872d00; /* 三级色容器/卡片背景：中深棕橙 */
+  --color-on-tertiary-container: #ffa583; /* 三级色容器上的文字/图标颜色：浅橙色 */
+  --color-tertiary-fixed: #ffdbce; /* 三级色固定色调：极浅橙，不随主题变化 */
+  --color-tertiary-fixed-dim: #ffb59a; /* 三级色固定色调暗化版本：浅橙色 */
+  --color-on-tertiary-fixed: #380d00; /* 三级色固定色调上的文字颜色：极深棕 */
+  --color-on-tertiary-fixed-variant: #802a00; /* 三级色固定色调上的变体文字颜色：深棕橙 */
+
+  /* ========== 错误色系 (Error) ========== */
+  --color-error: #ba1a1a; /* 错误色：鲜红色，用于错误提示、删除操作、必填校验等 */
+  --color-on-error: #ffffff; /* 错误色上的文字/图标颜色：白色 */
+  --color-error-container: #ffdad6; /* 错误色容器/卡片背景：极浅粉红，用于错误提示条的背景 */
+  --color-on-error-container: #93000a; /* 错误色容器上的文字/图标颜色：深红色 */
+
+  /* ========== 表面/背景色系 (Surface & Background) ========== */
+  --color-background: #f7f9fb; /* 页面全局背景色：极浅灰蓝 */
+  --color-on-background: #191c1e; /* 页面背景上的文字颜色：近黑色 */
+  --color-surface: #f7f9fb; /* 基础表面色：极浅灰蓝，与背景色一致，用于最底层表面 */
+  --color-on-surface: #191c1e; /* 表面上的文字/图标颜色：近黑色，正文主色 */
+  --color-on-surface-variant: #444653; /* 表面上的变体文字颜色：深灰紫，用于次级文字、标签 */
+  --color-surface-variant: #e0e3e5; /* 表面变体色：浅灰，用于分割线区域、输入框背景等 */
+  --color-surface-tint: #3755c3; /* 表面着色：蓝紫色，用于海拔叠加（elevation overlay）的色调层 */
+  --color-surface-bright: #f7f9fb; /* 明亮表面色：极浅灰蓝，最亮的表面色阶 */
+  --color-surface-dim: #d8dadc; /* 暗化表面色：中浅灰，表面的暗化版本，用于禁用态或更低层级 */
+
+  /* ========== 表面容器色阶 (Surface Container) ========== */
+  --color-surface-container-lowest: #ffffff; /* 最低层容器背景：纯白色，最低海拔的容器 */
+  --color-surface-container-low: #f2f4f6; /* 低层容器背景：极浅灰，用于低海拔卡片 */
+  --color-surface-container: #eceef0; /* 标准容器背景：浅灰，默认卡片和容器的背景色 */
+  --color-surface-container-high: #e6e8ea; /* 高层容器背景：中浅灰，用于高海拔卡片或搜索栏 */
+  --color-surface-container-highest: #e0e3e5; /* 最高层容器背景：浅灰，最高海拔的容器（如顶部应用栏） */
+
+  /* ========== 反转色系 (Inverse) ========== */
+  --color-inverse-surface: #2d3133; /* 反转表面色：深灰，用于深色区域如 Snackbar、Tooltip 的背景 */
+  --color-inverse-on-surface: #eff1f3; /* 反转表面上的文字颜色：极浅灰，用于深色区域中的文字 */
+
+  /* ========== 边框/轮廓色 (Outline) ========== */
+  --color-outline: #757684; /* 主轮廓色：中灰紫，用于输入框边框、分割线、卡片描边 */
+  --color-outline-variant: #c4c5d5; /* 轮廓变体色：浅灰紫，用于较弱的分割线、装饰性边框 */
+
+  /* ========== 字体 (Font Family) ========== */
+  --font-family-headline: 'Manrope', sans-serif; /* 标题字体：Manrope 无衬线体 */
+  --font-family-body: 'Manrope', sans-serif; /* 正文字体：Manrope 无衬线体 */
+  --font-family-label: 'Manrope', sans-serif; /* 标签字体：Manrope 无衬线体 */
+}
+
+/* ===== 全局 body 基础样式 ===== */
+body {
+  font-family: 'Manrope', sans-serif; /* 全局字体：使用 Manrope 无衬线体，与主题变量保持一致 */
+  background-color: #f7f9fb; /* 页面背景色：极浅灰蓝，对应主题的 --color-background */
+  color: #191c1e; /* 默认文字颜色：近黑色，对应主题的 --color-on-background */
+  line-height: 1.6; /* 行高：1.6 倍字号，提升正文段落的可读性和呼吸感 */
+}
+
+/* ===== 玻璃卡片效果 ===== */
+/* 毛玻璃（Glassmorphism）卡片样式，用于需要半透明模糊背景的容器 */
+.glass-card {
+    backdrop-filter: blur(12px); /* 背景模糊滤镜：对卡片下方内容施加 12px 高斯模糊，营造毛玻璃质感 */
+    background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景：80% 不透明度，让模糊效果透出底层内容 */
+}
+
+/* ===== 自定义滚动条（更细、更低调） ===== */
+/* 覆盖 WebKit 浏览器默认滚动条样式，使其更纤细、更融入界面，减少视觉干扰 */
+
+/* 滚动条整体容器：控制滚动条的宽度尺寸 */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px; /* 滚动条宽度：4px，比默认的 ~16px 细得多，视觉上更克制 */
+}
+
+/* 滚动条轨道：滑块滑动的背景区域 */
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; /* 轨道背景透明：隐藏轨道，只在滑动时显示滑块 */
+}
+
+/* 滚动条滑块：可拖拽的滚动指示器 */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c4c5d5; /* 滑块颜色：浅灰紫，对应主题的 --color-outline-variant，低调不抢眼 */
+    border-radius: 10px; /* 滑块圆角：10px，使其呈胶囊/药丸形状 */
+}
+
+/* ===== Material Symbols 图标默认设置 ===== */
+/* Google Material Symbols 可变字体的全局默认配置，统一项目中所有图标的视觉风格 */
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,  /* 填充：0 = 线框/描边风格（1 = 实心填充） */
+        'wght' 400, /* 笔画粗细：400 = 常规（范围 100-700，越大越粗） */
+        'GRAD' 0,  /* 渐变/强调度：0 = 默认（正值加粗笔画，负值减细，不改变整体尺寸） */
+        'opsz' 24; /* 光学尺寸：24px，针对 24px 显示尺寸优化图标细节和清晰度 */
+}
+
+/* ===== 按钮点击缩放效果 ===== */
+/* 点击时微缩反馈：为按钮等可交互元素添加触觉式视觉响应，增强操作手感 */
+.scale-98-on-click:active {
+    transform: scale(0.98); /* 按下时缩小到 98%：轻微内缩模拟物理按压效果，松开后自动恢复原始大小 */
+}
+
+/* ===== 隐藏滚动条但保持滚动功能 ===== */
+/* 某些区域需要可滚动但不显示滚动条（如心情评分的水平滚动列表） */
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* WebKit 浏览器：完全隐藏滚动条 */
+}
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE/Edge：隐藏滚动条 */
+    scrollbar-width: none; /* Firefox：隐藏滚动条 */
+}

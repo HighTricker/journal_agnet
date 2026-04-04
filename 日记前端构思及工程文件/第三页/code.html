@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-bright": "#f7f9fb",
+              "error": "#ba1a1a",
+              "surface-container-lowest": "#ffffff",
+              "inverse-on-surface": "#eff1f3",
+              "on-background": "#191c1e",
+              "tertiary-container": "#872d00",
+              "surface-container-low": "#f2f4f6",
+              "inverse-surface": "#2d3133",
+              "on-tertiary-fixed-variant": "#802a00",
+              "surface": "#f7f9fb",
+              "surface-container-highest": "#e0e3e5",
+              "primary-fixed": "#dde1ff",
+              "background": "#f7f9fb",
+              "tertiary": "#611e00",
+              "secondary-fixed": "#d5e4f8",
+              "primary-container": "#1e40af",
+              "outline-variant": "#c4c5d5",
+              "secondary": "#516070",
+              "tertiary-fixed": "#ffdbce",
+              "on-primary": "#ffffff",
+              "on-secondary": "#ffffff",
+              "on-primary-fixed": "#001453",
+              "tertiary-fixed-dim": "#ffb59a",
+              "on-primary-container": "#a8b8ff",
+              "on-error": "#ffffff",
+              "surface-dim": "#d8dadc",
+              "on-surface-variant": "#444653",
+              "surface-container-high": "#e6e8ea",
+              "secondary-container": "#d5e4f8",
+              "primary": "#00288e",
+              "on-error-container": "#93000a",
+              "error-container": "#ffdad6",
+              "on-tertiary-fixed": "#380d00",
+              "surface-tint": "#3755c3",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed-dim": "#b9c8db",
+              "on-secondary-fixed": "#0e1d2b",
+              "on-tertiary-container": "#ffa583",
+              "on-surface": "#191c1e",
+              "on-secondary-fixed-variant": "#3a4858",
+              "primary-fixed-dim": "#b8c4ff",
+              "on-primary-fixed-variant": "#173bab",
+              "on-secondary-container": "#576676",
+              "surface-variant": "#e0e3e5",
+              "surface-container": "#eceef0",
+              "outline": "#757684",
+              "inverse-primary": "#b8c4ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased leading-relaxed">
+<!-- TopAppBar (Updated to match SCREEN_18/25 style) -->
+<header class="fixed top-0 w-full z-50 bg-[#f7f9fb] dark:bg-slate-950 font-['Manrope'] antialiased leading-[1.6]">
+<div class="flex justify-between items-center px-8 h-20 max-w-7xl mx-auto">
+<nav class="md:flex items-center gap-8 mx-auto flex">
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">日记</a>
+<a class="text-[#00288e] dark:text-blue-400 font-bold border-b-2 border-[#00288e] dark:border-blue-400 pb-1 hover:opacity-100 transition-all active:scale-95 duration-200" href="#">周记</a>
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">月记</a>
+<a class="text-[#191c1e] dark:text-slate-400 opacity-70 hover:opacity-100 hover:text-[#00288e] dark:hover:text-blue-300 transition-all active:scale-95 duration-200" href="#">AI导师</a>
+</nav>
+</div>
+</header>
+<main class="pt-32 pb-24 px-6 max-w-4xl mx-auto space-y-16">
+<!-- Header Title Section -->
+<section class="space-y-2 text-center">
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface">Weekly Review: Oct 23 - Oct 29</h1>
+<p class="text-on-surface-variant/70 font-medium">Reflecting on progress and cultivating mindfulness.</p>
+</section>
+<!-- Data Dashboard -->
+<section class="space-y-6">
+<div class="flex items-end justify-between px-2">
+<h2 class="text-xl font-bold tracking-tight">Key Metrics</h2>
+<span class="text-sm font-semibold text-primary cursor-pointer">View Trends</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="p-8 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="timer">timer</span>
+<div class="space-y-1">
+<p class="text-sm font-medium text-on-surface-variant">Focus Hours</p>
+<p class="text-3xl font-bold">34.5<span class="text-lg font-normal text-on-surface-variant ml-1">hrs</span></p>
+</div>
+<div class="flex items-center gap-1 text-xs text-green-600 font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span>12% from last week</span>
+</div>
+</div>
+</div>
+<div class="p-8 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="mood">mood</span>
+<div class="space-y-1">
+<p class="text-sm font-medium text-on-surface-variant">Avg. Mood</p>
+<p class="text-3xl font-bold">Calm<span class="text-lg font-normal text-on-surface-variant ml-1">/8.2</span></p>
+</div>
+<div class="flex items-center gap-1 text-xs text-primary font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="horizontal_rule">horizontal_rule</span>
+<span>Stable at target</span>
+</div>
+</div>
+</div>
+<div class="p-8 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="bedtime">bedtime</span>
+<div class="space-y-1">
+<p class="text-sm font-medium text-on-surface-variant">Sleep Score</p>
+<p class="text-3xl font-bold">88<span class="text-lg font-normal text-on-surface-variant ml-1">/100</span></p>
+</div>
+<div class="flex items-center gap-1 text-xs text-error font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_down">trending_down</span>
+<span>-3 pts variance</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Habit Tracking -->
+<section class="space-y-6">
+<div class="px-2">
+<h2 class="text-xl font-bold tracking-tight">Habit Consistency</h2>
+</div>
+<div class="bg-surface-container-low rounded-xl p-8 overflow-hidden">
+<div class="grid grid-cols-8 gap-4 min-w-[600px]">
+<div class="col-span-1"></div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Mon</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Tue</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Wed</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Thu</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Fri</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Sat</div>
+<div class="text-center text-xs font-bold text-on-surface-variant uppercase tracking-widest">Sun</div>
+<div class="text-sm font-semibold flex items-center">Meditation</div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-outline-variant/30" data-icon="circle">circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="text-sm font-semibold flex items-center">Deep Work</div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-outline-variant/30" data-icon="circle">circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-outline-variant/30" data-icon="circle">circle</span></div>
+<div class="text-sm font-semibold flex items-center">Reading</div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-outline-variant/30" data-icon="circle">circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-outline-variant/30" data-icon="circle">circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="flex justify-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+</div>
+</div>
+</section>
+<!-- Objective Status (Fixed height with scroll) -->
+<section class="space-y-6">
+<div class="px-2">
+<h2 class="text-xl font-bold tracking-tight">Objective Status</h2>
+</div>
+<div class="h-[400px] overflow-y-auto pr-2 space-y-4 no-scrollbar hover:scrollbar-default" style="scrollbar-width: thin; scrollbar-color: #00288e #f2f4f6;">
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg">Finish Q4 Project Proposal</p>
+<p class="text-sm text-on-surface-variant">Completed on Wednesday</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700">Completed</span>
+</div>
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg">Update Personal Portfolio</p>
+<p class="text-sm text-on-surface-variant">Ongoing – Finalizing Case Studies</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">In Progress</span>
+</div>
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="error_outline">error_outline</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg text-slate-500 line-through">Run 15km Total</p>
+<p class="text-sm text-on-surface-variant">Achieved 8km - Delayed due to rain</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500">Missed</span>
+</div>
+<!-- Task A Items -->
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg">Task A</p>
+<p class="text-sm text-on-surface-variant">Scheduled for next week</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">In Progress</span>
+</div>
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg">Task A</p>
+<p class="text-sm text-on-surface-variant">Scheduled for next week</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">In Progress</span>
+</div>
+<div class="flex items-center gap-6 p-6 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-lg">Task A</p>
+<p class="text-sm text-on-surface-variant">Scheduled for next week</p>
+</div>
+<span class="px-4 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">In Progress</span>
+</div>
+</div>
+</section>
+<!-- Week Summary (Emoji-based ratings) -->
+<section class="space-y-8 bg-surface-container-low p-10 rounded-2xl">
+<div class="text-center space-y-6">
+<h2 class="text-2xl font-bold tracking-tight">Week Summary</h2>
+<div class="flex justify-center flex-wrap gap-3">
+<button class="flex flex-col items-center justify-center p-4 min-w-[80px] border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md active:scale-95 bg-surface-container-lowest">
+<span class="text-3xl mb-2">😊</span>
+<span class="text-[11px] font-bold text-on-surface-variant">超赞</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 min-w-[80px] border-2 border-primary rounded-xl bg-primary/5 transition-all shadow-md active:scale-95">
+<span class="text-3xl mb-2">🙂</span>
+<span class="text-[11px] font-bold text-primary">开心</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 min-w-[80px] border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md active:scale-95 bg-surface-container-lowest">
+<span class="text-3xl mb-2">😐</span>
+<span class="text-[11px] font-bold text-on-surface-variant">一般</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 min-w-[80px] border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md active:scale-95 bg-surface-container-lowest">
+<span class="text-3xl mb-2">🙁</span>
+<span class="text-[11px] font-bold text-on-surface-variant">低落</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 min-w-[80px] border border-outline-variant/20 rounded-xl hover:bg-primary/5 transition-all hover:shadow-md active:scale-95 bg-surface-container-lowest">
+<span class="text-3xl mb-2">😫</span>
+<span class="text-[11px] font-bold text-on-surface-variant">极差</span>
+</button>
+</div>
+<p class="text-sm font-semibold text-on-surface-variant">Overall Satisfaction: 4/5</p>
+</div>
+<div class="space-y-4">
+<label class="block text-sm font-bold tracking-wider text-on-surface-variant uppercase">Key Takeaways &amp; Reflection</label>
+<div class="relative">
+<textarea class="w-full bg-surface-container-lowest border-none rounded-xl p-6 text-on-surface focus:ring-2 focus:ring-primary transition-all text-lg placeholder:text-on-surface-variant/30" placeholder="What did you learn about yourself this week?" rows="5"></textarea>
+<div class="absolute bottom-4 right-4">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity flex items-center gap-2 shadow-lg active:scale-95">
+<span>Save Review</span>
+<span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 rounded-t-3xl">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-6 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="book_2">book_2</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-blue-800 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl px-6 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide">Reviews</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-6 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-6 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide">Profile</span>
+</a>
+</nav>
+</body></html>
