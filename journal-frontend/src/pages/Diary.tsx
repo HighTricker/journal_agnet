@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import PageLayout from '../components/layout/PageLayout'
 import SaveButton from '../components/shared/SaveButton'
 import DiarySchedule from './DiarySchedule'
@@ -16,16 +16,26 @@ function getTodayStr(): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+// 从 URL ?date= 参数读取初始日期，无效则回退到今天
+function getInitialDate(): string {
+    const params = new URLSearchParams(window.location.search)
+    const dateParam = params.get('date')
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        return dateParam
+    }
+    return getTodayStr()
+}
+
 function Diary() {
     const [activeTab, setActiveTab] = useState<'schedule' | 'journal'>('schedule')
 
-    // 当前选中的日期（完整格式 YYYY-MM-DD）
-    const [selectedDateStr, setSelectedDateStr] = useState(getTodayStr)
+    // 当前选中的日期（完整格式 YYYY-MM-DD，优先从 URL 读取）
+    const [selectedDateStr, setSelectedDateStr] = useState(getInitialDate)
 
-    // 日历显示的年月（可以翻页浏览不同月份）
-    const today = new Date()
-    const [calendarYear, setCalendarYear] = useState(today.getFullYear())
-    const [calendarMonth, setCalendarMonth] = useState(today.getMonth() + 1)
+    // 日历显示的年月（跟随初始日期）
+    const initialDate = getInitialDate()
+    const [calendarYear, setCalendarYear] = useState(parseInt(initialDate.split('-')[0]))
+    const [calendarMonth, setCalendarMonth] = useState(parseInt(initialDate.split('-')[1]))
 
     // 从 API 加载真实数据（日历打点跟随日历显示月份）
     const calendarMonthStr = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}`
@@ -39,9 +49,33 @@ function Diary() {
         YEARLY_GOALS.map((cat) => ({ ...cat, goals: cat.goals.map((g) => ({ ...g })) }))
     )
 
+    /* ========== 日历联动：监听 WeekStrip 的 datechange 事件 ========== */
+    const applyDate = useCallback((dateStr: string) => {
+        setSelectedDateStr(dateStr)
+        const [y, m] = dateStr.split('-')
+        setCalendarYear(parseInt(y))
+        setCalendarMonth(parseInt(m))
+        const url = new URL(window.location.href)
+        url.searchParams.set('date', dateStr)
+        window.history.replaceState({}, '', url.toString())
+    }, [])
+
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const detail = (e as CustomEvent).detail
+            if (detail?.date && detail?.source === 'weekstrip') {
+                applyDate(detail.date)
+            }
+        }
+        window.addEventListener('datechange', handler)
+        return () => window.removeEventListener('datechange', handler)
+    }, [applyDate])
+
     /* ========== 日历：点击日期 + 月份切换 ========== */
     const handleSelectDate = (dateStr: string) => {
-        setSelectedDateStr(dateStr)
+        applyDate(dateStr)
+        // 广播事件，让 WeekStrip 联动
+        window.dispatchEvent(new CustomEvent('datechange', { detail: { date: dateStr, source: 'minicalendar' } }))
     }
 
     const handlePrevMonth = () => {

@@ -11,7 +11,7 @@ interface DiaryState {
     sleepQuality: number | null
     sleepTime: { hour: string; minute: string }
     wakeTime: { hour: string; minute: string }
-    metrics: { pomo: number; zen: number; ai: number }
+    metrics: { pomo: number; zen: number; ai: number; fap: number }
     textRecords: Record<string, string>
     inspiration: string
     thoughts: string
@@ -31,7 +31,7 @@ interface UseDiaryDataReturn {
     setSleepQuality: (v: number) => void
     setSleepTime: (field: 'hour' | 'minute', value: string) => void
     setWakeTime: (field: 'hour' | 'minute', value: string) => void
-    setMetric: (key: 'pomo' | 'zen' | 'ai', value: number) => void
+    setMetric: (key: 'pomo' | 'zen' | 'ai' | 'fap', value: number) => void
     setTextRecord: (key: string, value: string) => void
     setInspiration: (v: string) => void
     setThoughts: (v: string) => void
@@ -127,7 +127,7 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
     const [sleepQuality, setSleepQuality] = useState<number | null>(null)
     const [sleepTime, setSleepTimeState] = useState({ hour: '22', minute: '00' })
     const [wakeTime, setWakeTimeState] = useState({ hour: '06', minute: '00' })
-    const [metrics, setMetrics] = useState({ pomo: 0, zen: 0, ai: 0 })
+    const [metrics, setMetrics] = useState({ pomo: 0, zen: 0, ai: 0, fap: 0 })
     const [textRecords, setTextRecords] = useState<Record<string, string>>({})
     const [inspiration, setInspiration] = useState('')
     const [thoughts, setThoughts] = useState('')
@@ -179,6 +179,7 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
                         pomo: Number(s.Focus_Count) || 0,
                         zen: Number(s.Meditation_Minutes) || 0,
                         ai: Number(s.AI_Time) || 0,
+                        fap: Number(s.Masturbation_Count) || 0,
                     })
 
                     // 反思文字
@@ -209,7 +210,7 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
                     setSleepQuality(null)
                     setSleepTimeState({ hour: '22', minute: '00' })
                     setWakeTimeState({ hour: '06', minute: '00' })
-                    setMetrics({ pomo: 0, zen: 0, ai: 0 })
+                    setMetrics({ pomo: 0, zen: 0, ai: 0, fap: 0 })
                     setTextRecords({})
                     setInspiration('')
                     setThoughts('')
@@ -268,7 +269,7 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
                     Focus_Count: metrics.pomo,
                     Meditation_Minutes: metrics.zen,
                     AI_Time: metrics.ai,
-                    Masturbation_Count: 0,
+                    Masturbation_Count: metrics.fap,
                     ...reflectFields,
                     Reflect_Thoughts: inspiration,
                     Reflect_Deep_Reflections: thoughts,
@@ -305,7 +306,7 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
             setSleepTimeState(prev => ({ ...prev, [field]: value })),
         setWakeTime: (field: 'hour' | 'minute', value: string) =>
             setWakeTimeState(prev => ({ ...prev, [field]: value })),
-        setMetric: (key: 'pomo' | 'zen' | 'ai', value: number) =>
+        setMetric: (key: 'pomo' | 'zen' | 'ai' | 'fap', value: number) =>
             setMetrics(prev => ({ ...prev, [key]: value })),
         setTextRecord: (key: string, value: string) =>
             setTextRecords(prev => ({ ...prev, [key]: value })),

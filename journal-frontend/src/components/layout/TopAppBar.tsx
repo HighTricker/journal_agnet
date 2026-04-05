@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import WeekStrip from './WeekStrip'
 
 const NAV_ITEMS = [
     { path: '/diary', label: '日记' },
@@ -13,7 +14,7 @@ function TopAppBar() {
     return (
         <header className="fixed top-0 w-full z-50 bg-surface">
         <div className="flex justify-between items-center px-8 h-15 max-w-7xl mx-auto">
-            <nav className="flex items-center gap-[75px] mx-auto">
+            <nav className="flex items-center gap-[75px]">
             {NAV_ITEMS.map((item) => (
                 <Link
                 key={item.path}
@@ -28,6 +29,7 @@ function TopAppBar() {
                 </Link>
             ))}
             </nav>
+            <WeekStrip />
         </div>
         </header>
     )

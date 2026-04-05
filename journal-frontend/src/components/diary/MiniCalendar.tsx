@@ -82,13 +82,19 @@ function MiniCalendar({ year, month, selectedDate, dots = [], onSelectDate, onPr
 
                     return (
                         <div key={day} className="flex flex-col items-center">
-                            <button
-                                type="button"
-                                className={className}
-                                onClick={() => onSelectDate(dateStr)}
+                            <a
+                                href={`/diary?date=${dateStr}`}
+                                className={`${className} no-underline`}
+                                onClick={(e) => {
+                                    // Ctrl/Meta+点击：让浏览器在新标签页打开
+                                    if (e.ctrlKey || e.metaKey) return
+                                    // 普通点击：SPA 内导航，不刷新页面
+                                    e.preventDefault()
+                                    onSelectDate(dateStr)
+                                }}
                             >
                                 {day}
-                            </button>
+                            </a>
                             {/* 有数据的日期显示小圆点 */}
                             {hasDot && !isToday && (
                                 <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />

@@ -15,10 +15,11 @@ const MOOD_OPTIONS = [
 const EMOJI_OPTIONS = MOOD_OPTIONS.map((m, i) => ({ value: i + 1, emoji: m.emoji, label: m.label }))
 
 /* 量化指标卡片数据 */
-const METRIC_CARDS: { key: 'pomo' | 'zen' | 'ai'; icon: string; label: string; title: string }[] = [
+const METRIC_CARDS: { key: 'pomo' | 'zen' | 'ai' | 'fap'; icon: string; label: string; title: string }[] = [
     { key: 'pomo', icon: 'timer', label: 'Pomo', title: '番茄钟 (25分钟/个)' },
     { key: 'zen', icon: 'self_improvement', label: 'Zen', title: '静坐时间 (分钟)' },
     { key: 'ai', icon: 'psychology', label: 'AI', title: 'AI时间 (小时)' },
+    { key: 'fap', icon: 'back_hand', label: 'Fap', title: '打飞机次数' },
 ]
 
 /* 右栏文字记录卡片 */
@@ -41,8 +42,8 @@ interface DiaryJournalProps {
     onSleepTimeChange: (field: 'hour' | 'minute', value: string) => void
     wakeTime: { hour: string; minute: string }
     onWakeTimeChange: (field: 'hour' | 'minute', value: string) => void
-    metrics: { pomo: number; zen: number; ai: number }
-    onMetricChange: (key: 'pomo' | 'zen' | 'ai', value: number) => void
+    metrics: { pomo: number; zen: number; ai: number; fap: number }
+    onMetricChange: (key: 'pomo' | 'zen' | 'ai' | 'fap', value: number) => void
     textRecords: Record<string, string>
     onTextRecordChange: (key: string, value: string) => void
     inspiration: string
