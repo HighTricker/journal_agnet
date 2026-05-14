@@ -11,14 +11,15 @@ interface GoalCardProps {
     onTextChange?: (index: number, text: string) => void
     onDelete?: (index: number) => void
     onAdd?: () => void
+    heightClass?: string
 }
 
-function GoalCard({ title, badge, variant, goals, onToggle, editable = false, onTextChange, onDelete, onAdd }: GoalCardProps) {
+function GoalCard({ title, badge, variant, goals, onToggle, editable = false, onTextChange, onDelete, onAdd, heightClass = 'h-[250px]' }: GoalCardProps) {
     const isPrimary = variant === 'primary'
 
     return (
         <section
-            className={`p-6 rounded-xl shadow-xl h-[250px] flex flex-col ${
+            className={`p-6 rounded-xl shadow-xl ${heightClass} flex flex-col ${
                 isPrimary
                     ? 'bg-primary text-on-primary'
                     : 'bg-white text-on-surface border border-outline-variant/20'

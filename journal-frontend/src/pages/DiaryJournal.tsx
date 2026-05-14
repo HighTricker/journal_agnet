@@ -192,6 +192,17 @@ function DiaryJournal({
                                 size="sm"
                             />
                         </div>
+
+                        {/* 睡眠情况 */}
+                        <div className="pt-4 border-t border-primary/10">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-2 block text-center">睡眠情况</span>
+                            <textarea
+                                value={textRecords['sleep_dreams'] ?? ''}
+                                onChange={(e) => onTextRecordChange('sleep_dreams', e.target.value)}
+                                placeholder="回忆睡眠情况，有无起夜，有无做梦，梦是什么？"
+                                className="w-full text-[14px] bg-surface-container-lowest p-3 rounded-lg border border-primary/10 text-on-surface-variant leading-relaxed min-h-[100px] resize-none focus:ring-0 focus:outline-none placeholder:text-on-surface-variant/40"
+                            />
+                        </div>
                     </div>
                 </section>
             </div>

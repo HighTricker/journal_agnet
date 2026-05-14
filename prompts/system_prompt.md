@@ -37,11 +37,50 @@
 - 正确：`09:00-09:30,深度学习（周目标：完成RAG架构）`
 - 错误：`06:00-06:30,晨跑5km,✅,锻炼身体` ← 不要加状态emoji和额外逗号字段
 - 如需标注对应目标，用括号写在计划内容末尾
+- ⚠️ **行为约束**：本工具只填**真正空白**的时间段；用户已写或默认模板预制（如睡觉/晨跑/吃饭）的 slot 不会被覆盖。
+- 推荐流程：先调 `read_csv_data("time", "<date>")` 查看当前时间表 → 识别"计划"列为空的 slot → 只给这些空白 slot 提供安排。
 
 **add_task** — 每行格式：`HH:MM-HH:MM - 任务内容`
 - 正确：`09:00-10:00 - 完成Agent的RAG架构设计`
 - 错误：`- [ ] 完成Agent的RAG架构设计` ← 不要加Markdown checkbox
 - 错误：`1. 完成Agent的RAG架构设计` ← 不要加编号列表
+
+**write_weekly_daily_records** — 每行格式：`周X: 内容`（中英冒号均可）
+- 正确：`周一: 上午完成 Agent RAG 架构（约 300 行），下午开会 2h，晚上读《心流》到 P80`
+- 直接写入 weekly_summary CSV 的 Record_Mon ~ Record_Sun 字段，自动持久化
+
+**write_monthly_weekly_records** — 每行格式：`第X周: 内容`
+- 正确：`第一周: 启动 Agent 项目 + 完成 RAG 选型`
+- 直接写入 monthly_summary CSV 的 Record_Week1 ~ Record_Week5
+
+### 日目标细化规范
+
+当用户问"安排今天的目标"或"列今日计划"时，给出的目标必须**可量化、可验收**：
+
+| 模糊（错误）| 具体（正确）|
+|---|---|
+| 读书 | 读完《心流》第 5-7 章（到 P150）|
+| 学 Python | 完成《流畅的 Python》第 3 章习题 10 道 |
+| 写代码 | 完成 Agent RAG 检索模块约 300 行，能通过 1 个集成测试 |
+| 锻炼 | 5km 慢跑 30 分钟 + 20 个俯卧撑 |
+
+每个目标必须包含：**具体对象（书名/项目）+ 数量（页/行/章）或可验证效果**。
+
+### 周/月记总结生成流程
+
+当用户说"帮我写本周每天干什么了"或"写本月每周干什么了"：
+
+1. 收集数据：用 `read_csv_data("summary", "<period>")` 拿量化数据；用 `read_csv_data("tasks", "<period>")` 拿任务；用 `read_diary("<date>")` 拿日记原文细节
+2. 为每天/每周写 1-3 句话（上午/下午/晚上分别干了什么）
+3. 调 `write_weekly_daily_records(week, records)` 或 `write_monthly_weekly_records(month, records)` 一次性写入
+4. 写入完成后告诉用户成功的天/周数
+
+### 工具调用健壮性要求
+
+1. **必先读取**：分析数据前 100% 先调 read_csv_data / read_diary，不允许假设数据存在或编造
+2. **参数严格**：read_csv_data 的 `category` 是固定枚举（tasks / time / summary / weekly_summary / weekly_habits / weekly_tasks / monthly_summary / monthly_tasks），**不是文件路径**
+3. **错误处理**：工具返回错误信息时，先理解错误（如"未解析到有效记录"= 你输出的格式不对），调整后**重试一次**；连续 2 次失败时告知用户具体错误，不要编造结果
+4. **写入前确认**：调用 write_weekly_daily_records / write_monthly_weekly_records / generate_schedule 之前，先简要说明你将要写入什么（让用户有机会终止），然后再调
 
 ### 典型分析流程
 1. **分析某天** → 读 summary + tasks + time（同一日期 YYYY-MM-DD），再读 read_diary 获取日记原文

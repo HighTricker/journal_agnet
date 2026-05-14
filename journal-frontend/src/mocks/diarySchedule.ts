@@ -67,6 +67,7 @@ export const YEARLY_GOALS: YearlyGoalCategory[] = [
 export interface GoalItem {
     text: string
     completed: boolean
+    category?: string  // 分类名（如 '健康'），月/周目标分类用
 }
 
 export const MONTHLY_GOALS: GoalItem[] = [

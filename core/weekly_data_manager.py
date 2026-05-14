@@ -9,6 +9,92 @@ from . import weekly_texts as wt
 
 
 # ==========================================
+# 0. 习惯自动判定（基于日记数据）
+# ==========================================
+
+def _auto_early_rise(row: dict) -> bool:
+    """早起：起床时间早于 06:00（且非空）"""
+    wake = str(row.get("Sleep_Waketime", "")).strip()
+    return ":" in wake and wake < "06:00"
+
+
+def _auto_focus(row: dict) -> bool:
+    """专注工作：番茄钟 >= 4"""
+    try:
+        return int(float(row.get("Focus_Count", 0))) >= 4
+    except (ValueError, TypeError):
+        return False
+
+
+def _auto_no_fap(row: dict) -> bool:
+    """不打飞机：打飞机次数 == 0（且当天有量化数据，避免空记录被误判为 ✅）"""
+    val = row.get("Masturbation_Count")
+    if val is None or (isinstance(val, float) and pd.isna(val)) or str(val).strip() == "":
+        return False
+    try:
+        return int(float(val)) == 0
+    except (ValueError, TypeError):
+        return False
+
+
+def _auto_early_sleep(row: dict) -> bool:
+    """按时睡觉：入睡时间在 18:00–22:30 区间（避免凌晨上床被误判）"""
+    bed = str(row.get("Sleep_Bedtime", "")).strip()
+    if ":" not in bed:
+        return False
+    return "18:00" <= bed < "22:30"
+
+
+AUTO_HABIT_RULES = {
+    "早起（6:00前起床）": _auto_early_rise,
+    "专注工作（4个番茄钟以上）": _auto_focus,
+    "不打飞机": _auto_no_fap,
+    "按时睡觉（22:30前）": _auto_early_sleep,
+}
+
+
+def apply_auto_habits(habits_df: pd.DataFrame, monday) -> pd.DataFrame:
+    """根据 daily_summary 自动给 habits_df 中可推断的 4 个习惯打卡 ✅。
+    只填**当前为空**的格子，已被用户填过的 ✅/❌ 一律保留。
+    """
+    if habits_df.empty:
+        return habits_df
+
+    year = monday.year
+    summary_path = os.path.join(cfg.PATH_SUMMARY, f"daily_summary_{year}.csv")
+    if not os.path.exists(summary_path):
+        return habits_df
+
+    df = pd.read_csv(summary_path, encoding="utf-8-sig")
+    if "Date" not in df.columns:
+        return habits_df
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date
+
+    # 字符串列清洗（保证 strip 比较安全）
+    str_cols = [wt.COL_HABIT_NAME] + wt.DAY_COLUMNS
+    for col in str_cols:
+        if col in habits_df.columns:
+            habits_df[col] = habits_df[col].fillna("").astype(str)
+
+    for habit_name, checker in AUTO_HABIT_RULES.items():
+        mask = habits_df[wt.COL_HABIT_NAME] == habit_name
+        if not mask.any():
+            continue
+        for i in range(7):
+            day = monday + timedelta(days=i)
+            day_col = wt.DAY_COLUMNS[i]
+            day_row = df[df["Date"] == day]
+            if day_row.empty:
+                continue
+            if not checker(day_row.iloc[0].to_dict()):
+                continue
+            for idx in habits_df[mask].index:
+                if habits_df.at[idx, day_col].strip() == "":
+                    habits_df.at[idx, day_col] = "✅"
+    return habits_df
+
+
+# ==========================================
 # 1. 周信息计算
 # ==========================================
 

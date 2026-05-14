@@ -1,9 +1,10 @@
+// 评分含义：分数越高越好。1=极差，5=超赞
 const DEFAULT_OPTIONS = [
-    { value: 1, emoji: '😊', label: '超赞' },
-    { value: 2, emoji: '🙂', label: '开心' },
+    { value: 1, emoji: '😫', label: '极差' },
+    { value: 2, emoji: '🙁', label: '低落' },
     { value: 3, emoji: '😐', label: '一般' },
-    { value: 4, emoji: '🙁', label: '低落' },
-    { value: 5, emoji: '😫', label: '极差' },
+    { value: 4, emoji: '🙂', label: '开心' },
+    { value: 5, emoji: '😊', label: '超赞' },
 ]
 
 interface EmojiOption {

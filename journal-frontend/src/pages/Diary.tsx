@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import PageLayout from '../components/layout/PageLayout'
-import SaveButton from '../components/shared/SaveButton'
 import DiarySchedule from './DiarySchedule'
 import DiaryJournal from './DiaryJournal'
 import { useDiaryData } from '../hooks/useDiaryData'
 import { useCrossPageGoals } from '../hooks/useCrossPageGoals'
+import { usePageActions } from '../hooks/usePageActions'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import {
     YEARLY_GOALS,
 } from '../mocks/diarySchedule'
@@ -28,6 +29,9 @@ function getInitialDate(): string {
 
 function Diary() {
     const [activeTab, setActiveTab] = useState<'schedule' | 'journal'>('schedule')
+
+    const tabLabel = activeTab === 'schedule' ? '每日日程' : '生活记录'
+    useDocumentTitle(`日记-${tabLabel}`)
 
     // 当前选中的日期（完整格式 YYYY-MM-DD，优先从 URL 读取）
     const [selectedDateStr, setSelectedDateStr] = useState(getInitialDate)
@@ -163,17 +167,11 @@ function Diary() {
         )
     }
 
-    /* ========== 目标 Toggle Handler ========== */
-    const handleGoalToggle = (group: 'monthly' | 'weekly' | 'today', index: number) => {
-        if (group === 'today') {
-            diary.setTodayGoals((prev) =>
-                prev.map((g, i) => (i === index ? { ...g, completed: !g.completed } : g))
-            )
-        } else if (group === 'weekly') {
-            crossGoals.toggleWeeklyGoal(index)
-        } else if (group === 'monthly') {
-            crossGoals.toggleMonthlyGoal(index)
-        }
+    /* ========== 今日目标 Toggle ========== */
+    const handleTodayToggle = (index: number) => {
+        diary.setTodayGoals((prev) =>
+            prev.map((g, i) => (i === index ? { ...g, completed: !g.completed } : g))
+        )
     }
 
     const handleTodayGoalTextChange = (index: number, text: string) => {
@@ -190,38 +188,27 @@ function Diary() {
         diary.setTodayGoals((prev) => [...prev, { text: '', completed: false }])
     }
 
+    /* ========== 注册顶栏 actions（子 Tab + 保存按钮 + 状态） ========== */
+    const { setState: setPageActions, reset: resetPageActions } = usePageActions()
+    useEffect(() => {
+        setPageActions({
+            subTabs: [
+                { key: 'schedule', label: '每日日程' },
+                { key: 'journal', label: '生活记录' },
+            ],
+            activeSubTab: activeTab,
+            onSubTabChange: (k) => setActiveTab(k as 'schedule' | 'journal'),
+            saveLabel: diary.saving ? '保存中...' : '保存日记',
+            onSave: diary.save,
+            isSaving: diary.saving,
+            statusText: diary.loading ? '加载中...' : diary.error,
+            statusType: diary.loading ? 'loading' : (diary.error ? 'error' : null),
+        })
+        return resetPageActions
+    }, [activeTab, diary.saving, diary.loading, diary.error, diary.save, setPageActions, resetPageActions])
+
     return (
         <PageLayout>
-            {/* 子页面切换 */}
-            <div className="flex justify-end items-center mb-6 gap-2">
-                {diary.loading && (
-                    <span className="text-sm text-primary animate-pulse mr-auto">加载中...</span>
-                )}
-                {diary.error && (
-                    <span className="text-sm text-error mr-auto">{diary.error}</span>
-                )}
-                    <button
-                        onClick={() => setActiveTab('schedule')}
-                        className={
-                            activeTab === 'schedule'
-                                ? 'px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold transition-colors'
-                                : 'px-4 py-2 bg-surface-container-low text-secondary rounded-lg text-sm font-bold hover:bg-surface-container transition-colors'
-                        }
-                    >
-                        每日日程
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('journal')}
-                        className={
-                            activeTab === 'journal'
-                                ? 'px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold transition-colors'
-                                : 'px-4 py-2 bg-surface-container-low text-secondary rounded-lg text-sm font-bold hover:bg-surface-container transition-colors'
-                        }
-                    >
-                        生活记录
-                    </button>
-            </div>
-
             {/* 条件渲染子页面 */}
             {activeTab === 'schedule' ? (
                 <DiarySchedule
@@ -238,7 +225,9 @@ function Diary() {
                         weekly: crossGoals.weeklyGoals,
                         today: diary.data.todayGoals,
                     }}
-                    onGoalToggle={handleGoalToggle}
+                    onMonthlyUpdate={crossGoals.updateMonthlyGoals}
+                    onWeeklyUpdate={crossGoals.updateWeeklyGoals}
+                    onTodayToggle={handleTodayToggle}
                     schedule={diary.data.schedule}
                     onCellEdit={handleCellEdit}
                     onTodayGoalTextChange={handleTodayGoalTextChange}
@@ -279,11 +268,6 @@ function Diary() {
                     onThoughtsChange={diary.setThoughts}
                 />
             )}
-
-            <SaveButton
-                label={diary.saving ? '保存中...' : '保存日记'}
-                onSave={diary.save}
-            />
         </PageLayout>
     )
 }

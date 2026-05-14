@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import PageLayout from '../components/layout/PageLayout'
 import MaterialIcon from '../components/ui/MaterialIcon'
 import { useChat } from '../hooks/useChat'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 const QUICK_COMMANDS = [
     { icon: 'summarize', label: '分析今天', message: '请分析我今天的日记数据，给出行为建议' },
@@ -11,6 +12,7 @@ const QUICK_COMMANDS = [
 ]
 
 function AISage() {
+    useDocumentTitle('AI导师')
     const chat = useChat()
     const messagesEndRef = useRef<HTMLDivElement>(null)
 

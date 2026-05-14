@@ -44,6 +44,31 @@ _register(ModelConfig(
     env_key="DEEPSEEK_API_KEY",
 ))
 
+_register(ModelConfig(
+    key="openai",
+    display_name="OpenAI GPT-5.5",
+    provider="openai",
+    model_name="gpt-5.5",
+    env_key="OPENAI_API_KEY",
+))
+
+_register(ModelConfig(
+    key="anthropic",
+    display_name="Claude Opus 4.7",
+    provider="anthropic",
+    model_name="claude-opus-4-7",
+    env_key="ANTHROPIC_API_KEY",
+))
+
+_register(ModelConfig(
+    key="xai",
+    display_name="Grok 4",
+    provider="openai",
+    model_name="grok-4",
+    env_key="XAI_API_KEY",
+    base_url="https://api.x.ai/v1",
+))
+
 DEFAULT_MODEL_KEY = "gemini"
 
 

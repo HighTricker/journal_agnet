@@ -4,8 +4,8 @@ from typing import Optional
 
 class SummaryInput(BaseModel):
     """日记概览 — 前端提交的量化数据和反思"""
-    Mood: Optional[int] = Field(None, ge=1, le=5, description="心情评分 1-5")
-    Sleep_Score: Optional[int] = Field(None, ge=1, le=5, description="睡眠质量 1-5")
+    Mood: Optional[int] = Field(None, ge=1, le=6, description="心情评分 1-6")
+    Sleep_Score: Optional[int] = Field(None, ge=1, le=6, description="睡眠质量 1-6")
     Sleep_Bedtime: Optional[str] = Field(None, description="入睡时间 HH:MM")
     Sleep_Waketime: Optional[str] = Field(None, description="起床时间 HH:MM")
     Sleep_Hours: Optional[float] = Field(None, description="睡眠时长（小时）")

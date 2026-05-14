@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Optional
 
 
@@ -12,6 +12,14 @@ class MonthlySummaryInput(BaseModel):
     Total_Focus: Optional[int] = None
     Total_Masturbation: Optional[int] = None
     No_Masturbation_Days: Optional[int] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def _empty_str_to_none(cls, data):
+        """前端从 GET 拿回 summary 原样回传时，CSV 空数值是 ""，统一转 None 避免 pydantic 校验失败"""
+        if isinstance(data, dict):
+            return {k: (None if v == '' else v) for k, v in data.items()}
+        return data
     Best_Mood_Day: Optional[str] = ""
     Worst_Mood_Day: Optional[str] = ""
     Create_Time: Optional[str] = ""

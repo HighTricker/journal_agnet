@@ -40,6 +40,10 @@ def get_weekly(week_str: str):
     week_key, year, iso_week, monday, sunday = _parse_week(week_str)
     summary_data, habits_df, tasks_df = wdm.load_weekly_data(week_key, year)
 
+    # 自动从日记反馈 4 个能推断的习惯（早起/专注/不打飞机/按时睡觉）
+    # 仅对**空格子**填 ✅，用户手填的 ✅/❌ 保留
+    habits_df = wdm.apply_auto_habits(habits_df, monday)
+
     return {
         "summary": summary_data,
         "habits": habits_df.to_dict(orient="records"),

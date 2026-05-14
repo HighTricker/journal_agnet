@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PageLayout from '../components/layout/PageLayout'
-import SaveButton from '../components/shared/SaveButton'
 import WeeklyReview from './WeeklyReview'
 import WeeklyText from './WeeklyText'
 import { useWeeklyData, getISOWeekKey, shiftWeek } from '../hooks/useWeeklyData'
+import { usePageActions } from '../hooks/usePageActions'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import type { Objective } from '../mocks/weeklyReview'
 import { YEARLY_GOALS } from '../mocks/diarySchedule'
 import type { YearlyGoalCategory } from '../mocks/diarySchedule'
@@ -11,11 +12,33 @@ import type { YearlyGoalCategory } from '../mocks/diarySchedule'
 function Weekly() {
     const [activeTab, setActiveTab] = useState<'review' | 'text'>('review')
 
+    const tabLabel = activeTab === 'review' ? '周度数据' : '周记文字'
+    useDocumentTitle(`周记-${tabLabel}`)
+
     // 周切换
     const [weekKey, setWeekKey] = useState(() => getISOWeekKey(new Date()))
 
     // 从 API 加载真实数据
     const weekly = useWeeklyData(weekKey)
+
+    /* ========== 注册顶栏 actions ========== */
+    const { setState: setPageActions, reset: resetPageActions } = usePageActions()
+    useEffect(() => {
+        setPageActions({
+            subTabs: [
+                { key: 'review', label: '周度数据' },
+                { key: 'text', label: '周记文字' },
+            ],
+            activeSubTab: activeTab,
+            onSubTabChange: (k) => setActiveTab(k as 'review' | 'text'),
+            saveLabel: weekly.saving ? '保存中...' : '保存周记',
+            onSave: weekly.save,
+            isSaving: weekly.saving,
+            statusText: weekly.loading ? '加载中...' : weekly.error,
+            statusType: weekly.loading ? 'loading' : (weekly.error ? 'error' : null),
+        })
+        return resetPageActions
+    }, [activeTab, weekly.saving, weekly.loading, weekly.error, weekly.save, setPageActions, resetPageActions])
 
     /* ========== 年度目标（暂时还用 mock） ========== */
     const [yearlyGoals, setYearlyGoals] = useState<YearlyGoalCategory[]>(
@@ -98,31 +121,13 @@ function Weekly() {
 
     return (
         <PageLayout>
-            {/* 周切换导航 + Tab 切换 */}
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => setWeekKey(k => shiftWeek(k, -1))}
-                        className="px-3 py-1 text-sm font-bold text-primary hover:bg-primary/10 rounded-lg transition-colors">◀</button>
-                    <span className="text-sm font-bold text-on-surface">{weekKey} · {weekly.dateRange.label}</span>
-                    <button onClick={() => setWeekKey(k => shiftWeek(k, 1))}
-                        className="px-3 py-1 text-sm font-bold text-primary hover:bg-primary/10 rounded-lg transition-colors">▶</button>
-                    {weekly.loading && <span className="text-sm text-primary animate-pulse">加载中...</span>}
-                    {weekly.error && <span className="text-sm text-error">{weekly.error}</span>}
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={() => setActiveTab('review')}
-                        className={activeTab === 'review'
-                            ? 'px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold transition-colors'
-                            : 'px-4 py-2 bg-surface-container-low text-secondary rounded-lg text-sm font-bold hover:bg-surface-container transition-colors'}>
-                        周度数据
-                    </button>
-                    <button onClick={() => setActiveTab('text')}
-                        className={activeTab === 'text'
-                            ? 'px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold transition-colors'
-                            : 'px-4 py-2 bg-surface-container-low text-secondary rounded-lg text-sm font-bold hover:bg-surface-container transition-colors'}>
-                        周记文字
-                    </button>
-                </div>
+            {/* 周切换导航 */}
+            <div className="flex items-center gap-3 mb-6">
+                <button onClick={() => setWeekKey(k => shiftWeek(k, -1))}
+                    className="px-3 py-1 text-sm font-bold text-primary hover:bg-primary/10 rounded-lg transition-colors">◀</button>
+                <span className="text-sm font-bold text-on-surface">{weekKey} · {weekly.dateRange.label}</span>
+                <button onClick={() => setWeekKey(k => shiftWeek(k, 1))}
+                    className="px-3 py-1 text-sm font-bold text-primary hover:bg-primary/10 rounded-lg transition-colors">▶</button>
             </div>
 
             {activeTab === 'review' ? (
@@ -155,11 +160,6 @@ function Weekly() {
                     onInspirationChange={weekly.setInspiration}
                 />
             )}
-
-            <SaveButton
-                label={weekly.saving ? '保存中...' : '保存周记'}
-                onSave={weekly.save}
-            />
         </PageLayout>
     )
 }

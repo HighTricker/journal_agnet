@@ -26,7 +26,21 @@ function tasksToGoals(tasks: Array<Record<string, string>>): GoalItem[] {
         .map(t => ({
             text: t['计划事项'],
             completed: STATUS_TO_BOOL[t['状态']] ?? false,
+            category: t['分类'] || '',
         }))
+}
+
+function goalsToTasks(goals: GoalItem[]): Array<{ 分类: string; 计划事项: string; 实际完成: string; 状态: string; 原因分析: string }> {
+    if (goals.length === 0) {
+        return [{ 分类: '', 计划事项: '', 实际完成: '', 状态: '', 原因分析: '' }]
+    }
+    return goals.map(g => ({
+        分类: g.category || '',
+        计划事项: g.text,
+        实际完成: g.completed ? '完成' : '',
+        状态: g.completed ? '✅' : '',
+        原因分析: '',
+    }))
 }
 
 function updateTaskStatus(tasks: Array<Record<string, string>>, goalIndex: number, completed: boolean): Array<Record<string, string>> {
@@ -161,10 +175,56 @@ export function useCrossPageGoals(dateStr: string) {
         })
     }, [monthlyCache, monthKey])
 
+    /* ---- 整体替换 周目标 (add/delete/textChange/拖拽分类) ---- */
+    const updateWeeklyGoals = useCallback(async (newGoals: GoalItem[]) => {
+        setWeeklyGoals(newGoals)
+        if (!weeklyCache) {
+            // cache 未加载完时，传空 habits 会被后端覆盖为默认值——禁止
+            alert('周记数据还在加载，请稍后再试')
+            return
+        }
+        try {
+            const newTasks = goalsToTasks(newGoals)
+            await weeklyApi.save(weekKey, {
+                summary: weeklyCache.summary as Record<string, unknown>,
+                habits: weeklyCache.habits as unknown as Array<{ 习惯: string; Mon: string; Tue: string; Wed: string; Thu: string; Fri: string; Sat: string; Sun: string }>,
+                tasks: newTasks,
+            })
+            setWeeklyCache(prev => prev ? { ...prev, tasks: newTasks as unknown as Array<Record<string, string>> } : prev)
+            console.info('[周目标] 已保存', { week: weekKey, count: newGoals.length })
+        } catch (err) {
+            console.error('[周目标保存失败]', err)
+            alert(`周目标保存失败：${err instanceof Error ? err.message : '未知错误'}`)
+        }
+    }, [weeklyCache, weekKey])
+
+    /* ---- 整体替换 月目标 ---- */
+    const updateMonthlyGoals = useCallback(async (newGoals: GoalItem[]) => {
+        setMonthlyGoals(newGoals)
+        if (!monthlyCache) {
+            alert('月记数据还在加载，请稍后再试')
+            return
+        }
+        try {
+            const newTasks = goalsToTasks(newGoals)
+            await monthlyApi.save(monthKey, {
+                summary: monthlyCache.summary as Record<string, unknown>,
+                tasks: newTasks,
+            })
+            setMonthlyCache(prev => prev ? { ...prev, tasks: newTasks as unknown as Array<Record<string, string>> } : prev)
+            console.info('[月目标] 已保存', { month: monthKey, count: newGoals.length })
+        } catch (err) {
+            console.error('[月目标保存失败]', err)
+            alert(`月目标保存失败：${err instanceof Error ? err.message : '未知错误'}`)
+        }
+    }, [monthlyCache, monthKey])
+
     return {
         weeklyGoals,
         monthlyGoals,
         toggleWeeklyGoal,
         toggleMonthlyGoal,
+        updateWeeklyGoals,
+        updateMonthlyGoals,
     }
 }
