@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import WeekStrip from './WeekStrip'
 import { usePageActions } from '../../hooks/usePageActions'
 
@@ -19,17 +19,27 @@ function TopAppBar() {
                 {/* 左：主导航 */}
                 <nav className="flex items-center gap-[40px] shrink-0">
                     {NAV_ITEMS.map((item) => (
-                        <Link
+                        <a
                             key={item.path}
-                            to={item.path}
+                            href={item.path}
+                            onClick={(e) => {
+                                // React Router 7 + React 19 + Vite 8 prod build 下
+                                // Link 内部 navigate 不触发 Routes 重渲染（bug），
+                                // 改用全页面跳转：浏览器实跳，backend SPA fallback 返回
+                                // index.html，React 重新 mount，BrowserRouter 首次匹配
+                                // 路径，渲染对应 page。代价是切换有 1s 加载，但 100% 工作。
+                                if (e.ctrlKey || e.metaKey) return
+                                e.preventDefault()
+                                window.location.href = item.path
+                            }}
                             className={
                                 location.pathname.startsWith(item.path)
-                                    ? 'text-[21px] text-primary font-bold border-b-2 border-primary pb-1'
-                                    : 'text-[21px] text-on-surface opacity-70 hover:opacity-100 hover:text-primary transition-all'
+                                    ? 'text-[21px] text-primary font-bold border-b-2 border-primary pb-1 no-underline'
+                                    : 'text-[21px] text-on-surface opacity-70 hover:opacity-100 hover:text-primary transition-all no-underline'
                             }
                         >
                             {item.label}
-                        </Link>
+                        </a>
                     ))}
                 </nav>
 

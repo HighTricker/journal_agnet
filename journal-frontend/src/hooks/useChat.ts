@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { chatApi } from '../api/client'
+import { chatApi, BASE_URL } from '../api/client'
 import type { ChatModelsResponse } from '../api/client'
 
 export interface ChatMessage {
@@ -94,7 +94,7 @@ export function useChat() {
             const controller = new AbortController()
             abortRef.current = controller
 
-            const res = await fetch('http://127.0.0.1:8000/api/chat', {
+            const res = await fetch(`${BASE_URL}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

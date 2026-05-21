@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import PageLayout from '../components/layout/PageLayout'
 import DiarySchedule from './DiarySchedule'
 import DiaryJournal from './DiaryJournal'
@@ -190,6 +190,11 @@ function Diary() {
 
     /* ========== 注册顶栏 actions（子 Tab + 保存按钮 + 状态） ========== */
     const { setState: setPageActions, reset: resetPageActions } = usePageActions()
+    // diary.save 每次按键都会变（它依赖了 schedule 等表单状态）。用 ref 包一层得到引用稳定的
+    // stableSave，避免下面的 useEffect 每次按键都重新执行 setPageActions → 触发重渲染雪崩。
+    const saveRef = useRef(diary.save)
+    saveRef.current = diary.save
+    const stableSave = useCallback(() => { saveRef.current() }, [])
     useEffect(() => {
         setPageActions({
             subTabs: [
@@ -199,13 +204,13 @@ function Diary() {
             activeSubTab: activeTab,
             onSubTabChange: (k) => setActiveTab(k as 'schedule' | 'journal'),
             saveLabel: diary.saving ? '保存中...' : '保存日记',
-            onSave: diary.save,
+            onSave: stableSave,
             isSaving: diary.saving,
             statusText: diary.loading ? '加载中...' : diary.error,
             statusType: diary.loading ? 'loading' : (diary.error ? 'error' : null),
         })
         return resetPageActions
-    }, [activeTab, diary.saving, diary.loading, diary.error, diary.save, setPageActions, resetPageActions])
+    }, [activeTab, diary.saving, diary.loading, diary.error, stableSave, setPageActions, resetPageActions])
 
     return (
         <PageLayout>

@@ -1,17 +1,36 @@
-const BASE_URL = 'http://127.0.0.1:8000/api'
+// 环境感知的 API base：
+//   dev 模式（npm run dev）：前端在 5173，后端在 8000，不同源，必须用绝对 URL
+//   打包后：前端被后端 serve（同一个动态端口），同源，用相对路径，端口由 backend 自动分配
+export const BASE_URL = import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : '/api'
+
+// 请求超时（毫秒）：防止某个请求长时间挂起，导致界面状态（saving / loading）永久卡死
+const REQUEST_TIMEOUT_MS = 15000
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(`${BASE_URL}${path}`, {
-        headers: { 'Content-Type': 'application/json' },
-        ...options,
-    })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-    if (!res.ok) {
-        const body = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(body.detail || `请求失败: ${res.status}`)
+    try {
+        const res = await fetch(`${BASE_URL}${path}`, {
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            ...options,
+        })
+
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({ detail: res.statusText }))
+            throw new Error(body.detail || `请求失败: ${res.status}`)
+        }
+
+        return await res.json()
+    } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') {
+            throw new Error(`请求超时（${REQUEST_TIMEOUT_MS / 1000} 秒）：后端无响应`)
+        }
+        throw e instanceof Error ? e : new Error('网络请求失败')
+    } finally {
+        clearTimeout(timer)
     }
-
-    return res.json()
 }
 
 // ==================== 日记 ====================

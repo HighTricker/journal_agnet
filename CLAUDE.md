@@ -114,10 +114,6 @@ journal_agnet/
 ├── CLAUDE.md
 ├── TODO.md
 └── 功能TODO.md
-
-⚠️ 已废弃但未删除（Streamlit 时代遗留，勿改勿引用）：
-   diary.py、pages/1_周记.py、pages/2_月记.py、pages/3_AI导师.py、assets/styles.css
-   `requirements.txt` 中的 `streamlit` 也是历史遗留，新代码不再 import
 ```
 
 ## 业务模块

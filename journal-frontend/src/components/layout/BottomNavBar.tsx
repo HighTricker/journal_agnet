@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import MaterialIcon from '../ui/MaterialIcon'
 
 const NAV_ITEMS = [
@@ -16,10 +16,15 @@ function BottomNavBar() {
             {NAV_ITEMS.map((item) => {
                 const isActive = location.pathname.startsWith(item.path)
                 return (
-                    <Link
+                    <a
                         key={item.path}
-                        to={item.path}
-                        className={`flex flex-col items-center justify-center transition-transform ${
+                        href={item.path}
+                        onClick={(e) => {
+                            if (e.ctrlKey || e.metaKey) return
+                            e.preventDefault()
+                            window.location.href = item.path
+                        }}
+                        className={`flex flex-col items-center justify-center transition-transform no-underline ${
                             isActive
                                 ? 'text-primary font-semibold'
                                 : 'text-secondary hover:scale-110'
@@ -31,7 +36,7 @@ function BottomNavBar() {
                             className="text-2xl"
                         />
                         <span className="text-[11px] font-medium">{item.label}</span>
-                    </Link>
+                    </a>
                 )
             })}
         </nav>

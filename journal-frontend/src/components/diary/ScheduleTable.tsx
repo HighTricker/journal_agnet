@@ -138,6 +138,15 @@ function ScheduleTable({ data, dateLabel, onCellEdit }: ScheduleTableProps) {
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
             if (editing) return
+            // 焦点在其它输入框 / 文本域时不劫持键盘，否则会抢走别处的 Delete/Backspace 等按键
+            const active = document.activeElement
+            if (
+                active instanceof HTMLInputElement ||
+                active instanceof HTMLTextAreaElement ||
+                (active instanceof HTMLElement && active.isContentEditable)
+            ) {
+                return
+            }
             if (!selection) return
             const key = e.key.toLowerCase()
             if (e.ctrlKey || e.metaKey) {

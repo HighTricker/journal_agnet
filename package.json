@@ -1,0 +1,15 @@
+{
+    "name": "journal-agent",
+    "version": "1.0.0",
+    "description": "量化日记系统桌面应用 - Electron 壳 + FastAPI sidecar",
+    "main": "electron/main.js",
+    "scripts": {
+        "start": "electron .",
+        "build:frontend": "npm --prefix journal-frontend run build",
+        "build:backend": "pyinstaller --noconfirm --console --add-data \"journal-frontend/dist;journal-frontend/dist\" --add-data \"prompts;prompts\" --add-data \"core/kingsley_context.md;core\" --hidden-import=uvicorn.logging --hidden-import=uvicorn.loops.auto --hidden-import=uvicorn.protocols.http.auto --hidden-import=uvicorn.protocols.websockets.auto --hidden-import=uvicorn.lifespan.on --name journal-backend backend_entry.py"
+    },
+    "devDependencies": {
+        "electron": "^33.0.0",
+        "electron-builder": "^25.0.0"
+    }
+}

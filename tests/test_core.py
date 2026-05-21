@@ -9,8 +9,6 @@ from unittest.mock import patch, MagicMock
 # ==========================================
 # 1. 日记编号计算逻辑测试
 # ==========================================
-# get_diary_metadata 定义在 app.py 中，因为 app.py 导入时会触发 Streamlit，
-# 这里直接测试其核心计算逻辑（纯数学，无外部依赖）。
 
 def calc_diary_no(target_date):
     """复刻 app.py 中 get_diary_metadata 的编号计算逻辑"""
