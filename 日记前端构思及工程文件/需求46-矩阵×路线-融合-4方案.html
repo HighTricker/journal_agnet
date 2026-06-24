@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求 46 · 矩阵 × 路线 融合 — 4 方案</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #00288e; --on-primary: #fff;
+            --background: #f7f9fb; --surface-lowest: #ffffff; --surface-low: #f2f4f6;
+            --ov-20: rgba(196,197,213,0.30); --shadow-sm: 0 1px 3px rgba(0,40,142,0.06);
+            --weekly-grad: linear-gradient(90deg,#064E3B 0%,#047857 50%,#059669 100%);
+            --label:#1c1c1e; --label2:#8a8a8e; --label3:#c4c4c8; --sep:#e9e9ee; --today:#ff3b30;
+            --col: 124px;   /* 每日列宽 */
+            --lbl: 150px;   /* 目标标签列宽 */
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family:'Manrope',-apple-system,'Segoe UI','PingFang SC',sans-serif; background:var(--background); color:var(--label); line-height:1.5; padding:40px 24px 90px; }
+        .material-symbols-outlined { font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24; user-select:none; vertical-align:middle; }
+        .num { font-variant-numeric: tabular-nums; }
+
+        .wrap { max-width: 1240px; margin: 0 auto; }
+        .page-head h1 { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
+        .page-head p { margin-top:8px; max-width:90ch; font-size:14px; color:#444653; }
+        .locked { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+        .locked .pill { font-size:12px; font-weight:600; color:var(--primary); background:rgba(0,40,142,0.05); border:1px solid rgba(0,40,142,0.10); padding:5px 12px; border-radius:999px; }
+        .legend { margin-top:16px; display:flex; flex-wrap:wrap; gap:9px; align-items:center; }
+        .legend .lab { font-size:11px; font-weight:700; letter-spacing:0.12em; color:var(--label2); margin-right:2px; }
+        .gchip { font-size:12px; font-weight:600; padding:3px 11px 3px 9px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; }
+        .gchip .dot { width:8px; height:8px; border-radius:50%; }
+
+        .sec { margin-top:46px; }
+        .sec > h2 { font-size:21px; font-weight:800; letter-spacing:-0.01em; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .sec > h2 .no { font-size:12px; font-weight:700; color:var(--on-primary); background:var(--primary); border-radius:8px; padding:2px 9px; }
+        .sec > h2 .rec { font-size:11px; font-weight:700; color:#fff; background:#047857; border-radius:999px; padding:3px 10px; }
+        .sec > .desc { font-size:13.5px; color:#444653; margin:8px 0 16px; max-width:92ch; }
+
+        .stage { background:var(--surface-lowest); border:1px solid var(--ov-20); border-radius:20px; padding:20px; box-shadow:var(--shadow-sm); }
+        .grab-hint { font-size:11px; color:var(--label2); margin-bottom:12px; display:flex; align-items:center; gap:5px; }
+        .scroll { overflow-x:auto; cursor:grab; padding-bottom:8px; }
+        .scroll.grab { cursor:grabbing; }
+        .scroll::-webkit-scrollbar { height:8px; }
+        .scroll::-webkit-scrollbar-thumb { background:var(--label3); border-radius:8px; }
+
+        /* 周目标卡 */
+        .goalcard { background:var(--weekly-grad); border-radius:18px; padding:16px 20px; box-shadow:0 8px 24px rgba(4,120,87,0.22); }
+        .goalcard h3 { color:rgba(255,255,255,0.92); font-size:12px; font-weight:800; letter-spacing:0.18em; margin-bottom:12px; }
+        .goal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px; }
+        .goal-item { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:11px; padding:9px 12px; display:flex; align-items:center; gap:9px; }
+        .goal-item .box { width:17px; height:17px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+        .goal-item.done .box { background:#fff; border-color:#fff; }
+        .goal-item.done .box .material-symbols-outlined { color:#047857; font-size:13px; }
+        .goal-item .gtext { color:#fff; font-size:13.5px; font-weight:600; }
+        .goal-item.done .gtext { opacity:0.6; text-decoration:line-through; }
+        .goal-item .prog { margin-left:auto; font-size:11px; font-weight:700; color:rgba(255,255,255,0.85); background:rgba(0,0,0,0.18); border-radius:999px; padding:2px 8px; }
+
+        /* iOS 圆圈勾选 */
+        .ck { width:18px; height:18px; border-radius:50%; border:1.5px solid var(--label3); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; transition:all .15s; background:#fff; }
+        .ck:hover { border-color:var(--g-fg); }
+        .ck.on { background:var(--g-fg); border-color:var(--g-fg); }
+        .ck.on .material-symbols-outlined { color:#fff; font-size:12px; }
+        .done-text { color:var(--label2) !important; text-decoration:line-through; opacity:.7; }
+
+        /* ===== 共享：网格骨架 ===== */
+        .diagram { min-width:max-content; }
+        .dgrid { display:grid; grid-template-columns:var(--lbl) repeat(7,var(--col)); }
+        .dhead .dh { text-align:center; padding-bottom:14px; }
+        .dh .dh-dow { font-size:12px; font-weight:600; color:var(--label2); }
+        .dh .dh-date { font-size:18px; font-weight:800; margin-top:1px; }
+        .dh.today .dh-dow { color:var(--today); }
+        .dh.today .dh-date { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:var(--today); color:#fff; font-size:15px; }
+
+        .lane { align-items:center; }
+        .lane + .lane { border-top:1px solid var(--sep); }
+        .llabel { display:flex; align-items:center; gap:9px; padding:0 10px 0 2px; }
+        .llabel .gdot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+        .llabel .gname { font-size:13px; font-weight:700; }
+        .track { grid-column:2 / -1; position:relative;
+            background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(var(--col) - 1px), var(--sep) calc(var(--col) - 1px), var(--sep) var(--col)); }
+        .todayband { position:absolute; top:0; bottom:0; background:rgba(255,59,48,0.045); pointer-events:none; }
+        .cap-txt { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:112px; }
+
+        /* ===== 方案甲：地铁线路（粗轨 + 站点） ===== */
+        .v-metro .track { height:74px; }
+        .metro-line { position:absolute; top:30px; height:12px; border-radius:999px; transform:translateY(-50%); box-shadow:0 2px 6px rgba(0,0,0,0.06); }
+        .metro-st { position:absolute; top:30px; transform:translate(-50%,-50%); cursor:pointer; }
+        .metro-st .dotc { width:24px; height:24px; border-radius:50%; background:#fff; border:4px solid var(--g-fg); display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+        .metro-st.done .dotc { background:var(--g-fg); }
+        .metro-st.done .dotc .material-symbols-outlined { color:#fff; font-size:13px; }
+        .metro-cap { position:absolute; top:46px; left:50%; transform:translateX(-50%); font-size:11.5px; font-weight:600; text-align:center; }
+
+        /* ===== 方案乙：甘特色带（区段填充 + 格内节点） ===== */
+        .v-gantt .track { height:54px; }
+        .gantt-band { position:absolute; top:50%; transform:translateY(-50%); height:36px; border-radius:12px; }
+        .gantt-node { position:absolute; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:7px; background:#fff; border:1.5px solid var(--g-fg); border-radius:999px; padding:5px 11px 5px 8px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        .gantt-node .gn-txt { font-size:12px; font-weight:700; color:var(--g-fg); }
+
+        /* ===== 方案丙：胶囊串链（块状卡 + 粗连接） ===== */
+        .v-chain .track { height:60px; }
+        .chain-link { position:absolute; top:50%; height:9px; transform:translateY(-50%); border-radius:999px; opacity:.55; }
+        .chain-node { position:absolute; top:50%; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+        .chain-card { display:flex; align-items:center; gap:7px; border-radius:12px; padding:7px 11px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .chain-card .cc-txt { font-size:12px; font-weight:700; }
+
+        /* ===== 方案丁：渐变光带（厚 ribbon + 发光节点） ===== */
+        .v-ribbon .track { height:78px; }
+        .ribbon { position:absolute; top:32px; height:18px; border-radius:999px; transform:translateY(-50%); }
+        .ribbon-st { position:absolute; top:32px; transform:translate(-50%,-50%); cursor:pointer; }
+        .ribbon-st .rdot { width:26px; height:26px; border-radius:50%; background:#fff; border:3px solid var(--g-fg); display:flex; align-items:center; justify-content:center; }
+        .ribbon-st.done .rdot { background:var(--g-fg); }
+        .ribbon-st.done .rdot .material-symbols-outlined { color:#fff; font-size:14px; }
+        .ribbon-cap { position:absolute; top:48px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:600; background:var(--surface-lowest); border:1px solid var(--sep); border-radius:7px; padding:2px 7px; }
+
+        .footer-note { margin-top:54px; background:#fff; border:1px solid var(--ov-20); border-radius:20px; padding:22px 24px; box-shadow:var(--shadow-sm); }
+        .footer-note h2 { font-size:17px; font-weight:800; margin-bottom:6px; }
+        .footer-note p { font-size:13.5px; color:#444653; }
+        .footer-note code { background:rgba(0,40,142,0.06); color:var(--primary); padding:1px 6px; border-radius:6px; font-size:12.5px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>需求 46 · 矩阵 × 路线 融合（4 方案）</h1>
+        <p>结合你喜欢的两点：<b>V2 矩阵</b>的结构（行=目标、列=7 天、竖看某天负载 / 横看一件事的分布）+ <b>V4</b> 的旅程感（一条线把一件事的节点串起来）。<b>线条全部加粗、加圆角、加渐变/光晕</b>。背景保留淡淡的日列网格线，今日列红色高亮。4 方案区别只在"那条路线"的质感。</p>
+        <div class="locked">
+            <span class="pill">行=目标 列=天</span>
+            <span class="pill">路线串起节点</span>
+            <span class="pill">粗线 + 渐变</span>
+            <span class="pill">日列网格 + 今日高亮</span>
+            <span class="pill">勾选联动周目标</span>
+        </div>
+        <div class="legend" id="legend"><span class="lab">事项配色</span></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">联动</span> 周目标卡</h2>
+        <div class="goalcard"><h3>WEEKLY · 周度目标</h3><div class="goal-grid" id="goalGrid"></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">方案甲</span> 地铁线路图 · 粗轨 + 站点 <span class="rec">最清爽</span></h2>
+        <p class="desc">每个目标 = 一条加粗圆头彩色"地铁线"，节点是白心彩环的站点，站名（事项）在站点下方。像地铁图一样，一眼看出一件事经停哪几天、今天停哪几站。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="s1"><div class="diagram v-metro"><div class="dgrid dhead" id="head1"></div><div id="lanes1"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">方案乙</span> 甘特色带 · 区段填充 <span class="rec">最像矩阵</span></h2>
+        <p class="desc">最大程度保留矩阵格子感：每个目标一条柔色"区段带"从首个节点铺到末个节点，节点是带文字的圆角药丸卡钉在对应日列上。色带让"这件事本周一直在推进"看得见，又不丢矩阵的对齐读法。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="s2"><div class="diagram v-gantt"><div class="dgrid dhead" id="head2"></div><div id="lanes2"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">方案丙</span> 胶囊串链 · 块状节点 + 粗连接</h2>
+        <p class="desc">节点本身是实色圆角"胶囊卡"（带事项名 + 勾选），相邻节点之间用粗连接条串起来。块头最大、最有"任务卡"的实体感，适合喜欢厚重、信息明确的风格。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="s3"><div class="diagram v-chain"><div class="dgrid dhead" id="head3"></div><div id="lanes3"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">方案丁</span> 渐变光带 · 厚 ribbon + 发光节点 <span class="rec">最高级</span></h2>
+        <p class="desc">最粗、最有美感：一条带渐变和柔光的厚缎带流过各天，节点是发光圆点，事项名做成小标签浮在下方。视觉最"premium"，旅程感最强。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="s4"><div class="diagram v-ribbon"><div class="dgrid dhead" id="head4"></div><div id="lanes4"></div></div></div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <h2>下一步</h2>
+        <p>挑一个质感（甲/乙/丙/丁），或细调（线更粗/更细、要不要渐变、节点要圆点还是药丸卡、事项名放上方还是下方）。定稿后我们敲<b>数据存储</b>（推荐独立表 <code>weekly_timeline</code>：周 / 日期 / 内容 / 关联周目标 / 完成，无小时）和"目标完成判定"，再开发。</p>
+    </div>
+
+</div>
+
+<script>
+    const DAYS = [
+        { dow:'周一', date:'06-22' }, { dow:'周二', date:'06-23' }, { dow:'周三', date:'06-24' },
+        { dow:'周四', date:'06-25' }, { dow:'周五', date:'06-26' }, { dow:'周六', date:'06-27' }, { dow:'周日', date:'06-28' },
+    ];
+    const TODAY = 2, N = 7;
+    const GC = {
+        g1:{ fg:'#2e6b4f', bg:'#e3efe8' }, g2:{ fg:'#0e7490', bg:'#e0f2f7' }, g3:{ fg:'#00288e', bg:'#e6ebf7' },
+        g4:{ fg:'#5b21b6', bg:'#ede9fe' }, g5:{ fg:'#92600a', bg:'#fdf0d5' }, g6:{ fg:'#9d174d', bg:'#fce7ef' }, g7:{ fg:'#b45309', bg:'#fdf0e3' },
+    };
+    const GOALS = [
+        { id:'g1', text:'每天晨跑 5km' }, { id:'g2', text:'健身房 ×2' }, { id:'g3', text:'完成日记时间轴功能' },
+        { id:'g4', text:'读完《深度工作》' }, { id:'g5', text:'每日冥想' }, { id:'g6', text:'陪伴家人' }, { id:'g7', text:'周末爬山' },
+    ];
+    const TASKS = [
+        { id:'t1', day:0, goal:'g1', title:'晨跑 5km' }, { id:'t2', day:0, goal:'g3', title:'写组件骨架' }, { id:'t3', day:0, goal:'g4', title:'读 p30–60' },
+        { id:'t4', day:1, goal:'g2', title:'健身房' }, { id:'t5', day:1, goal:'g3', title:'接入 API' },
+        { id:'t6', day:2, goal:'g1', title:'晨跑 5km' }, { id:'t7', day:2, goal:'g3', title:'出设计 demo' }, { id:'t8', day:2, goal:'g6', title:'陪爸妈' },
+        { id:'t9', day:3, goal:'g3', title:'联调' }, { id:'t10', day:3, goal:'g4', title:'读 p60–90' },
+        { id:'t11', day:4, goal:'g2', title:'健身房' }, { id:'t12', day:4, goal:'g4', title:'整理笔记' },
+        { id:'t13', day:5, goal:'g7', title:'爬山' },
+        { id:'t14', day:6, goal:'g4', title:'周复盘' }, { id:'t15', day:6, goal:'g5', title:'冥想总结' },
+    ];
+    const done = {}; TASKS.forEach(t => done[t.id] = false);
+    ['t1','t2','t3','t4','t5'].forEach(i => done[i] = true);
+
+    const goalsWithTasks = () => GOALS.filter(g => TASKS.some(t => t.goal === g.id));
+    const pctC = i => ((i + 0.5) / N) * 100;        // 第 i 天列中心
+    const cellL = i => (i / N) * 100;                // 第 i 天列左边
+    const cellW = (1 / N) * 100;
+    function toggle(id) { done[id] = !done[id]; renderAll(); }
+    function ckHTML(id, gid, sz) {
+        const s = sz ? `width:${sz}px;height:${sz}px;` : '';
+        return `<div class="ck ${done[id] ? 'on' : ''}" style="--g-fg:${GC[gid].fg};${s}" onclick="event.stopPropagation();toggle('${id}')">${done[id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div>`;
+    }
+    const todayBand = `<div class="todayband" style="left:${cellL(TODAY)}%;width:${cellW}%"></div>`;
+    function headHTML() {
+        return `<div class="dh-corner"></div>` + DAYS.map((d, di) =>
+            `<div class="dh ${di === TODAY ? 'today' : ''}"><div class="dh-dow">${d.dow}</div><div class="dh-date num">${d.date.split('-')[1]}</div></div>`).join('');
+    }
+
+    function renderLegend() {
+        const el = document.getElementById('legend');
+        GOALS.forEach(g => { const c = GC[g.id]; el.insertAdjacentHTML('beforeend', `<span class="gchip" style="background:${c.bg};color:${c.fg}"><span class="dot" style="background:${c.fg}"></span>${g.text}</span>`); });
+    }
+    function renderGoals() {
+        document.getElementById('goalGrid').innerHTML = GOALS.map(g => {
+            const ts = TASKS.filter(t => t.goal === g.id), dn = ts.filter(t => done[t.id]).length, isDone = ts.length > 0 && dn === ts.length;
+            return `<div class="goal-item ${isDone ? 'done' : ''}"><div class="box">${isDone ? '<span class="material-symbols-outlined">check</span>' : ''}</div><span class="gtext">${g.text}</span><span class="prog num">${dn}/${ts.length}</span></div>`;
+        }).join('');
+    }
+
+    // 通用：取一个目标的任务（按天排序）+ 首末
+    function laneData(gid) {
+        const my = TASKS.filter(t => t.goal === gid).sort((a, b) => a.day - b.day);
+        const days = my.map(t => t.day);
+        return { my, first: Math.min(...days), last: Math.max(...days) };
+    }
+    function laneShell(g, trackInner) {
+        const c = GC[g.id];
+        return `<div class="dgrid lane"><div class="llabel"><span class="gdot" style="background:${c.fg}"></span><span class="gname">${g.text}</span></div><div class="track">${todayBand}${trackInner}</div></div>`;
+    }
+
+    /* 甲 地铁 */
+    function renderMetro() {
+        document.getElementById('head1').innerHTML = headHTML();
+        document.getElementById('lanes1').innerHTML = goalsWithTasks().map(g => {
+            const c = GC[g.id], { my, first, last } = laneData(g.id);
+            const line = first !== last ? `<div class="metro-line" style="left:${pctC(first)}%;width:${pctC(last) - pctC(first)}%;background:linear-gradient(90deg,${c.fg}b3,${c.fg})"></div>` : '';
+            const sts = my.map(t => `<div class="metro-st ${done[t.id] ? 'done' : ''}" style="--g-fg:${c.fg};left:${pctC(t.day)}%" onclick="toggle('${t.id}')"><div class="dotc">${done[t.id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div><div class="metro-cap cap-txt ${done[t.id] ? 'done-text' : ''}">${t.title}</div></div>`).join('');
+            return laneShell(g, line + sts);
+        }).join('');
+    }
+
+    /* 乙 甘特色带 */
+    function renderGantt() {
+        document.getElementById('head2').innerHTML = headHTML();
+        document.getElementById('lanes2').innerHTML = goalsWithTasks().map(g => {
+            const c = GC[g.id], { my, first, last } = laneData(g.id);
+            const band = `<div class="gantt-band" style="left:${cellL(first) + 1}%;width:${cellL(last) + cellW - cellL(first) - 2}%;background:${c.bg}"></div>`;
+            const nodes = my.map(t => `<div class="gantt-node" style="--g-fg:${c.fg};left:${pctC(t.day)}%" onclick="toggle('${t.id}')">${ckHTML(t.id, g.id, 16)}<span class="gn-txt cap-txt ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>`).join('');
+            return laneShell(g, band + nodes);
+        }).join('');
+    }
+
+    /* 丙 胶囊串链 */
+    function renderChain() {
+        document.getElementById('head3').innerHTML = headHTML();
+        document.getElementById('lanes3').innerHTML = goalsWithTasks().map(g => {
+            const c = GC[g.id], { my } = laneData(g.id);
+            let links = '';
+            for (let k = 0; k < my.length - 1; k++) { const a = my[k].day, b = my[k + 1].day; links += `<div class="chain-link" style="left:${pctC(a)}%;width:${pctC(b) - pctC(a)}%;background:${c.fg}"></div>`; }
+            const nodes = my.map(t => `<div class="chain-node" style="left:${pctC(t.day)}%" onclick="toggle('${t.id}')"><div class="chain-card" style="background:${done[t.id] ? c.bg : '#fff'};border:1.5px solid ${c.fg}">${ckHTML(t.id, g.id, 16)}<span class="cc-txt cap-txt ${done[t.id] ? 'done-text' : ''}" style="color:${c.fg}">${t.title}</span></div></div>`).join('');
+            return laneShell(g, links + nodes);
+        }).join('');
+    }
+
+    /* 丁 渐变光带 */
+    function renderRibbon() {
+        document.getElementById('head4').innerHTML = headHTML();
+        document.getElementById('lanes4').innerHTML = goalsWithTasks().map(g => {
+            const c = GC[g.id], { my, first, last } = laneData(g.id);
+            const ribbon = first !== last ? `<div class="ribbon" style="left:${pctC(first)}%;width:${pctC(last) - pctC(first)}%;background:linear-gradient(90deg,${c.fg}66,${c.fg});box-shadow:0 4px 14px ${c.fg}55"></div>` : '';
+            const sts = my.map(t => `<div class="ribbon-st ${done[t.id] ? 'done' : ''}" style="--g-fg:${c.fg};left:${pctC(t.day)}%" onclick="toggle('${t.id}')"><div class="rdot">${done[t.id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div><div class="ribbon-cap cap-txt ${done[t.id] ? 'done-text' : ''}">${t.title}</div></div>`).join('');
+            return laneShell(g, ribbon + sts);
+        }).join('');
+    }
+
+    function enableDrag(el) {
+        let down = false, sx, sl;
+        el.addEventListener('mousedown', e => { if (e.target.closest('.ck,.metro-st,.gantt-node,.chain-node,.ribbon-st')) return; down = true; el.classList.add('grab'); sx = e.pageX; sl = el.scrollLeft; });
+        window.addEventListener('mouseup', () => { down = false; el.classList.remove('grab'); });
+        el.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); el.scrollLeft = sl - (e.pageX - sx); });
+    }
+
+    function renderAll() { renderGoals(); renderMetro(); renderGantt(); renderChain(); renderRibbon(); }
+    renderLegend(); renderAll();
+    ['s1','s2','s3','s4'].forEach(id => enableDrag(document.getElementById(id)));
+</script>
+</body>
+</html>

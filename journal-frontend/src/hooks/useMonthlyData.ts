@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { monthlyApi } from '../api/client'
+import { useToast } from './useToast'
 import type { MonthlySaveRequest, MonthlyAggregation } from '../api/client'
 import type { MonthlyObjective } from '../mocks/monthlyReview'
 
@@ -87,6 +88,7 @@ const MONTHLY_TEXT_MAP_REVERSE = Object.fromEntries(
 // ==================== Hook ====================
 
 export function useMonthlyData(monthKey: string) {
+    const { showToast } = useToast()
     const [monthRating, setMonthRating] = useState<number | null>(null)
     const [objectives, setObjectives] = useState<MonthlyObjective[]>([])
     const [textRecords, setTextRecords] = useState<Record<string, string>>({})
@@ -173,14 +175,16 @@ export function useMonthlyData(monthKey: string) {
                 tasks: objectivesToApiTasks(objectives),
             }
             await monthlyApi.save(monthKey, payload)
-            alert('月记保存成功！')
+            showToast('月记保存成功！', 'success')
         } catch (e) {
-            setError(e instanceof Error ? e.message : '保存失败')
-            alert('保存失败：' + (e instanceof Error ? e.message : '未知错误'))
+            const msg = e instanceof Error ? e.message : '未知错误'
+            console.error('[月记保存失败]', e)
+            setError(msg)
+            showToast('保存失败：' + msg, 'error')
         } finally {
             setSaving(false)
         }
-    }, [monthKey, monthRating, objectives, textRecords, inspiration, aggregation])
+    }, [monthKey, monthRating, objectives, textRecords, inspiration, aggregation, showToast])
 
     return {
         monthKey,

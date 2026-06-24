@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求 40-44 · 设计对比（MD3 主题适配）</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============ MD3 主题变量（与 src/index.css 一致） ============ */
+        :root {
+            --primary: #00288e;
+            --on-primary: #ffffff;
+            --primary-container: #1e40af;
+            --secondary: #516070;
+            --on-surface: #191c1e;
+            --on-surface-variant: #444653;
+            --surface-variant: #e0e3e5;
+            --background: #f7f9fb;
+            --surface-lowest: #ffffff;
+            --surface-low: #f2f4f6;
+            --outline: #757684;
+            --outline-variant: #c4c5d5;
+
+            --primary-05: rgba(0, 40, 142, 0.05);
+            --primary-10: rgba(0, 40, 142, 0.10);
+            --primary-15: rgba(0, 40, 142, 0.15);
+            --primary-70: rgba(0, 40, 142, 0.70);
+            --primary-container-10: rgba(30, 64, 175, 0.10);
+            --ov-20: rgba(196, 197, 213, 0.30);
+            --shadow-tinted: 0 6px 18px rgba(0, 40, 142, 0.10);
+            --shadow-sm: 0 1px 3px rgba(0, 40, 142, 0.06);
+
+            /* 方向 pill 语义色（去饱和，不做红绿灯） */
+            --slip: #872d00;     --slip-soft: #ffdbce;
+            --hold: #2e6b4f;     --hold-soft: #e3efe8;
+            --neutral: #516070;  --neutral-soft: #e8edf2;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Manrope', -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--background);
+            color: var(--on-surface);
+            line-height: 1.6;
+            padding: 40px 24px 90px;
+        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; user-select: none; }
+
+        .wrap { max-width: 1280px; margin: 0 auto; }
+        .page-head h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+        .page-head p { margin-top: 8px; max-width: 78ch; font-size: 14px; color: var(--on-surface-variant); }
+        .locked { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .locked .pill { font-size: 12px; font-weight: 600; color: var(--primary); background: var(--primary-05); border: 1px solid var(--primary-10); padding: 5px 12px; border-radius: 999px; }
+
+        /* 大节标题 */
+        .sec { margin-top: 44px; }
+        .sec > h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+        .sec > h2 .no { font-size: 12px; font-weight: 700; color: var(--on-primary); background: var(--primary); border-radius: 8px; padding: 2px 9px; }
+        .sec > .desc { font-size: 13.5px; color: var(--on-surface-variant); margin: 6px 0 18px; max-width: 80ch; }
+
+        .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; align-items: start; }
+        @media (max-width: 480px) { .panels { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--surface-lowest); border: 1px solid var(--ov-20); border-radius: 20px; padding: 20px 20px 22px; box-shadow: var(--shadow-sm); }
+        .panel__head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .panel__head h3 { font-size: 16px; font-weight: 700; }
+        .badge-rec { font-size: 11px; font-weight: 700; color: var(--on-primary); background: var(--primary); padding: 3px 9px; border-radius: 999px; }
+        .panel__desc { font-size: 12.5px; color: var(--on-surface-variant); margin-bottom: 16px; }
+        .storenote { margin-top: 14px; border-top: 1px dashed var(--outline-variant); padding-top: 10px; font-size: 11.5px; color: var(--outline); line-height: 1.7; }
+        .storenote b { color: var(--primary); font-weight: 700; }
+
+        /* ============ 复刻 App 上下文容器 ============ */
+        .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .mock-grid .span2 { grid-column: span 2; }
+        .metric-card { background: var(--surface-lowest); border: 1px solid var(--ov-20); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; }
+        .metric-card .top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .metric-card .top .material-symbols-outlined { color: var(--primary); font-size: 26px; }
+        .metric-card .top .tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--outline); }
+        .metric-card .title { font-size: 12.5px; color: var(--on-surface-variant); text-align: center; }
+        .metric-card .num { width: 70px; margin: 4px auto 0; display: block; text-align: center; font-size: 22px; font-weight: 700; color: var(--primary); background: transparent; border: none; border-bottom: 2px solid var(--primary-15); padding: 0; font-family: inherit; }
+        .metric-card .num:focus { outline: none; border-bottom-color: var(--primary); }
+
+        .sleep-card { background: var(--primary-container-10); border: 1px solid var(--primary-05); border-radius: 16px; padding: 18px; }
+        .sleep-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .sleep-card__head h4 { font-size: 15px; font-weight: 700; color: var(--primary); }
+        .sleep-card__head .material-symbols-outlined { color: var(--primary); font-size: 20px; }
+        .sleep-label { display: block; text-align: center; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: var(--primary-70); margin-bottom: 12px; }
+        .sleep-sub { border-top: 1px solid var(--primary-10); padding-top: 14px; margin-top: 14px; }
+        .sleep-textarea { width: 100%; font-family: inherit; font-size: 13px; background: var(--surface-lowest); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--primary-10); color: var(--on-surface-variant); min-height: 64px; resize: none; }
+        .sleep-textarea:focus { outline: none; }
+
+        /* ============ 评分行（心情/精力共用骨架，同已上线的睡眠方案C） ============ */
+        .rate-list { display: flex; flex-direction: column; gap: 8px; }
+        .rate-opt { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; cursor: pointer; border: 1px solid var(--ov-20); border-radius: 12px; padding: 9px 11px; background: var(--surface-lowest); font-family: inherit; transition: all 0.18s cubic-bezier(0.16,1,0.3,1); }
+        .rate-opt:hover { background: var(--primary-05); box-shadow: var(--shadow-tinted); transform: translateY(-2px); }
+        .rate-opt:active { transform: scale(0.98); }
+        .rate-opt.sel { border: 2px solid var(--primary); background: var(--primary-05); box-shadow: var(--shadow-tinted); padding: 8px 10px; }
+        .rate-badge { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; background: var(--surface-variant); color: var(--on-surface-variant); transition: all 0.18s; }
+        .rate-opt.sel .rate-badge { background: var(--primary); color: var(--on-primary); }
+        .rate-text { min-width: 0; }
+        .rate-name { display: block; font-size: 13.5px; font-weight: 700; color: var(--on-surface); }
+        .rate-opt.sel .rate-name { color: var(--primary); }
+        .rate-desc { display: block; font-size: 11.5px; color: var(--on-surface-variant); line-height: 1.45; margin-top: 1px; }
+
+        /* 精力·电量填充变体：背景从左到右铺到 --pct */
+        .rate-opt.energy-fill { background: linear-gradient(to right, var(--primary-10) var(--pct), var(--surface-lowest) var(--pct)); }
+        .rate-opt.energy-fill:hover { background: linear-gradient(to right, var(--primary-10) var(--pct), var(--primary-05) var(--pct)); }
+        .rate-opt.energy-fill.sel { background: linear-gradient(to right, rgba(0,40,142,0.20) var(--pct), var(--primary-05) var(--pct)); }
+        .rate-opt.energy-fill .rate-badge { background: rgba(255,255,255,0.85); color: var(--primary); }
+        .rate-opt.energy-fill.sel .rate-badge { background: var(--primary); color: var(--on-primary); }
+
+        /* 量化卡片标头（心情/精力卡通用） */
+        .qcard { background: var(--surface-lowest); border: 1px solid var(--ov-20); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); }
+        .qcard .qhead { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .qcard .qhead .material-symbols-outlined { color: var(--primary); font-size: 26px; }
+        .qcard .qhead .tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--outline); }
+
+        /* ============ 今日分岔点 ============ */
+        .fork-slot { display: flex; flex-direction: column; gap: 5px; }
+        .fork-slot .lab { font-size: 11px; font-weight: 700; color: var(--primary-70); padding-left: 2px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .fork-slot textarea { width: 100%; resize: none; border: 1px solid var(--ov-20); border-radius: 11px; background: var(--surface-low); padding: 9px 11px; font-family: inherit; font-size: 13px; color: var(--on-surface); line-height: 1.5; min-height: 46px; transition: all 0.15s; }
+        .fork-slot textarea::placeholder { color: var(--outline-variant); }
+        .fork-slot textarea:focus { outline: none; border-color: var(--primary); background: var(--surface-lowest); box-shadow: 0 0 0 3px var(--primary-05); }
+        .fork-conn { display: flex; justify-content: center; align-items: center; height: 20px; color: var(--primary); font-size: 14px; font-weight: 700; user-select: none; }
+        .fork-conn.gap { color: var(--slip); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; gap: 6px; }
+        .fork-conn.gap::before, .fork-conn.gap::after { content: ""; height: 1px; width: 26px; background: var(--slip); opacity: 0.4; }
+        .gapwrap { border: 1px solid rgba(135,45,0,0.18); background: rgba(255,219,206,0.18); border-radius: 13px; padding: 12px 11px; margin-top: 4px; }
+        .fork-two { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
+        .fork-two .arrow { display: flex; align-items: center; color: var(--slip); font-weight: 700; font-size: 14px; }
+        .dir-row { display: flex; align-items: center; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
+        .dir-row .lab2 { font-size: 12px; font-weight: 700; color: var(--primary-70); text-transform: uppercase; letter-spacing: 0.1em; }
+        .dir-row .opt-hint { font-size: 10.5px; color: var(--outline-variant); }
+        .dpill { border: 1px solid var(--ov-20); background: var(--surface-lowest); color: var(--on-surface-variant); border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .dpill:active { transform: scale(0.96); }
+        .dpill.sel[data-d="滑坡"] { background: var(--slip-soft); border-color: var(--slip); color: var(--slip); }
+        .dpill.sel[data-d="中性"] { background: var(--neutral-soft); border-color: var(--neutral); color: var(--neutral); }
+        .dpill.sel[data-d="顶住"] { background: var(--hold-soft); border-color: var(--hold); color: var(--hold); }
+
+        /* ============ 三件好事 ============ */
+        .good-rows { display: flex; flex-direction: column; gap: 11px; }
+        .good-row { display: flex; align-items: flex-start; gap: 10px; }
+        .good-idx { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 8px; margin-top: 24px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: var(--primary); background: var(--primary-05); border: 1px solid var(--primary-10); }
+        .good-pair { flex: 1; display: grid; grid-template-columns: 1.25fr 1fr; gap: 9px; min-width: 0; }
+        @media (max-width: 560px) { .good-pair { grid-template-columns: 1fr; } }
+        .good-fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .good-fld .lab { font-size: 10.5px; font-weight: 700; color: var(--primary-70); padding-left: 2px; text-transform: uppercase; letter-spacing: 0.12em; }
+        .good-fld textarea { width: 100%; resize: none; border: 1px solid var(--ov-20); border-radius: 11px; background: var(--surface-low); padding: 8px 10px; font-family: inherit; font-size: 13px; color: var(--on-surface); line-height: 1.5; min-height: 48px; transition: all 0.15s; }
+        .good-fld textarea::placeholder { color: var(--outline-variant); }
+        .good-fld textarea:focus { outline: none; border-color: var(--primary); background: var(--surface-lowest); box-shadow: 0 0 0 3px var(--primary-05); }
+        .good-soft { margin-top: 12px; background: var(--surface-low); border-radius: 11px; padding: 10px 12px; font-size: 11.5px; color: var(--on-surface-variant); line-height: 1.55; }
+
+        /* 区块大标题（右栏文字记录复刻） */
+        .txt-h { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .txt-h .material-symbols-outlined { color: var(--primary-container); font-size: 22px; }
+        .txt-h span.t { font-size: 16px; font-weight: 800; letter-spacing: 0.08em; }
+
+        /* 顺序示意 */
+        .order-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+        .order-item { display: flex; align-items: center; gap: 10px; background: var(--surface-low); border: 1px solid var(--ov-20); border-radius: 10px; padding: 8px 13px; font-size: 13px; font-weight: 600; color: var(--on-surface-variant); }
+        .order-item.new { background: var(--primary-05); border-color: var(--primary-10); color: var(--primary); }
+        .order-item .material-symbols-outlined { font-size: 17px; color: var(--outline); }
+        .order-item.new .material-symbols-outlined { color: var(--primary); }
+        .order-item .newtag { margin-left: auto; font-size: 10px; font-weight: 800; color: var(--on-primary); background: var(--primary); border-radius: 999px; padding: 1px 8px; }
+
+        /* 行内 stepper（起夜方案B） */
+        .stepper-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface-lowest); border: 1px solid var(--primary-10); border-radius: 11px; padding: 10px 13px; }
+        .stepper-row .sl { font-size: 13px; font-weight: 700; color: var(--primary); }
+        .stepper { display: flex; align-items: center; gap: 4px; }
+        .stepper button { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--ov-20); background: var(--surface-low); color: var(--primary); font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .stepper button:hover { background: var(--primary-05); }
+        .stepper button:active { transform: scale(0.94); }
+        .stepper .val { width: 44px; text-align: center; font-size: 19px; font-weight: 800; color: var(--primary); }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <header class="page-head">
+        <h1>需求 40-44 · 设计对比</h1>
+        <p>四块新内容全部转成现有 MD3 主题（深海蓝 / Manrope / 白卡），放在真实上下文里预览，可点击交互。参考稿的紫色系不沿用。</p>
+        <div class="locked">
+            <span class="pill">✅ 已锁定：4-11 数据分界修复迁移完成</span>
+            <span class="pill">✅ 已锁定：三件好事 CSV = 6 平铺列</span>
+            <span class="pill">✅ 已锁定：顺序 分岔点→灵感→三件好事→感悟</span>
+        </div>
+    </header>
+
+    <!-- ================== 需求 42+43：心情 + 精力 ================== -->
+    <section class="sec">
+        <h2><span class="no">42+43</span>心情评分（5档纯文字）＋ 精力评分（新字段）</h2>
+        <p class="desc">心情去表情，5 档：5明亮/4平和/3平淡/2低落/1很糟（5=最好，和睡眠/历史数据方向一致）。精力是全新字段：5充沛/4够用/3一般/2发虚/1枯竭。三个方案选一个。</p>
+        <div class="panels">
+            <div class="panel">
+                <div class="panel__head"><h3>方案 A · 并排 + 精力带电量填充</h3><span class="badge-rec">推荐</span></div>
+                <p class="panel__desc">心情、精力各占一列并排；精力行背景按档位从左往右"充电"填充，一眼读出电量感，和纯列表的心情形成功能区分。</p>
+                <div class="mock-grid">
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">sentiment_satisfied</span><span class="tag">心情</span></div>
+                        <div class="rate-list" data-rate="mood-a"></div>
+                    </div>
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">bolt</span><span class="tag">精力</span></div>
+                        <div class="rate-list" data-rate="energy-a" data-fill="1"></div>
+                    </div>
+                </div>
+                <p class="storenote">存储：<b>Mood</b>（沿用原列，1-5，历史已迁移）＋ 新列 <b>Energy_Score</b>（1-5）</p>
+            </div>
+            <div class="panel">
+                <div class="panel__head"><h3>方案 B · 全宽堆叠</h3></div>
+                <p class="panel__desc">心情、精力各一张全宽卡上下排。行更宽、解释文字一行放得下，但纵向更长。</p>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">sentiment_satisfied</span><span class="tag">心情</span></div>
+                        <div class="rate-list" data-rate="mood-b"></div>
+                    </div>
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">bolt</span><span class="tag">精力</span></div>
+                        <div class="rate-list" data-rate="energy-b" data-fill="1"></div>
+                    </div>
+                </div>
+                <p class="storenote">存储同方案 A</p>
+            </div>
+            <div class="panel">
+                <div class="panel__head"><h3>方案 C · 并排 + 全部纯列表</h3></div>
+                <p class="panel__desc">精力不做电量填充，跟心情、睡眠完全同一种行样式——三套评分视觉 100% 统一，最素。</p>
+                <div class="mock-grid">
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">sentiment_satisfied</span><span class="tag">心情</span></div>
+                        <div class="rate-list" data-rate="mood-c"></div>
+                    </div>
+                    <div class="qcard">
+                        <div class="qhead"><span class="material-symbols-outlined">bolt</span><span class="tag">精力</span></div>
+                        <div class="rate-list" data-rate="energy-c"></div>
+                    </div>
+                </div>
+                <p class="storenote">存储同方案 A</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================== 需求 41：起夜/醒来次数 ================== -->
+    <section class="sec">
+        <h2><span class="no">41</span>起夜/醒来次数（睡眠记录内，睡眠情况之前）</h2>
+        <p class="desc">两个方案都放在睡眠蓝色区块里演示（下方紧跟着现有的"睡眠情况"文本框）。</p>
+        <div class="panels">
+            <div class="panel">
+                <div class="panel__head"><h3>方案 A · 番茄钟同款卡片</h3></div>
+                <p class="panel__desc">复刻番茄钟量化卡：图标 + 标签 + 居中数字输入（下划线）。和量化区视觉同源。</p>
+                <div class="sleep-card">
+                    <div class="sleep-card__head"><h4>睡眠记录</h4><span class="material-symbols-outlined">bedtime</span></div>
+                    <div class="sleep-sub">
+                        <span class="sleep-label">起夜 / 醒来次数</span>
+                        <div class="metric-card" style="min-height:110px">
+                            <div class="top"><span class="material-symbols-outlined">nights_stay</span><span class="tag">Wake</span></div>
+                            <div><p class="title">夜间醒来（次）</p><input class="num" type="number" min="0" step="1" value="0"></div>
+                        </div>
+                    </div>
+                    <div class="sleep-sub">
+                        <span class="sleep-label">睡眠情况</span>
+                        <textarea class="sleep-textarea" placeholder="回忆睡眠情况，有无起夜，有无做梦，梦是什么？"></textarea>
+                    </div>
+                </div>
+                <p class="storenote">存储：新列 <b>Sleep_Wake_Count</b>（整数 ≥0）</p>
+            </div>
+            <div class="panel">
+                <div class="panel__head"><h3>方案 B · 行内步进器</h3><span class="badge-rec">推荐</span></div>
+                <p class="panel__desc">一行搞定：左标题、右 −/＋ 步进。起夜次数通常 0-3，点两下比敲键盘快，省纵向空间。</p>
+                <div class="sleep-card">
+                    <div class="sleep-card__head"><h4>睡眠记录</h4><span class="material-symbols-outlined">bedtime</span></div>
+                    <div class="sleep-sub">
+                        <span class="sleep-label">起夜 / 醒来次数</span>
+                        <div class="stepper-row">
+                            <span class="sl">夜间醒来（次）</span>
+                            <div class="stepper">
+                                <button data-step="-1">−</button>
+                                <span class="val" id="stepval">0</span>
+                                <button data-step="1">＋</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sleep-sub">
+                        <span class="sleep-label">睡眠情况</span>
+                        <textarea class="sleep-textarea" placeholder="回忆睡眠情况，有无起夜，有无做梦，梦是什么？"></textarea>
+                    </div>
+                </div>
+                <p class="storenote">存储同方案 A</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================== 需求 40：今日分岔点 ================== -->
+    <section class="sec">
+        <h2><span class="no">40</span>今日分岔点（文字记录区，灵感与启发上面）</h2>
+        <p class="desc">情景 → 该做的 vs 实际做的（落差）→ 方向标签（滑坡/中性/顶住，可选可取消）。</p>
+        <div class="panels">
+            <div class="panel">
+                <div class="panel__head"><h3>方案 A · 竖排落差版</h3><span class="badge-rec">推荐</span></div>
+                <p class="panel__desc">忠实参考稿结构：竖排槽位 + ↓ 连接，「该做的/实际做的」拢进一个暖色落差框——那条缝就是要盯的东西。</p>
+                <div class="txt-h"><span class="material-symbols-outlined">alt_route</span><span class="t">今日分岔点</span></div>
+                <div class="fork-slot">
+                    <span class="lab">情景 / 触发</span>
+                    <textarea placeholder="如：下午躺床上，手机在手边"></textarea>
+                </div>
+                <div class="fork-conn">↓</div>
+                <div class="gapwrap">
+                    <div class="fork-slot"><span class="lab">该做的</span><textarea placeholder="如：去把日记写完"></textarea></div>
+                    <div class="fork-conn gap">落差</div>
+                    <div class="fork-slot"><span class="lab">实际做的</span><textarea placeholder="如：刷了半小时抖音"></textarea></div>
+                </div>
+                <div class="dir-row">
+                    <span class="lab2">方向</span><span class="opt-hint">（可选，再点一下取消）</span>
+                    <div style="display:flex;gap:8px" data-dirs="a"></div>
+                </div>
+                <p class="storenote">存储：新列 <b>Fork_Trigger</b> / <b>Fork_Should</b> / <b>Fork_Actual</b> / <b>Fork_Direction</b></p>
+            </div>
+            <div class="panel">
+                <div class="panel__head"><h3>方案 B · 紧凑两列版</h3></div>
+                <p class="panel__desc">情景全宽，「该做的 → 实际做的」左右并排、中间箭头标落差。更矮更紧凑，窄屏自动堆叠。</p>
+                <div class="txt-h"><span class="material-symbols-outlined">alt_route</span><span class="t">今日分岔点</span></div>
+                <div class="fork-slot">
+                    <span class="lab">情景 / 触发</span>
+                    <textarea placeholder="如：下午躺床上，手机在手边"></textarea>
+                </div>
+                <div class="gapwrap" style="margin-top:10px">
+                    <div class="fork-two">
+                        <div class="fork-slot"><span class="lab">该做的</span><textarea placeholder="如：去把日记写完"></textarea></div>
+                        <div class="arrow">→</div>
+                        <div class="fork-slot"><span class="lab">实际做的</span><textarea placeholder="如：刷了半小时抖音"></textarea></div>
+                    </div>
+                </div>
+                <div class="dir-row">
+                    <span class="lab2">方向</span><span class="opt-hint">（可选，再点一下取消）</span>
+                    <div style="display:flex;gap:8px" data-dirs="b"></div>
+                </div>
+                <p class="storenote">存储同方案 A</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================== 需求 44：三件好事 ================== -->
+    <section class="sec">
+        <h2><span class="no">44</span>今天的三件好事（灵感与启发之后、感悟与思考之前）</h2>
+        <p class="desc">结构按你的需求定死（3 组「好事+为什么」双栏，窄屏堆叠，允许写不满），就一个方案；右边附右栏最终顺序示意。</p>
+        <div class="panels">
+            <div class="panel">
+                <div class="panel__head"><h3>三件好事 · MD3 适配</h3><span class="badge-rec">即定稿</span></div>
+                <div class="txt-h"><span class="material-symbols-outlined">favorite</span><span class="t">今天的三件好事</span></div>
+                <div class="good-rows" id="goodrows"></div>
+                <div class="good-soft">写不满三件也没关系，<b>一件小事也算</b>；今天很糟的话，这不是要你假装它好，只是帮你把容易被盖过去的那点好捞回来。</div>
+                <p class="storenote">存储：新列 <b>Good_Thing_1 / Good_Why_1 / Good_Thing_2 / Good_Why_2 / Good_Thing_3 / Good_Why_3</b>（API 层为 good_things 数组）</p>
+            </div>
+            <div class="panel">
+                <div class="panel__head"><h3>右栏「文字记录」最终顺序</h3></div>
+                <p class="panel__desc">你已确认的顺序，新增块标蓝。</p>
+                <div class="order-list">
+                    <div class="order-item"><span class="material-symbols-outlined">grid_view</span>6 个文字记录小卡片（不变）</div>
+                    <div class="order-item new"><span class="material-symbols-outlined">alt_route</span>今日分岔点<span class="newtag">新</span></div>
+                    <div class="order-item"><span class="material-symbols-outlined">lightbulb</span>灵感与启发（不变）</div>
+                    <div class="order-item new"><span class="material-symbols-outlined">favorite</span>今天的三件好事<span class="newtag">新</span></div>
+                    <div class="order-item"><span class="material-symbols-outlined">auto_awesome</span>感悟与思考（不变）</div>
+                </div>
+                <p class="storenote">左栏同步变化：心情卡换新（42）、精力卡插在心情后（43）、睡眠区加起夜次数（41）。Markdown 日记模板同步加这些字段。</p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    /* ========== 评分数据 ========== */
+    const MOOD = [
+        { v: 5, n: '明亮', d: '心里轻快、舒展，有由衷的好心情' },
+        { v: 4, n: '平和', d: '平稳里带点暖意，挺舒服，不到特别兴奋' },
+        { v: 3, n: '平淡', d: '没什么大起伏，情绪基本是平的' },
+        { v: 2, n: '低落', d: '发沉或烦躁，提不起劲，有点想躲' },
+        { v: 1, n: '很糟', d: '情绪很差，沉重、难受或发空，撑着过' },
+    ];
+    const ENERGY = [
+        { v: 5, n: '充沛', d: '精力满格，身体轻、脑子清，做事带劲不费力', pct: '100%' },
+        { v: 4, n: '够用', d: '有劲，推得动事，不亢奋但不缺力气', pct: '80%' },
+        { v: 3, n: '一般', d: '不上不下，维持日常够用，想提速有点吃力', pct: '60%' },
+        { v: 2, n: '发虚', d: '没劲、容易累，做事要硬推，注意力发散', pct: '40%' },
+        { v: 1, n: '枯竭', d: '像被抽空，身体沉、脑子发懵，维持基本运转都费劲', pct: '20%' },
+    ];
+
+    /* 渲染评分列表（mood-* 用 MOOD，energy-* 用 ENERGY；data-fill=1 启用电量填充） */
+    document.querySelectorAll('[data-rate]').forEach(box => {
+        const isEnergy = box.dataset.rate.startsWith('energy');
+        const opts = isEnergy ? ENERGY : MOOD;
+        const useFill = box.dataset.fill === '1';
+        box.innerHTML = opts.map(o => `
+            <button class="rate-opt${useFill ? ' energy-fill' : ''}${o.v === 4 ? ' sel' : ''}" data-v="${o.v}" ${useFill ? `style="--pct:${o.pct}"` : ''}>
+                <span class="rate-badge">${o.v}</span>
+                <span class="rate-text"><span class="rate-name">${o.n}</span><span class="rate-desc">${o.d}</span></span>
+            </button>`).join('');
+        box.querySelectorAll('.rate-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                box.querySelectorAll('.rate-opt').forEach(b => b.classList.remove('sel'));
+                btn.classList.add('sel');
+            });
+        });
+    });
+
+    /* 方向 pill（两个方案各一组，可选可取消） */
+    document.querySelectorAll('[data-dirs]').forEach(box => {
+        ['滑坡', '中性', '顶住'].forEach(d => {
+            const b = document.createElement('button');
+            b.className = 'dpill'; b.dataset.d = d; b.textContent = d;
+            b.addEventListener('click', () => {
+                const on = b.classList.contains('sel');
+                box.querySelectorAll('.dpill').forEach(x => x.classList.remove('sel'));
+                if (!on) b.classList.add('sel');
+            });
+            box.appendChild(b);
+        });
+    });
+
+    /* 起夜步进器 */
+    const stepval = document.getElementById('stepval');
+    document.querySelectorAll('[data-step]').forEach(b => {
+        b.addEventListener('click', () => {
+            stepval.textContent = Math.max(0, parseInt(stepval.textContent) + parseInt(b.dataset.step));
+        });
+    });
+
+    /* 三件好事 */
+    const GOOD_PH = [
+        ['一件顺心的小事', '它为什么发生 / 为什么是好的'],
+        ['如：丁丁炒面意外地好吃', '如：凉皮没开门，换一家反而踩到宝'],
+        ['再小都算', '它为什么发生 / 为什么是好的'],
+    ];
+    document.getElementById('goodrows').innerHTML = GOOD_PH.map((ph, i) => `
+        <div class="good-row">
+            <span class="good-idx">${i + 1}</span>
+            <div class="good-pair">
+                <div class="good-fld"><span class="lab">好事</span><textarea placeholder="${ph[0]}"></textarea></div>
+                <div class="good-fld"><span class="lab">为什么</span><textarea placeholder="${ph[1]}"></textarea></div>
+            </div>
+        </div>`).join('');
+</script>
+</body>
+</html>

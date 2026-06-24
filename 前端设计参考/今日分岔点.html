@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今日分岔点 · 结构化槽位（三段）</title>
+<style>
+  :root{
+    --bg:#e7eaf6; --card:#fff; --ink:#2b2e3c; --muted:#8c92a8; --line:#e6e9f3;
+    --accent:#5560d6; --accent-soft:#eef0fb;
+    --slip:#c08457; --slip-soft:#f6ede4;
+    --neutral:#8c92a8; --neutral-soft:#eef0f4;
+    --hold:#4f9b84; --hold-soft:#e7f2ee;
+    --gap:#b98a59;  /* 标住「该做的→实际做的」这条缝 */
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);font-family:var(--font);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;padding:28px 16px}
+  .card{width:100%;max-width:520px;background:var(--card);border-radius:18px;
+    padding:24px 22px 18px;box-shadow:0 10px 30px rgba(54,60,110,.10)}
+  .title{color:var(--accent);font-size:17px;font-weight:700;letter-spacing:.5px;margin:0}
+  .hint{color:var(--muted);font-size:13px;line-height:1.5;margin:6px 0 18px}
+
+  .slot{display:flex;flex-direction:column;gap:6px}
+  .slot .lab{font-size:12px;color:var(--muted);padding-left:2px;display:flex;align-items:center;gap:6px}
+  .slot textarea{width:100%;resize:none;border:1px solid var(--line);border-radius:12px;background:#fbfbfe;
+    padding:10px 11px;font-family:inherit;font-size:14px;color:var(--ink);line-height:1.5;min-height:48px;
+    transition:border-color .15s,box-shadow .15s}
+  .slot textarea::placeholder{color:#b7bccb}
+  .slot textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+  .conn{display:flex;justify-content:center;align-items:center;height:22px;color:var(--accent);
+    font-size:15px;font-weight:700;user-select:none}
+  .conn.gap{color:var(--gap);font-size:12px;font-weight:600;letter-spacing:.5px;gap:6px}
+  .conn.gap::before,.conn.gap::after{content:"";height:1px;width:26px;background:var(--gap);opacity:.4}
+
+  /* 把「该做的 / 实际做的」这对视觉上拢在一起，那条缝就是信号 */
+  .gapwrap{border:1px solid #f0e7db;background:#fdfaf5;border-radius:14px;padding:13px 12px;margin-top:4px}
+  .gapwrap .slot+.conn{margin-top:2px}
+
+  .dir{display:flex;align-items:center;gap:10px;margin:18px 0 0;flex-wrap:wrap}
+  .dir .lab2{font-size:13px;color:var(--muted)}
+  .dir .opt{font-size:11px;color:#b1b6c6}
+  .pills{display:flex;gap:8px}
+  .pill{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;
+    padding:7px 15px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s}
+  .pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pill[aria-pressed="true"][data-dir="滑坡"]{background:var(--slip-soft);border-color:var(--slip);color:var(--slip)}
+  .pill[aria-pressed="true"][data-dir="中性"]{background:var(--neutral-soft);border-color:var(--neutral);color:#5d6378}
+  .pill[aria-pressed="true"][data-dir="顶住"]{background:var(--hold-soft);border-color:var(--hold);color:var(--hold)}
+
+  .store{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;
+    font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.7;word-break:break-all}
+  .store b{color:var(--accent);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="card">
+    <p class="title">今日分岔点</p>
+    <p class="hint">今天某个想偷懒、或该做正事的时刻：情景是什么，你本该做什么，最后实际做了什么。中间那对放在一起——它们的落差就是要看的东西。</p>
+
+    <div class="slot">
+      <span class="lab">情景 / 触发</span>
+      <textarea data-f="情景" placeholder="如：下午躺床上，手机在手边"></textarea>
+    </div>
+
+    <div class="conn" aria-hidden="true">↓</div>
+
+    <div class="gapwrap">
+      <div class="slot">
+        <span class="lab">该做的</span>
+        <textarea data-f="该做的" placeholder="如：去把日记写完"></textarea>
+      </div>
+      <div class="conn gap" aria-hidden="true">落差</div>
+      <div class="slot">
+        <span class="lab">实际做的</span>
+        <textarea data-f="实际做的" placeholder="如：刷了半小时抖音"></textarea>
+      </div>
+    </div>
+
+    <div class="dir">
+      <span class="lab2">方向</span>
+      <span class="opt">（可选，点一下当快捷标签）</span>
+      <div class="pills" role="group" aria-label="方向"></div>
+    </div>
+
+    <div class="store"></div>
+  </div>
+
+<script>
+  const DIRS = ["滑坡","中性","顶住"];
+  const state = { 情景:"", 该做的:"", 实际做的:"", 方向:"" };
+
+  document.querySelectorAll("[data-f]").forEach(el => {
+    el.addEventListener("input", e => { state[el.dataset.f] = e.target.value.trim(); draw(); });
+  });
+
+  const pillBox = document.querySelector(".pills");
+  DIRS.forEach(d => {
+    const b = document.createElement("button");
+    b.className = "pill"; b.dataset.dir = d; b.textContent = d; b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", () => {
+      const on = state.方向 === d;
+      state.方向 = on ? "" : d;
+      pillBox.querySelectorAll(".pill").forEach(x => x.setAttribute("aria-pressed", String(!on && x===b)));
+      draw();
+    });
+    pillBox.appendChild(b);
+  });
+
+  const store = document.querySelector(".store");
+  function draw(){
+    const o = state;
+    store.innerHTML = "存成 &nbsp; { " +
+      `<b>情景</b>: ${o.情景||"—"}， ` +
+      `<b>该做的</b>: ${o.该做的||"—"}， ` +
+      `<b>实际做的</b>: ${o.实际做的||"—"}， ` +
+      `<b>方向</b>: ${o.方向||"—"} }`;
+  }
+  draw();
+</script>
+</body>
+</html>

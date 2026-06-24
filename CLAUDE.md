@@ -40,6 +40,53 @@ npm run dev
 ```
 后端 CORS 已允许 5173/3000（见 `main.py`）。打开 http://localhost:5173 即可。
 
+### 部署到桌面 .exe（生产环境，重要！）
+
+⚠️ **用户日常运行的是 electron-builder 打包好的成品**：
+```
+E:\journal_agent\release\Journal Agent\Journal Agent.exe
+```
+**不是** `npm start` / `uvicorn` / vite dev——那些只是开发用。
+
+#### 关键陷阱（必读）
+前端 dist **被烤进 .exe 内部**，改完前端代码后**必须重新部署**，否则用户看到的还是旧版本。
+- 即使源码改了、tsc 通过、eslint 通过、`journal-frontend/dist/` 有新 bundle，**只要没部署到 .exe 内部就完全无效**。
+- 用户描述"修了没用"时，第一件事就是检查 .exe 内部 dist 的时间戳是否更新过。
+
+#### 前端 dist 在 .exe 内部的实际位置
+```
+release\Journal Agent\resources\journal-backend\_internal\journal-frontend\dist\
+├── index.html
+└── assets\index-*.js / index-*.css
+```
+（PyInstaller 用 `--add-data "journal-frontend/dist;journal-frontend/dist"` 把前端打进 backend.exe，运行时解压到 `_internal/`。）
+
+#### 方案 A：热替换（5 秒，快速验证前端改动）
+只改了前端代码、想立刻让用户测的场景：
+1. `cd journal-frontend && npm run build` — 生成新 dist 到 `journal-frontend/dist/`
+2. 让用户**完全关闭** `Journal Agent.exe`（任务管理器确认 `electron.exe` 和 `journal-backend.exe` 都没了，否则 .js/.css 被锁复制失败）
+3. 复制新 dist 到 .exe 内部路径（Claude Code 必须用 **Bash tool + `dangerouslyDisableSandbox: true`**，PowerShell tool 会因路径保护拒绝）：
+   ```bash
+   SRC="E:/journal_agent/journal-frontend/dist"
+   DST="E:/journal_agent/release/Journal Agent/resources/journal-backend/_internal/journal-frontend/dist"
+   rm -f "$DST/assets/"*
+   cp -f "$SRC/index.html" "$DST/index.html"
+   cp -f "$SRC/assets/"* "$DST/assets/"
+   ```
+4. 用户双击 `Journal Agent.exe` 验证
+
+#### 方案 B：完整重打包（5-10 分钟，长期标准流程）
+改了 backend Python 代码 / 依赖 / Electron 主进程 / preload 时必须走完整流程：
+```powershell
+npm run build:frontend     # vite build → journal-frontend/dist/
+npm run build:backend      # pyinstaller 把 backend + dist 打包成 dist/journal-backend/journal-backend.exe
+# 然后 electron-builder 重新打包整个 Journal Agent.exe（具体命令查 package.json/electron-builder 配置）
+```
+
+#### 历史教训：Bug #7 修复事件（2026-05-23）
+修复期间 AI 改了 4 个 hook + 加了 ToastProvider + 通过了类型检查和 lint，用户在 .exe 里测试**两轮都说"完全没解决"**。根因是改完代码忘了部署到 .exe，用户实际跑的还是 5 月 21 日打包的旧 bundle。
+**永远记得**：改代码 ≠ 部署。前端改动验证前，**先用 `ls -la` 检查 .exe 内部 dist 时间戳**，确认是新的再让用户测。
+
 ### 配置
 - 环境变量：根目录 `.env`（参考 `.env.example`）
   - `GOOGLE_API_KEY` / `DASHSCOPE_API_KEY` / `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`
@@ -53,7 +100,7 @@ journal_agnet/
 ├── main.py                    # FastAPI 入口，挂 5 个 router + CORS
 ├── routers/                   # FastAPI 路由层（全部挂在 /api/ 前缀下）
 │   ├── diary.py               # 日记 CRUD + 日历打点
-│   ├── weekly.py              # 周记 CRUD + 周数据聚合
+│   ├── weekly.py              # 周记 CRUD + 周数据聚合 + 每周事项时间轴（/weekly/{week}/timeline GET·PUT，需求46）
 │   ├── monthly.py             # 月记 CRUD + 月数据聚合
 │   ├── report.py              # AI 行为建议报告（Gemini 分析 + 邮件发送）
 │   └── chat.py                # AI 导师 SSE 对话 + 模型列表 + 会话管理
@@ -95,13 +142,14 @@ journal_agnet/
 │       ├── components/        # 复用组件
 │       │   ├── layout/        # PageLayout / TopAppBar / BottomNavBar / WeekStrip
 │       │   ├── ui/            # MaterialIcon / Card / EmojiRating
-│       │   ├── diary/         # MiniCalendar / ScheduleTable / GoalCard / AIInsights
+│       │   ├── diary/         # MiniCalendar / ScheduleTable / GoalCard / GoalsCarousel(年/月/周/本周节点 4 tab) / WeeklyTimeline(每周事项甘特图谱,需求46) / AIInsights / SleepQualityPicker(睡眠5档) / RatingScale(心情·精力5档) / ForkPoint(今日分岔点) / GoodThings(三件好事)
 │       │   └── shared/        # SaveButton / YearlyGoalCard / ItemRecordCards
 │       ├── hooks/             # 业务数据 hooks（封装 API 调用 + state 管理）
 │       │   ├── useDiaryData.ts          # 日记数据
 │       │   ├── useWeeklyData.ts         # 周记数据
 │       │   ├── useMonthlyData.ts        # 月记数据
 │       │   ├── useCrossPageGoals.ts     # 跨页目标同步（日记页编辑 → 周/月 API 落库）
+│       │   ├── useWeeklyTimeline.ts     # 每周事项时间轴数据（需求46：lanes=周目标 + 卡片增删改/勾选，整周 PUT）
 │       │   └── useChat.ts               # AI 导师 SSE 对话
 │       ├── api/
 │       │   └── client.ts      # fetch 封装 + 类型导出（diaryApi / weeklyApi / monthlyApi / chatApi）
@@ -112,19 +160,20 @@ journal_agnet/
 ├── .env.example
 ├── requirements.txt
 ├── CLAUDE.md
-├── TODO.md
-└── 功能TODO.md
+├── 功能需求.md            # 功能需求清单 + 已完成日志（与 Bug 分开）
+└── BUG记录.md             # Bug 待修 + 已修复记录（与功能分开）
 ```
 
 ## 业务模块
 
 ### 日记（diary router + Diary 页面）
 - **元数据**：编号 / 日期 / 星期 / 天气 / 所在地。日记编号锚点 2026-02-18 = No.1100，按日期差递推（`routers/diary.py:14`）
-- **量化数据**：心情 1-6、睡眠 1-6 + 入睡/起床时间 + 自动算时长、番茄钟、静坐分钟、AI 时间、打飞机次数、睡眠/梦境
+- **量化数据**（均 5 档纯文字，5=最好，方向统一）：心情 1-5（5明亮…1很糟）、精力 1-5（5充沛…1枯竭）、睡眠质量 1-5（5神清气爽…1像没睡过）+ 入睡/起床时间 + 自动算时长 + 起夜/醒来次数 + 番茄钟、静坐分钟、AI 时间、打飞机次数、睡眠情况/梦境
+  - 评分组件：睡眠用 `SleepQualityPicker`、心情/精力用通用 `RatingScale`（带电量填充）；均存真实分数 1-5。心情/睡眠原为 1-6 表情，2026-06 改 5 档并迁移历史数据（详见 `BUG记录.md` 已修复 #8）；周/月记 Review 页仍用 `EmojiRating`（1-5）
 - **周/月目标展示**：日记页只读展示当前周/月目标，但通过 `useCrossPageGoals` 可双向编辑（toggle 状态立即调用周/月 API 落库）
 - **任务看板**：动态增删行，状态 ✅/❌/⚠️，"原因"列扫描 `texts.py` 坏习惯关键词
 - **30 分钟时间流**：48 半小时块，计划 vs 实际，固定任务（睡眠等）按 `template.py` 自动 ✅
-- **结构化反思**：10 个反思维度，定义在 `core/texts.py` 的 `REFLECTIONS_MAP`
+- **结构化反思**：`REFLECTIONS_MAP` 多维反思（AI使用/学习、读书、静坐、做得好/需改进、给自己的话、灵感、感悟）+ **今日分岔点**（需求 45 起为**最多 3 组**，每组 情景/该做的/实际做的/方向；第 1 组沿用原列名不带后缀、第 2/3 组为 `Fork_*_2`/`Fork_*_3`，老单组数据零迁移；方向白名单 = `texts.FORK_DIRECTIONS`「引起坏行为/中性/引起良好行为」，schema field_validator 一次覆盖 3 个方向字段强制）+ **今天的三件好事**（3 组「好事+为什么」）。这两块未填的**文本**格子均存为"无"、加载还原空框（分岔点的方向 pill 除外，未选存空串），AI 报告收集器对 `Good_`+`Fork_` 列的"无"占位统一清洗。全部文本字段走 `useDiaryData` 的 `textRecords` 管道（TEXT_RECORD_MAP）落库到 daily_summary
 
 ### 周记（weekly router + Weekly/WeeklyText/WeeklyReview 页面）
 - **三表**：weekly_summary / weekly_habits / weekly_tasks，主键 Week（"2026-W09"）
@@ -165,7 +214,7 @@ journal_agnet/
 
 ## 数据架构
 - **日记三表**：tasks_log / time_log / daily_summary，主键 Date（YYYY-MM-DD）
-- **周记三表**：weekly_summary / weekly_habits / weekly_tasks，主键 Week（2026-W09）
+- **周记四表**：weekly_summary / weekly_habits / weekly_tasks / weekly_timeline，主键 Week（2026-W09）。`weekly_tasks` 含稳定 `goal_id`（后端按计划事项文本继承、首次时间轴加载补 uuid 落库）；`weekly_timeline`（Week/id/goal_id/周几/内容/完成）= 每周事项时间轴卡片，按 goal_id 挂到周目标，卡片全完成自动回写 `weekly_tasks.状态=✅`（需求46）
 - **月记二表**：monthly_summary / monthly_tasks，主键 Month（2026-03）
 - 路径基于 `core/config.py` 的 `BASE_DIR`，按年度分表、按月归档
 - 聚合链：日记原始 → 周记统计 → 月记统计
@@ -218,7 +267,8 @@ journal_agnet/
 - **读写分离**：CSV 存原始数据，Markdown 是展示层
 - **以日期为轴**：所有数据操作围绕日期
 - **Upsert 模式**：更新覆盖同主键，不重复追加
-- **契约驱动**：Pydantic schema 是前后端契约源，先改 schema 再改两端
+- **契约驱动**：Pydantic schema 是前后端契约源，先改 schema 再改两端。daily_summary 列只加不改、新字段一律 `Optional`，保证老数据/老请求不报错
+- **历史数据迁移谨慎**：对历史数据做语义迁移（如评分方向翻转）前，先按「月分布 + 极值首现日期」验证整个时间跨度内录入约定是否一致，并务必先备份；切忌全量统一处理（曾因此误翻 49 天睡眠分，见 BUG记录.md 已修复 #8）。迁移用的一次性脚本用完即删，映射逻辑（方向翻转、按 2026-04-11 时代分界）记录在 BUG记录.md / 功能需求.md 备查
 - **商业化意识**：代码质量、可维护性、可扩展性为未来做准备
 
 ## 当前阶段重点

@@ -60,6 +60,7 @@ function DiarySchedule({
                     onMonthlyUpdate={onMonthlyUpdate}
                     weeklyGoals={goals.weekly}
                     onWeeklyUpdate={onWeeklyUpdate}
+                    dateStr={selectedDateStr}
                 />
             </div>
 

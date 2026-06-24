@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from . import config as cfg
 from . import report_config as rc
+from . import texts as t
 
 
 def _read_csv_safe(file_path):
@@ -35,8 +36,8 @@ def collect_daily_summary(year):
         return "暂无数据"
     # 选择关键量化列，避免过长
     key_cols = [c for c in [
-        "Date", "Mood", "Sleep_Score", "Sleep_Bedtime", "Sleep_Waketime",
-        "Sleep_Hours", "Focus_Count", "Meditation_Minutes", "AI_Time",
+        "Date", "Mood", "Energy_Score", "Sleep_Score", "Sleep_Bedtime", "Sleep_Waketime",
+        "Sleep_Hours", "Sleep_Wake_Count", "Focus_Count", "Meditation_Minutes", "AI_Time",
         "Masturbation_Count"
     ] if c in df.columns]
     return _df_to_text(df[key_cols]) if key_cols else _df_to_text(df)
@@ -107,12 +108,18 @@ def collect_reflections(year):
     df = _read_csv_safe(path)
     if df is None or df.empty:
         return "暂无数据"
-    # 找到所有反思列
-    reflect_cols = [c for c in df.columns if c.startswith("Reflect_")]
+    # 找到所有反思列（含今日分岔点 Fork_* 和三件好事 Good_*，都是行为分析素材）
+    reflect_cols = [c for c in df.columns if c.startswith(("Reflect_", "Fork_", "Good_"))]
     if not reflect_cols:
         return "暂无反思数据"
     keep_cols = ["Date"] + reflect_cols
     df_reflect = df[keep_cols].copy()
+    # 三件好事和今日分岔点的"无"都是未填写占位符（前端约定），先清洗为空：
+    # 既避免占位符当作内容喂给 Gemini，也保住下面"全空行过滤"的有效性
+    # （分岔点的 Fork_Direction 是白名单值，永不为"无"，一并 replace 也无副作用）
+    placeholder_cols = [c for c in reflect_cols if c.startswith(("Good_", "Fork_"))]
+    for c in placeholder_cols:
+        df_reflect[c] = df_reflect[c].replace(t.GOOD_THINGS_EMPTY, "")
     # 过滤掉所有反思列都为空的行
     mask = df_reflect[reflect_cols].apply(
         lambda row: any(str(v).strip() not in ("", "nan") for v in row), axis=1

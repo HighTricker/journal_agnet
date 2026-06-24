@@ -58,3 +58,19 @@ class WeeklyInput(BaseModel):
     summary: WeeklySummaryInput
     habits: list[HabitItem]
     tasks: list[WeeklyTaskItem]
+
+
+# ==================== 需求46：每周事项时间轴 ====================
+
+class TimelineTaskItem(BaseModel):
+    """时间轴上的一张卡片：某个周目标在某一天的事项"""
+    id: str = ""              # 卡片自身 uuid（空则后端生成）
+    goal_id: str = ""         # 关联的周目标 id（weekly_tasks.goal_id）
+    周几: str = ""            # Mon / Tue / ... / Sun
+    内容: str = ""
+    完成: str = ""            # ✅ / 空
+
+
+class TimelineSaveInput(BaseModel):
+    """保存整周时间轴卡片（whole-list Upsert）"""
+    tasks: list[TimelineTaskItem]

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { diaryApi } from '../api/client'
+import { useToast } from './useToast'
 import type { DiarySaveRequest } from '../api/client'
 import type { ScheduleRow } from '../mocks/diarySchedule'
 import type { GoalItem } from '../mocks/diarySchedule'
@@ -8,7 +9,9 @@ import type { GoalItem } from '../mocks/diarySchedule'
 
 interface DiaryState {
     mood: number | null
+    energy: number | null
     sleepQuality: number | null
+    wakeCount: number
     sleepTime: { hour: string; minute: string }
     wakeTime: { hour: string; minute: string }
     metrics: { pomo: number; zen: number; ai: number; fap: number }
@@ -28,7 +31,9 @@ interface UseDiaryDataReturn {
     saving: boolean
     calendarDots: string[]
     setMood: (v: number) => void
+    setEnergy: (v: number) => void
     setSleepQuality: (v: number) => void
+    setWakeCount: (v: number) => void
     setSleepTime: (field: 'hour' | 'minute', value: string) => void
     setWakeTime: (field: 'hour' | 'minute', value: string) => void
     setMetric: (key: 'pomo' | 'zen' | 'ai' | 'fap', value: number) => void
@@ -42,7 +47,7 @@ interface UseDiaryDataReturn {
 
 // ==================== 转换函数 ====================
 
-// 前端 textRecords key → 后端 Reflect_* 字段名
+// 前端 textRecords key → 后端字段名（Reflect_* 反思 + Fork_* 分岔点 + Good_* 三件好事）
 const TEXT_RECORD_MAP: Record<string, string> = {
     ai_usage: 'Reflect_AI_Usage',
     ai_learning: 'Reflect_AI_Learning',  // 新增卡片
@@ -52,7 +57,39 @@ const TEXT_RECORD_MAP: Record<string, string> = {
     improvement: 'Reflect_Bad_Actions',
     to_self: 'Reflect_Words_To_Self',
     sleep_dreams: 'Reflect_Sleep_Dreams',
+    // 今日分岔点（需求 40 单组 → 需求 45 扩展为 3 组）：第 1 组沿用原 key，第 2、3 组加 _2/_3
+    fork_trigger: 'Fork_Trigger',
+    fork_should: 'Fork_Should',
+    fork_actual: 'Fork_Actual',
+    fork_direction: 'Fork_Direction',
+    fork_trigger_2: 'Fork_Trigger_2',
+    fork_should_2: 'Fork_Should_2',
+    fork_actual_2: 'Fork_Actual_2',
+    fork_direction_2: 'Fork_Direction_2',
+    fork_trigger_3: 'Fork_Trigger_3',
+    fork_should_3: 'Fork_Should_3',
+    fork_actual_3: 'Fork_Actual_3',
+    fork_direction_3: 'Fork_Direction_3',
+    // 今天的三件好事（需求 44）
+    good_thing_1: 'Good_Thing_1',
+    good_why_1: 'Good_Why_1',
+    good_thing_2: 'Good_Thing_2',
+    good_why_2: 'Good_Why_2',
+    good_thing_3: 'Good_Thing_3',
+    good_why_3: 'Good_Why_3',
 }
+
+// 未填写时保存为"无"、加载时"无"还原为空框的文本 key：
+//   三件好事 6 格 + 分岔点 3 组各自的「情景/该做/实际」9 格（共 15 个）。
+//   分岔点的「方向」是白名单 pill（未选存空串，"无"会被后端校验拒绝），故不在此列。
+const GOOD_KEYS = ['good_thing_1', 'good_why_1', 'good_thing_2', 'good_why_2', 'good_thing_3', 'good_why_3']
+const FORK_TEXT_KEYS = [
+    'fork_trigger', 'fork_should', 'fork_actual',
+    'fork_trigger_2', 'fork_should_2', 'fork_actual_2',
+    'fork_trigger_3', 'fork_should_3', 'fork_actual_3',
+]
+const PLACEHOLDER_KEYS = [...GOOD_KEYS, ...FORK_TEXT_KEYS]
+const EMPTY_PLACEHOLDER = '无'
 
 // 反向映射
 const REFLECT_TO_TEXT: Record<string, string> = Object.fromEntries(
@@ -123,8 +160,11 @@ function goalToTask(goal: GoalItem) {
 // ==================== Hook ====================
 
 export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryDataReturn {
+    const { showToast } = useToast()
     const [mood, setMood] = useState<number | null>(null)
+    const [energy, setEnergy] = useState<number | null>(null)
     const [sleepQuality, setSleepQuality] = useState<number | null>(null)
+    const [wakeCount, setWakeCount] = useState(0)
     const [sleepTime, setSleepTimeState] = useState({ hour: '22', minute: '00' })
     const [wakeTime, setWakeTimeState] = useState({ hour: '06', minute: '00' })
     const [metrics, setMetrics] = useState({ pomo: 0, zen: 0, ai: 0, fap: 0 })
@@ -172,7 +212,9 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
 
                     // 量化数据（有数据时填充，无数据时重置）
                     setMood(hasData && s.Mood ? Number(s.Mood) : null)
+                    setEnergy(hasData && s.Energy_Score ? Number(s.Energy_Score) : null)
                     setSleepQuality(hasData && s.Sleep_Score ? Number(s.Sleep_Score) : null)
+                    setWakeCount(hasData ? Number(s.Sleep_Wake_Count) || 0 : 0)
                     setSleepTimeState(hasData ? parseTime(s.Sleep_Bedtime) : { hour: '22', minute: '00' })
                     setWakeTimeState(hasData ? parseTime(s.Sleep_Waketime) : { hour: '06', minute: '00' })
                     setMetrics({
@@ -182,11 +224,13 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
                         fap: Number(s.Masturbation_Count) || 0,
                     })
 
-                    // 反思文字
+                    // 反思文字（含分岔点/三件好事）
                     const records: Record<string, string> = {}
                     for (const [reflectKey, textKey] of Object.entries(REFLECT_TO_TEXT)) {
                         const val = s[reflectKey]
                         if (typeof val === 'string' && val) {
+                            // 三件好事 / 分岔点文本的"无"是未填写占位，加载时还原为空框（trim 与保存端判空对称）
+                            if (PLACEHOLDER_KEYS.includes(textKey) && val.trim() === EMPTY_PLACEHOLDER) continue
                             records[textKey] = val
                         }
                     }
@@ -207,7 +251,9 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
                 } else {
                     // API 调用失败（网络错误等）：重置所有数据
                     setMood(null)
+                    setEnergy(null)
                     setSleepQuality(null)
+                    setWakeCount(0)
                     setSleepTimeState({ hour: '22', minute: '00' })
                     setWakeTimeState({ hour: '06', minute: '00' })
                     setMetrics({ pomo: 0, zen: 0, ai: 0, fap: 0 })
@@ -253,19 +299,27 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
             if (sleepHours < 0) sleepHours += 24
             sleepHours = Math.round(sleepHours * 100) / 100
 
-            // 构建反思字段
+            // 构建反思字段（含分岔点/三件好事）
             const reflectFields: Record<string, string> = {}
             for (const [textKey, reflectKey] of Object.entries(TEXT_RECORD_MAP)) {
                 reflectFields[reflectKey] = textRecords[textKey] || ''
+            }
+            // 三件好事 + 分岔点文本格子：未填写的保存为"无"（方向 pill 不在此列，未选存空串）
+            for (const k of PLACEHOLDER_KEYS) {
+                if (!(textRecords[k] || '').trim()) {
+                    reflectFields[TEXT_RECORD_MAP[k]] = EMPTY_PLACEHOLDER
+                }
             }
 
             const payload: DiarySaveRequest = {
                 summary: {
                     Mood: mood,
+                    Energy_Score: energy,
                     Sleep_Score: sleepQuality,
                     Sleep_Bedtime: `${sleepTime.hour}:${sleepTime.minute}`,
                     Sleep_Waketime: `${wakeTime.hour}:${wakeTime.minute}`,
                     Sleep_Hours: sleepHours,
+                    Sleep_Wake_Count: wakeCount,
                     Focus_Count: metrics.pomo,
                     Meditation_Minutes: metrics.zen,
                     AI_Time: metrics.ai,
@@ -281,18 +335,20 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
             }
 
             await diaryApi.save(dateStr, payload)
-            alert('日记保存成功！')
+            showToast('日记保存成功！', 'success')
         } catch (e) {
-            setError(e instanceof Error ? e.message : '保存失败')
-            alert('保存失败：' + (e instanceof Error ? e.message : '未知错误'))
+            const msg = e instanceof Error ? e.message : '未知错误'
+            console.error('[日记保存失败]', e)
+            setError(msg)
+            showToast('保存失败：' + msg, 'error')
         } finally {
             setSaving(false)
         }
-    }, [dateStr, mood, sleepQuality, sleepTime, wakeTime, metrics, textRecords, inspiration, thoughts, todayGoals, schedule])
+    }, [dateStr, mood, energy, sleepQuality, wakeCount, sleepTime, wakeTime, metrics, textRecords, inspiration, thoughts, todayGoals, schedule, showToast])
 
     return {
         data: {
-            mood, sleepQuality, sleepTime, wakeTime, metrics,
+            mood, energy, sleepQuality, wakeCount, sleepTime, wakeTime, metrics,
             textRecords, inspiration, thoughts, todayGoals, schedule,
             diaryNo, weekdayName,
         },
@@ -301,7 +357,9 @@ export function useDiaryData(dateStr: string, calendarMonth?: string): UseDiaryD
         saving,
         calendarDots,
         setMood,
+        setEnergy,
         setSleepQuality,
+        setWakeCount,
         setSleepTime: (field: 'hour' | 'minute', value: string) =>
             setSleepTimeState(prev => ({ ...prev, [field]: value })),
         setWakeTime: (field: 'hour' | 'minute', value: string) =>

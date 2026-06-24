@@ -4,13 +4,18 @@
 def get_template(
     diary_number, date_str, write_time, weekday_num,
     location, weather,
-    mood_score, sleep_bedtime, sleep_waketime, sleep_hours, sleep_quality,
+    mood_score, energy_score,
+    sleep_bedtime, sleep_waketime, sleep_hours, sleep_wake_count, sleep_quality,
     focus_time, meditation_minutes, ai_time,masturbation_count,
     tasks_table, time_table,
     reflect_ai_usage, reflect_ai_learning, reflect_reading,
     reflect_meditation, reflect_good_actions, reflect_bad_actions,
     reflect_words_to_self, reflect_thoughts, reflect_sleep_dreams,
-    reflect_deep
+    reflect_deep,
+    fork_trigger, fork_should, fork_actual, fork_direction,
+    good_thing_1, good_why_1, good_thing_2, good_why_2, good_thing_3, good_why_3,
+    fork_trigger_2="", fork_should_2="", fork_actual_2="", fork_direction_2="",
+    fork_trigger_3="", fork_should_3="", fork_actual_3="", fork_direction_3=""
 ):
     return f"""---
 # 日记编号：继承最早的#50字写作挑战 wlog 965中的编号，从2025年10月6日开始继承，2025年10月6日为966号。
@@ -25,25 +30,34 @@ weekday: {weekday_num}
 location: {location}
 # 天气：之后用Python脚本接入天气api自动填写
 weather: {weather}  °C
-# ========== 心情评分 ==========
-# 1：很差（⭐糟糕的一天，没有完成想做的事情，打了飞机，伤害了别人，做了后悔的事情）
-# 2：较差（⭐⭐烦躁的一天，心情不平静，贪玩，贪看短视频）
-# 3：一般（⭐⭐⭐没什么特别的心情起伏，稀松平常的一天）
-# 4：较好（⭐⭐⭐⭐比较开心，和平时不太一样）
-# 5：很好（⭐⭐⭐⭐⭐非常开心，很高兴，见了想见的人/完成了目标/做完了项目等）
+# ========== 心情评分（分数越高心情越好） ==========
+# 5：明亮（心里轻快、舒展，有由衷的好心情）
+# 4：平和（平稳里带点暖意，挺舒服，不到特别兴奋）
+# 3：平淡（没什么大起伏，情绪基本是平的）
+# 2：低落（发沉或烦躁，提不起劲，有点想躲）
+# 1：很糟（情绪很差，沉重、难受或发空，撑着过）
 mood_score: {mood_score}
+# ========== 精力评分（只看电量，和心情分开看） ==========
+# 5：充沛（精力满格，身体轻、脑子清，做事带劲不费力）
+# 4：够用（有劲，推得动事，不亢奋但不缺力气）
+# 3：一般（不上不下，维持日常够用，想提速有点吃力）
+# 2：发虚（没劲、容易累，做事要硬推，注意力发散）
+# 1：枯竭（像被抽空，身体沉、脑子发懵，维持基本运转都费劲）
+energy_score: {energy_score}
 # 入睡时间：24小时制 "HH:MM"，最后一次看见时间的时刻
 sleep_bedtime: "{sleep_bedtime}"
 # 起床时间：24小时制 "HH:MM"，早起后第一次看见时间的时刻
 sleep_waketime: "{sleep_waketime}"
 # 睡眠时长：小时数（由脚本自动计算：起床时间-入睡时间）
 sleep_hours: {sleep_hours}
-# ========== 睡眠质量评分 ==========
-# 1：很差（⭐大于等于3次醒来/失眠/噩梦）
-# 2：较差（⭐⭐起夜1-2次，睡眠浅，被吵醒）
-# 3：一般（⭐⭐⭐正常睡眠，没什么特别之处）
-# 4：较好（⭐⭐⭐⭐一下就睡着了，一觉到天亮，没有起夜，没有梦，没有被吵醒）
-# 5：很好（⭐⭐⭐⭐⭐按时睡觉起床，起来后感觉身体恢复的很好，充满了能量）
+# 起夜/醒来次数：夜间醒来几次
+sleep_wake_count: {sleep_wake_count}
+# ========== 睡眠质量评分（分数越高睡得越好） ==========
+# 5：神清气爽（睁眼即清醒，身体轻快有劲，几乎无需缓冲）
+# 4：精力充沛（睡得饱，起身顺畅，疲劳已消，状态稳定）
+# 3：基本解乏（不算好也不算差，能正常起床，困意大致退去）
+# 2：昏沉发懵（醒来发沉、想再睡，要缓很久才清醒，睡眠惯性明显）
+# 1：像没睡过（醒来仍旧疲惫沉重，仿佛整夜没休息）
 sleep_quality: {sleep_quality}
 # 专注时间：番茄钟一个是25分钟，个数表示多少个番茄钟时间
 focus_time: {focus_time}
@@ -108,9 +122,21 @@ masturbation_count: {masturbation_count}
 <!-- 勉励自己的话 -->
 {reflect_words_to_self}
 
+## 今日分岔点
+<!-- 今天想偷懒、或该做正事的关键时刻（最多三个）：情景是什么，本该做什么，实际做了什么。方向：引起坏行为/中性/引起良好行为；未填写的格子为"无" -->
+1. 情景：{fork_trigger}｜该做：{fork_should}｜实际：{fork_actual}｜方向：{fork_direction}
+2. 情景：{fork_trigger_2}｜该做：{fork_should_2}｜实际：{fork_actual_2}｜方向：{fork_direction_2}
+3. 情景：{fork_trigger_3}｜该做：{fork_should_3}｜实际：{fork_actual_3}｜方向：{fork_direction_3}
+
 ## 想法
 <!-- 想要做的事情，或者今天想到的想实现的梦想 -->
 {reflect_thoughts}
+
+## 今天的三件好事
+<!-- 当天发生的顺心小事（不限于自己做成的），写下它为什么发生/为什么是好的；未填写的格子为"无" -->
+1. {good_thing_1}（为什么：{good_why_1}）
+2. {good_thing_2}（为什么：{good_why_2}）
+3. {good_thing_3}（为什么：{good_why_3}）
 
 ## 睡眠状况/梦境
 <!-- 回忆睡眠情况，有无起夜、醒来，有没有梦，如果有梦，梦是什么 -->

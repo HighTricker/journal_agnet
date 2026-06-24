@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { weeklyApi } from '../api/client'
+import { useToast } from './useToast'
 import type { WeeklySaveRequest, WeeklyAggregation } from '../api/client'
 import type { HabitRow, Objective } from '../mocks/weeklyReview'
 
@@ -128,6 +129,7 @@ const WEEKLY_TEXT_MAP_REVERSE = Object.fromEntries(
 // ==================== Hook ====================
 
 export function useWeeklyData(weekKey: string) {
+    const { showToast } = useToast()
     const [weekRating, setWeekRating] = useState<number | null>(null)
     const [habits, setHabits] = useState<HabitRow[]>([])
     const [objectives, setObjectives] = useState<Objective[]>([])
@@ -220,14 +222,16 @@ export function useWeeklyData(weekKey: string) {
                 tasks: objectivesToApiTasks(objectives),
             }
             await weeklyApi.save(weekKey, payload)
-            alert('周记保存成功！')
+            showToast('周记保存成功！', 'success')
         } catch (e) {
-            setError(e instanceof Error ? e.message : '保存失败')
-            alert('保存失败：' + (e instanceof Error ? e.message : '未知错误'))
+            const msg = e instanceof Error ? e.message : '未知错误'
+            console.error('[周记保存失败]', e)
+            setError(msg)
+            showToast('保存失败：' + msg, 'error')
         } finally {
             setSaving(false)
         }
-    }, [weekKey, weekRating, habits, objectives, textRecords, inspiration, aggregation])
+    }, [weekKey, weekRating, habits, objectives, textRecords, inspiration, aggregation, showToast])
 
     return {
         weekKey,

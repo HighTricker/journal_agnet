@@ -91,6 +91,12 @@ def load_data_for_date(date_obj):
     if os.path.exists(paths["summary"]):
         df = pd.read_csv(paths["summary"], encoding='utf-8-sig')
         df["Date"] = df["Date"].astype(str)
+        # 文本列强制转字符串（与下方 tasks/time 表做法一致）：
+        # 防止某文本列恰好全是纯数字时被 pandas 推断成数值类型——数值会被前端
+        # `typeof val === 'string'` 检查丢弃，下次保存被空值覆盖，造成静默数据丢失
+        text_cols = [c for c in df.columns if c.startswith(("Reflect_", "Fork_", "Good_"))]
+        for col in text_cols:
+            df[col] = df[col].fillna("").astype(str)
         df = df[df["Date"] == date_str]
         if not df.empty:
             # 将 numpy 类型转换为原生 python 类型，并清理 NaN
@@ -238,9 +244,11 @@ def generate_markdown(date_obj, summary, tasks_df, time_df, file_path):
         location          = t.LOCATION,
         weather           = t.WEATHER,
         mood_score        = summary.get("Mood", ""),
+        energy_score      = summary.get("Energy_Score", ""),
         sleep_bedtime     = summary.get("Sleep_Bedtime", ""),
         sleep_waketime    = summary.get("Sleep_Waketime", ""),
         sleep_hours       = summary.get("Sleep_Hours", ""),
+        sleep_wake_count  = summary.get("Sleep_Wake_Count", ""),
         sleep_quality     = summary.get("Sleep_Score", ""),
         focus_time        = summary.get("Focus_Count", ""),
         meditation_minutes = summary.get("Meditation_Minutes", ""),
@@ -258,6 +266,24 @@ def generate_markdown(date_obj, summary, tasks_df, time_df, file_path):
         reflect_thoughts     = summary.get("Reflect_Thoughts", ""),
         reflect_sleep_dreams = summary.get("Reflect_Sleep_Dreams", ""),
         reflect_deep         = summary.get("Reflect_Deep_Reflections", ""),
+        fork_trigger         = summary.get("Fork_Trigger", ""),
+        fork_should          = summary.get("Fork_Should", ""),
+        fork_actual          = summary.get("Fork_Actual", ""),
+        fork_direction       = summary.get("Fork_Direction", ""),
+        fork_trigger_2       = summary.get("Fork_Trigger_2", ""),
+        fork_should_2        = summary.get("Fork_Should_2", ""),
+        fork_actual_2        = summary.get("Fork_Actual_2", ""),
+        fork_direction_2     = summary.get("Fork_Direction_2", ""),
+        fork_trigger_3       = summary.get("Fork_Trigger_3", ""),
+        fork_should_3        = summary.get("Fork_Should_3", ""),
+        fork_actual_3        = summary.get("Fork_Actual_3", ""),
+        fork_direction_3     = summary.get("Fork_Direction_3", ""),
+        good_thing_1         = summary.get("Good_Thing_1", ""),
+        good_why_1           = summary.get("Good_Why_1", ""),
+        good_thing_2         = summary.get("Good_Thing_2", ""),
+        good_why_2           = summary.get("Good_Why_2", ""),
+        good_thing_3         = summary.get("Good_Thing_3", ""),
+        good_why_3           = summary.get("Good_Why_3", ""),
     )
     
     with open(file_path, "w", encoding="utf-8-sig") as f:

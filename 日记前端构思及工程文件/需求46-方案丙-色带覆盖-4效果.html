@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求 46 · 方案丙 进度填充 — 色带覆盖 4 效果</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary:#00288e; --on-primary:#fff;
+            --background:#f7f9fb; --surface-lowest:#ffffff; --surface-low:#f2f4f6;
+            --ov-20:rgba(196,197,213,0.30); --shadow-sm:0 1px 3px rgba(0,40,142,0.06);
+            --weekly-grad:linear-gradient(90deg,#064E3B 0%,#047857 50%,#059669 100%);
+            --label:#1c1c1e; --label2:#8a8a8e; --label3:#c4c4c8; --sep:#e9e9ee; --today:#ff3b30;
+            --col:124px; --lbl:150px;
+        }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'Manrope',-apple-system,'Segoe UI','PingFang SC',sans-serif; background:var(--background); color:var(--label); line-height:1.5; padding:40px 24px 90px; }
+        .material-symbols-outlined { font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24; user-select:none; vertical-align:middle; }
+        .num { font-variant-numeric:tabular-nums; }
+
+        .wrap { max-width:1240px; margin:0 auto; }
+        .page-head h1 { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
+        .page-head p { margin-top:8px; max-width:90ch; font-size:14px; color:#444653; }
+        .locked { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+        .locked .pill { font-size:12px; font-weight:600; color:var(--primary); background:rgba(0,40,142,0.05); border:1px solid rgba(0,40,142,0.10); padding:5px 12px; border-radius:999px; }
+        .legend { margin-top:16px; display:flex; flex-wrap:wrap; gap:9px; align-items:center; }
+        .legend .lab { font-size:11px; font-weight:700; letter-spacing:0.12em; color:var(--label2); margin-right:2px; }
+        .gchip { font-size:12px; font-weight:600; padding:3px 11px 3px 9px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; }
+        .gchip .dot { width:8px; height:8px; border-radius:50%; }
+
+        .sec { margin-top:46px; }
+        .sec > h2 { font-size:21px; font-weight:800; letter-spacing:-0.01em; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .sec > h2 .no { font-size:12px; font-weight:700; color:var(--on-primary); background:var(--primary); border-radius:8px; padding:2px 9px; }
+        .sec > h2 .rec { font-size:11px; font-weight:700; color:#fff; background:#047857; border-radius:999px; padding:3px 10px; }
+        .sec > .desc { font-size:13.5px; color:#444653; margin:8px 0 16px; max-width:92ch; }
+
+        .stage { background:var(--surface-lowest); border:1px solid var(--ov-20); border-radius:20px; padding:20px; box-shadow:var(--shadow-sm); }
+        .grab-hint { font-size:11px; color:var(--label2); margin-bottom:12px; display:flex; align-items:center; gap:5px; }
+        .scroll { overflow-x:auto; cursor:grab; padding-bottom:8px; }
+        .scroll.grab { cursor:grabbing; }
+        .scroll::-webkit-scrollbar { height:8px; }
+        .scroll::-webkit-scrollbar-thumb { background:var(--label3); border-radius:8px; }
+
+        .goalcard { background:var(--weekly-grad); border-radius:18px; padding:16px 20px; box-shadow:0 8px 24px rgba(4,120,87,0.22); }
+        .goalcard h3 { color:rgba(255,255,255,0.92); font-size:12px; font-weight:800; letter-spacing:0.18em; margin-bottom:12px; }
+        .goal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px; }
+        .goal-item { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:11px; padding:9px 12px; display:flex; align-items:center; gap:9px; }
+        .goal-item .box { width:17px; height:17px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+        .goal-item.done .box { background:#fff; border-color:#fff; }
+        .goal-item.done .box .material-symbols-outlined { color:#047857; font-size:13px; }
+        .goal-item .gtext { color:#fff; font-size:13.5px; font-weight:600; }
+        .goal-item.done .gtext { opacity:0.6; text-decoration:line-through; }
+        .goal-item .prog { margin-left:auto; font-size:11px; font-weight:700; color:rgba(255,255,255,0.85); background:rgba(0,0,0,0.18); border-radius:999px; padding:2px 8px; }
+
+        .ck { width:16px; height:16px; border-radius:50%; border:1.5px solid var(--label3); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; transition:all .15s; background:#fff; }
+        .ck:hover { border-color:var(--g-fg); }
+        .ck.on { background:var(--g-fg); border-color:var(--g-fg); }
+        .ck.on .material-symbols-outlined { color:#fff; font-size:11px; }
+        .done-text { text-decoration:line-through; opacity:.65; }
+
+        .diagram { min-width:max-content; }
+        .dgrid { display:grid; grid-template-columns:var(--lbl) repeat(7,var(--col)); }
+        .dhead .dh { text-align:center; padding-bottom:14px; }
+        .dh .dh-dow { font-size:12px; font-weight:600; color:var(--label2); }
+        .dh .dh-date { font-size:18px; font-weight:800; margin-top:1px; }
+        .dh.today .dh-dow { color:var(--today); }
+        .dh.today .dh-date { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:var(--today); color:#fff; font-size:15px; }
+
+        .lane { align-items:center; }
+        .lane + .lane { border-top:1px solid var(--sep); }
+        .llabel { display:flex; align-items:center; gap:9px; padding:0 10px 0 2px; }
+        .llabel .gdot { width:11px; height:11px; border-radius:50%; flex:0 0 auto; }
+        .llabel .gname { font-size:13px; font-weight:700; }
+        .track { grid-column:2 / -1; position:relative; height:60px;
+            background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(var(--col) - 1px),var(--sep) calc(var(--col) - 1px),var(--sep) var(--col)); }
+        .todayband { position:absolute; top:0; bottom:0; background:rgba(255,59,48,0.05); pointer-events:none; }
+        .cap-txt { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100px; }
+
+        /* 色带（位置/宽度由 JS 测量卡片边缘后写入 px） */
+        .pband, .pfill { position:absolute; pointer-events:none; }
+
+        /* 圆角矩形节点 */
+        .grect { position:absolute; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:7px; border-radius:10px; padding:6px 11px 6px 9px; cursor:pointer; border:1.5px solid var(--g-fg); box-shadow:0 1px 4px rgba(0,0,0,0.10); z-index:2; background:#fff; }
+        .grect .gr-txt { font-size:12px; font-weight:700; color:var(--g-fg); }
+
+        /* ===== 效果 A 包裹大圆角条 ===== */
+        .va .pband, .va .pfill { top:50%; transform:translateY(-50%); height:42px; border-radius:13px; }
+        /* ===== 效果 B 齐卡等高条 ===== */
+        .vb .pband, .vb .pfill { top:50%; transform:translateY(-50%); height:31px; border-radius:9px; }
+        /* ===== 效果 C 卡下进度轨 ===== */
+        .vc .grect { top:38%; }
+        .vc .pband, .vc .pfill { bottom:9px; height:8px; border-radius:999px; }
+        /* ===== 效果 D 极简纯填充 ===== */
+        .vd .pband, .vd .pfill { top:50%; transform:translateY(-50%); height:31px; border-radius:9px; }
+
+        .footer-note { margin-top:54px; background:#fff; border:1px solid var(--ov-20); border-radius:20px; padding:22px 24px; box-shadow:var(--shadow-sm); }
+        .footer-note h2 { font-size:17px; font-weight:800; margin-bottom:6px; }
+        .footer-note p { font-size:13.5px; color:#444653; }
+        .footer-note code { background:rgba(0,40,142,0.06); color:var(--primary); padding:1px 6px; border-radius:6px; font-size:12.5px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>需求 46 · 方案丙 进度填充 — 色带覆盖 4 效果</h1>
+        <p>已锁定方案丙（进度填充甘特）。本轮专门解决你说的问题：色带<b>精确从第一张卡的左缘覆盖到最后一张卡的右缘</b>（用 JS 实测卡片边缘，不再"中心到中心"导致卡片戳出）。进度填充填到<b>最后一个已完成卡片的右缘</b>。4 个效果对比"色带与卡片的关系"。<b>勾选任意卡片，填充实时变化。</b></p>
+        <div class="locked">
+            <span class="pill">色带=首卡左→末卡右</span>
+            <span class="pill">进度填到末个完成卡</span>
+            <span class="pill">圆角矩形节点</span>
+            <span class="pill">勾选实时联动</span>
+        </div>
+        <div class="legend" id="legend"><span class="lab">事项配色</span></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">联动</span> 周目标卡</h2>
+        <div class="goalcard"><h3>WEEKLY · 周度目标</h3><div class="goal-grid" id="goalGrid"></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">效果 A</span> 包裹大圆角条 <span class="rec">最圆润</span></h2>
+        <p class="desc">色带比卡片高一点（裹住上下各 6px），把整组卡片包在一颗大圆角胶囊里。色带头尾贴齐首/末卡片外缘。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动 · 点卡片看填充</div>
+            <div class="scroll" id="s1"><div class="diagram va"><div class="dgrid dhead" id="head1"></div><div id="lanes1"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">效果 B</span> 齐卡等高条 <span class="rec">最无缝</span></h2>
+        <p class="desc">色带和卡片几乎等高、左右严丝合缝贴住首末卡缘，远看像卡片被一条同高的带子无缝连成一整条。最干净，不戳出。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动 · 点卡片看填充</div>
+            <div class="scroll" id="s2"><div class="diagram vb"><div class="dgrid dhead" id="head2"></div><div id="lanes2"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">效果 C</span> 卡下进度轨 <span class="rec">零戳出</span></h2>
+        <p class="desc">卡片整体上移悬浮，进度轨在卡片<b>正下方</b>单独一条细轨（首卡左→末卡右）。卡片身上完全没有色带，彻底消除"色带在卡片上突出"。进度轨像下划进度条。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动 · 点卡片看填充</div>
+            <div class="scroll" id="s3"><div class="diagram vc"><div class="dgrid dhead" id="head3"></div><div id="lanes3"></div></div></div>
+        </div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">效果 D</span> 极简纯填充</h2>
+        <p class="desc">轨道几乎透明（仅极淡底），只保留已完成那段的渐变填充色，最克制。未完成的部分基本看不到带子。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动 · 点卡片看填充</div>
+            <div class="scroll" id="s4"><div class="diagram vd"><div class="dgrid dhead" id="head4"></div><div id="lanes4"></div></div></div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <h2>下一步</h2>
+        <p>挑一个效果（A/B/C/D）。还能微调：色带高度/圆角、填充渐变浓淡、进度是否要带个小箭头/光点收尾、未完成段要不要更淡。定稿后敲数据存储（<code>weekly_timeline</code>，无小时）和"目标完成判定"，再开发。</p>
+    </div>
+
+</div>
+
+<script>
+    const DAYS = [
+        { dow:'周一', date:'06-22' }, { dow:'周二', date:'06-23' }, { dow:'周三', date:'06-24' },
+        { dow:'周四', date:'06-25' }, { dow:'周五', date:'06-26' }, { dow:'周六', date:'06-27' }, { dow:'周日', date:'06-28' },
+    ];
+    const TODAY = 2, N = 7;
+    const GC = {
+        g1:{ fg:'#2e6b4f', bg:'#e3efe8' }, g2:{ fg:'#0e7490', bg:'#e0f2f7' }, g3:{ fg:'#00288e', bg:'#e6ebf7' },
+        g4:{ fg:'#5b21b6', bg:'#ede9fe' }, g5:{ fg:'#92600a', bg:'#fdf0d5' }, g6:{ fg:'#9d174d', bg:'#fce7ef' }, g7:{ fg:'#b45309', bg:'#fdf0e3' },
+    };
+    const GOALS = [
+        { id:'g1', text:'每天晨跑 5km' }, { id:'g2', text:'健身房 ×2' }, { id:'g3', text:'完成日记时间轴功能' },
+        { id:'g4', text:'读完《深度工作》' }, { id:'g5', text:'每日冥想' }, { id:'g6', text:'陪伴家人' }, { id:'g7', text:'周末爬山' },
+    ];
+    const TASKS = [
+        { id:'t1', day:0, goal:'g1', title:'晨跑 5km' }, { id:'t2', day:0, goal:'g3', title:'写骨架' }, { id:'t3', day:0, goal:'g4', title:'读 p30–60' },
+        { id:'t4', day:1, goal:'g2', title:'健身房' }, { id:'t5', day:1, goal:'g3', title:'接入 API' },
+        { id:'t6', day:2, goal:'g1', title:'晨跑 5km' }, { id:'t7', day:2, goal:'g3', title:'出 demo' }, { id:'t8', day:2, goal:'g6', title:'陪爸妈' },
+        { id:'t9', day:3, goal:'g3', title:'联调' }, { id:'t10', day:3, goal:'g4', title:'读 p60–90' },
+        { id:'t11', day:4, goal:'g2', title:'健身房' }, { id:'t12', day:4, goal:'g4', title:'整理笔记' },
+        { id:'t13', day:5, goal:'g7', title:'爬山' },
+        { id:'t14', day:6, goal:'g4', title:'周复盘' }, { id:'t15', day:6, goal:'g5', title:'冥想总结' },
+    ];
+    const done = {}; TASKS.forEach(t => done[t.id] = false);
+    ['t1','t2','t3','t4','t5','t7'].forEach(i => done[i] = true);
+
+    const goalsWithTasks = () => GOALS.filter(g => TASKS.some(t => t.goal === g.id));
+    const pctC = i => ((i + 0.5) / N) * 100;
+    const cellL = i => (i / N) * 100, cellW = (1 / N) * 100;
+    function toggle(id) { done[id] = !done[id]; renderAll(); }
+    function ckHTML(id, gid) { return `<div class="ck ${done[id] ? 'on' : ''}" style="--g-fg:${GC[gid].fg}" onclick="event.stopPropagation();toggle('${id}')">${done[id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div>`; }
+
+    const todayBand = `<div class="todayband" style="left:${cellL(TODAY)}%;width:${cellW}%"></div>`;
+    function headHTML() { return `<div></div>` + DAYS.map((d, di) => `<div class="dh ${di === TODAY ? 'today' : ''}"><div class="dh-dow">${d.dow}</div><div class="dh-date num">${d.date.split('-')[1]}</div></div>`).join(''); }
+    function renderLegend() { const el = document.getElementById('legend'); GOALS.forEach(g => { const c = GC[g.id]; el.insertAdjacentHTML('beforeend', `<span class="gchip" style="background:${c.bg};color:${c.fg}"><span class="dot" style="background:${c.fg}"></span>${g.text}</span>`); }); }
+    function renderGoals() { document.getElementById('goalGrid').innerHTML = GOALS.map(g => { const ts = TASKS.filter(t => t.goal === g.id), dn = ts.filter(t => done[t.id]).length, isDone = ts.length > 0 && dn === ts.length; return `<div class="goal-item ${isDone ? 'done' : ''}"><div class="box">${isDone ? '<span class="material-symbols-outlined">check</span>' : ''}</div><span class="gtext">${g.text}</span><span class="prog num">${dn}/${ts.length}</span></div>`; }).join(''); }
+
+    function laneData(gid) { return TASKS.filter(t => t.goal === gid).sort((a, b) => a.day - b.day); }
+    function nodeHTML(t, c) {
+        return `<div class="grect ${done[t.id] ? 'done' : ''}" data-done="${done[t.id] ? 1 : 0}" style="left:${pctC(t.day)}%;--g-fg:${c.fg};background:${done[t.id] ? c.bg : '#fff'}" onclick="toggle('${t.id}')">${ckHTML(t.id, t.goal)}<span class="gr-txt cap-txt ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>`;
+    }
+    /* 各效果色带底/填充的颜色（轨道淡、填充渐变） */
+    function bandStyles(c, variant) {
+        if (variant === 'vd') return { track:`${c.fg}12`, fill:`linear-gradient(90deg,${c.fg}cc,${c.fg})` };
+        if (variant === 'vc') return { track:`${c.fg}24`, fill:`linear-gradient(90deg,${c.fg}cc,${c.fg})` };
+        return { track:`${c.fg}1f`, fill:`linear-gradient(90deg,${c.fg}b3,${c.fg})` };
+    }
+    function laneShell(g, variant) {
+        const c = GC[g.id], st = bandStyles(c, variant);
+        const cards = laneData(g.id).map(t => nodeHTML(t, c)).join('');
+        return `<div class="dgrid lane"><div class="llabel"><span class="gdot" style="background:${c.fg}"></span><span class="gname">${g.text}</span></div>` +
+            `<div class="track" data-fg="${c.fg}"><div class="pband" style="background:${st.track}"></div><div class="pfill" style="background:${st.fill}"></div>${todayBand}${cards}</div></div>`;
+    }
+    function renderLanes(headId, lanesId, variant) {
+        document.getElementById(headId).innerHTML = headHTML();
+        document.getElementById(lanesId).innerHTML = goalsWithTasks().map(g => laneShell(g, variant)).join('');
+    }
+
+    /* 测量卡片边缘，把色带对齐到 首卡左→末卡右，填充到 末个完成卡右缘 */
+    function positionBands(lanesId) {
+        document.getElementById(lanesId).querySelectorAll('.track').forEach(track => {
+            const cards = [...track.querySelectorAll('.grect')];
+            const pband = track.querySelector('.pband'), pfill = track.querySelector('.pfill');
+            if (!cards.length) { pband.style.display = pfill.style.display = 'none'; return; }
+            const lefts = cards.map(c => c.offsetLeft - c.offsetWidth / 2);
+            const rights = cards.map(c => c.offsetLeft + c.offsetWidth / 2);
+            const firstLeft = Math.min(...lefts), lastRight = Math.max(...rights);
+            pband.style.display = 'block';
+            pband.style.left = firstLeft + 'px';
+            pband.style.width = (lastRight - firstLeft) + 'px';
+            const doneRights = cards.filter(c => c.dataset.done === '1').map(c => c.offsetLeft + c.offsetWidth / 2);
+            if (doneRights.length) {
+                const doneRight = Math.max(...doneRights);
+                pfill.style.display = 'block';
+                pfill.style.left = firstLeft + 'px';
+                pfill.style.width = Math.max(0, doneRight - firstLeft) + 'px';
+            } else { pfill.style.display = 'none'; }
+        });
+    }
+
+    function enableDrag(el) {
+        let down = false, sx, sl;
+        el.addEventListener('mousedown', e => { if (e.target.closest('.ck,.grect')) return; down = true; el.classList.add('grab'); sx = e.pageX; sl = el.scrollLeft; });
+        window.addEventListener('mouseup', () => { down = false; el.classList.remove('grab'); });
+        el.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); el.scrollLeft = sl - (e.pageX - sx); });
+    }
+
+    const VARIANTS = [['head1','lanes1','va'], ['head2','lanes2','vb'], ['head3','lanes3','vc'], ['head4','lanes4','vd']];
+    function renderAll() {
+        renderGoals();
+        VARIANTS.forEach(([h, l, v]) => renderLanes(h, l, v));
+        VARIANTS.forEach(([h, l]) => positionBands(l));   // 渲染后测量定位
+    }
+    renderLegend(); renderAll();
+    ['s1','s2','s3','s4'].forEach(id => enableDrag(document.getElementById(id)));
+    window.addEventListener('resize', () => VARIANTS.forEach(([h, l]) => positionBands(l)));
+</script>
+</body>
+</html>

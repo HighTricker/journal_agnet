@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import MaterialIcon from '../ui/MaterialIcon'
+import WeeklyTimeline from './WeeklyTimeline'
 import type { GoalItem, YearlyGoalCategory } from '../../mocks/diarySchedule'
 
-type Tab = 'yearly' | 'monthly' | 'weekly'
+type Tab = 'yearly' | 'monthly' | 'weekly' | 'timeline'
 
 interface GoalsCarouselProps {
     yearlyGoals: YearlyGoalCategory[]
@@ -17,9 +18,10 @@ interface GoalsCarouselProps {
     onMonthlyUpdate: (newGoals: GoalItem[]) => void
     weeklyGoals: GoalItem[]
     onWeeklyUpdate: (newGoals: GoalItem[]) => void
+    dateStr: string   // 需求46：时间轴按当前日期定位所在周
 }
 
-const TAB_ORDER: Tab[] = ['yearly', 'monthly', 'weekly']
+const TAB_ORDER: Tab[] = ['yearly', 'monthly', 'weekly', 'timeline']
 
 const TAB_META: Record<Tab, { title: string; short: string; gradient: string; checkColor: string }> = {
     yearly: {
@@ -40,6 +42,12 @@ const TAB_META: Record<Tab, { title: string; short: string; gradient: string; ch
         gradient: 'linear-gradient(90deg, #064E3B 0%, #047857 50%, #059669 100%)',
         checkColor: '#047857',
     },
+    timeline: {
+        title: '本周节点',
+        short: '轴',
+        gradient: 'linear-gradient(90deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%)',
+        checkColor: '#0e7490',
+    },
 }
 
 /* 月/周固定 6 大分类（与年度初始分类对齐） */
@@ -51,8 +59,8 @@ function GoalsCarousel(props: GoalsCarouselProps) {
     const currentIndex = TAB_ORDER.indexOf(activeTab)
     const meta = TAB_META[activeTab]
 
-    const handlePrev = () => setActiveTab(TAB_ORDER[(currentIndex + 2) % 3])
-    const handleNext = () => setActiveTab(TAB_ORDER[(currentIndex + 1) % 3])
+    const handlePrev = () => setActiveTab(TAB_ORDER[(currentIndex - 1 + TAB_ORDER.length) % TAB_ORDER.length])
+    const handleNext = () => setActiveTab(TAB_ORDER[(currentIndex + 1) % TAB_ORDER.length])
 
     return (
         <section
@@ -126,6 +134,9 @@ function GoalsCarousel(props: GoalsCarouselProps) {
                         onUpdate={props.onWeeklyUpdate}
                         checkColor={meta.checkColor}
                     />
+                )}
+                {activeTab === 'timeline' && (
+                    <WeeklyTimeline dateStr={props.dateStr} />
                 )}
             </div>
         </section>

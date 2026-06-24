@@ -1,18 +1,27 @@
 import MaterialIcon from '../components/ui/MaterialIcon'
-import EmojiRating from '../components/ui/EmojiRating'
+import SleepQualityPicker from '../components/diary/SleepQualityPicker'
+import RatingScale from '../components/diary/RatingScale'
+import ForkPoint from '../components/diary/ForkPoint'
+import GoodThings from '../components/diary/GoodThings'
+import type { RatingOption } from '../components/diary/RatingScale'
 
-/* 心情选项：心情卡片和睡眠质量共用 */
-const MOOD_OPTIONS = [
-    { emoji: '😊', label: '超赞' },
-    { emoji: '🙂', label: '开心' },
-    { emoji: '😐', label: '一般' },
-    { emoji: '🙁', label: '低落' },
-    { emoji: '☹️', label: '难过' },
-    { emoji: '😫', label: '极差' },
+/* 心情 5 档（需求 42）：纯文字，5=最好，从上到下递减，与后端 Mood 方向一致 */
+const MOOD_SCALE: RatingOption[] = [
+    { score: 5, title: '明亮', desc: '心里轻快、舒展，有由衷的好心情' },
+    { score: 4, title: '平和', desc: '平稳里带点暖意，挺舒服，不到特别兴奋' },
+    { score: 3, title: '平淡', desc: '没什么大起伏，情绪基本是平的' },
+    { score: 2, title: '低落', desc: '发沉或烦躁，提不起劲，有点想躲' },
+    { score: 1, title: '很糟', desc: '情绪很差，沉重、难受或发空，撑着过' },
 ]
 
-/* EmojiRating 用的 options（带 value） */
-const EMOJI_OPTIONS = MOOD_OPTIONS.map((m, i) => ({ value: i + 1, emoji: m.emoji, label: m.label }))
+/* 精力 5 档（需求 43）：带电量填充百分比，存入 Energy_Score */
+const ENERGY_SCALE: RatingOption[] = [
+    { score: 5, title: '充沛', desc: '精力满格，身体轻、脑子清，做事带劲不费力', fillPct: '100%' },
+    { score: 4, title: '够用', desc: '有劲，推得动事，不亢奋但不缺力气', fillPct: '80%' },
+    { score: 3, title: '一般', desc: '不上不下，维持日常够用，想提速有点吃力', fillPct: '60%' },
+    { score: 2, title: '发虚', desc: '没劲、容易累，做事要硬推，注意力发散', fillPct: '40%' },
+    { score: 1, title: '枯竭', desc: '像被抽空，身体沉、脑子发懵，维持基本运转都费劲', fillPct: '20%' },
+]
 
 /* 量化指标卡片数据 */
 const METRIC_CARDS: { key: 'pomo' | 'zen' | 'ai' | 'fap'; icon: string; label: string; title: string }[] = [
@@ -36,8 +45,12 @@ const DAILY_TEXT_RECORDS = [
 interface DiaryJournalProps {
     mood: number | null
     onMoodChange: (v: number) => void
+    energy: number | null
+    onEnergyChange: (v: number) => void
     sleepQuality: number | null
     onSleepQualityChange: (v: number) => void
+    wakeCount: number
+    onWakeCountChange: (v: number) => void
     sleepTime: { hour: string; minute: string }
     onSleepTimeChange: (field: 'hour' | 'minute', value: string) => void
     wakeTime: { hour: string; minute: string }
@@ -55,8 +68,12 @@ interface DiaryJournalProps {
 function DiaryJournal({
     mood,
     onMoodChange,
+    energy,
+    onEnergyChange,
     sleepQuality,
     onSleepQualityChange,
+    wakeCount,
+    onWakeCountChange,
     sleepTime,
     onSleepTimeChange,
     wakeTime,
@@ -78,18 +95,29 @@ function DiaryJournal({
                 <section>
                     <h2 className="text-xl font-bold mb-6 tracking-tight text-on-surface">生活量化数据</h2>
                     <div className="grid grid-cols-2 gap-4">
-                        {/* 心情卡片（占两列） */}
+                        {/* 心情卡片（占两列，需求 42：5 档纯文字） */}
                         <div className="bg-surface-container-lowest p-6 rounded-2xl flex flex-col h-auto group border border-outline-variant/10 col-span-2 shadow-sm">
                             <div className="flex justify-between items-start mb-6">
                                 <MaterialIcon name="sentiment_satisfied" className="text-primary text-3xl" />
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-outline">心情</span>
                             </div>
-                            <EmojiRating
+                            <RatingScale
                                 value={mood}
                                 onChange={onMoodChange}
-                                options={EMOJI_OPTIONS}
-                                columns={3}
-                                size="sm"
+                                options={MOOD_SCALE}
+                            />
+                        </div>
+
+                        {/* 精力卡片（占两列，需求 43：带电量填充） */}
+                        <div className="bg-surface-container-lowest p-6 rounded-2xl flex flex-col h-auto group border border-outline-variant/10 col-span-2 shadow-sm">
+                            <div className="flex justify-between items-start mb-6">
+                                <MaterialIcon name="bolt" className="text-primary text-3xl" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-outline">精力</span>
+                            </div>
+                            <RatingScale
+                                value={energy}
+                                onChange={onEnergyChange}
+                                options={ENERGY_SCALE}
                             />
                         </div>
 
@@ -184,13 +212,34 @@ function DiaryJournal({
                         {/* 睡眠质量 */}
                         <div className="pt-4 border-t border-primary/10">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-4 block text-center">睡眠质量</span>
-                            <EmojiRating
+                            <SleepQualityPicker
                                 value={sleepQuality}
                                 onChange={onSleepQualityChange}
-                                options={EMOJI_OPTIONS}
-                                columns={3}
-                                size="sm"
                             />
+                        </div>
+
+                        {/* 起夜/醒来次数（需求 41：番茄钟同款卡片） */}
+                        <div className="pt-4 border-t border-primary/10">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-4 block text-center">起夜 / 醒来次数</span>
+                            <div className="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between border border-outline-variant/10">
+                                <div className="flex justify-between items-start">
+                                    <MaterialIcon name="nights_stay" className="text-primary text-3xl" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-outline">Wake</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-on-surface-variant text-center">夜间醒来（次）</p>
+                                    <div className="flex items-center justify-center mt-1">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step={1}
+                                            value={wakeCount}
+                                            onChange={(e) => onWakeCountChange(Math.max(0, parseInt(e.target.value) || 0))}
+                                            className="w-20 text-center text-2xl font-bold text-primary bg-transparent border-b-2 border-primary/30 focus:border-primary focus:ring-0 focus:outline-none p-0"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* 睡眠情况 */}
@@ -233,6 +282,9 @@ function DiaryJournal({
                         ))}
                     </div>
 
+                    {/* 今日分岔点（需求 40） */}
+                    <ForkPoint values={textRecords} onChange={onTextRecordChange} />
+
                     {/* Ideas & Inspiration */}
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
@@ -246,6 +298,9 @@ function DiaryJournal({
                             className="w-full text-[20px] bg-surface p-6 rounded-2xl border-l-4 border-primary shadow-inner text-on-surface-variant leading-loose min-h-[180px] resize-none focus:ring-0 focus:outline-none placeholder:text-on-surface-variant/40"
                         />
                     </div>
+
+                    {/* 今天的三件好事（需求 44） */}
+                    <GoodThings values={textRecords} onChange={onTextRecordChange} />
 
                     {/* Thoughts & Insights */}
                     <div className="flex-grow flex flex-col">

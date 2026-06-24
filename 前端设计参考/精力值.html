@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>精力值 · 五级（连续填充）</title>
+<style>
+  :root{
+    --bg:#e7eaf6; --card:#fff; --ink:#2b2e3c; --muted:#8c92a8; --line:#e6e9f3;
+    --accent:#5560d6; --accent-soft:#eef0fb;
+    --fill:#c6cdf0;        /* 填充（未选中） */
+    --fill-on:#9aa5e8;     /* 填充（选中后更实） */
+    --empty:#fafbfe;       /* 未填充部分 */
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);font-family:var(--font);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;padding:28px 16px}
+  .card{width:100%;max-width:480px;background:var(--card);border-radius:18px;
+    padding:24px 20px 18px;box-shadow:0 10px 30px rgba(54,60,110,.10)}
+  .title{color:var(--accent);font-size:17px;font-weight:700;letter-spacing:.5px;margin:0}
+  .hint{color:var(--muted);font-size:13px;line-height:1.5;margin:6px 0 16px}
+
+  .opts{display:flex;flex-direction:column;gap:8px}
+  /* 连续填充：铺到 --pct 刻度，硬边收口 */
+  .opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;
+    border:1px solid var(--line);border-radius:13px;padding:13px 13px;font-family:inherit;
+    background:linear-gradient(to right, var(--fill) var(--pct), var(--empty) var(--pct));
+    transition:border-color .15s,box-shadow .15s,background .15s}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .opt[aria-checked="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);
+    background:linear-gradient(to right, var(--fill-on) var(--pct), var(--empty) var(--pct))}
+
+  .badge{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;
+    justify-content:center;font-family:var(--mono);font-size:14px;font-weight:600;color:#5a5f78;
+    background:rgba(255,255,255,.82)}
+  .body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+  .name{font-size:15px;font-weight:600;color:var(--ink)}
+  .desc{font-size:12.5px;color:#5f6478;line-height:1.45}
+
+  .store{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;
+    font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .store b{color:var(--accent);font-weight:600}
+  .note{font-size:11.5px;color:#b1b6c6;margin-top:6px;line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="card">
+    <p class="title">今日精力</p>
+    <p class="hint">今天身体和脑子有多少劲？只看电量——和心情好坏分开看。</p>
+
+    <div class="opts" role="radiogroup" aria-label="今日精力">
+      <button class="opt" role="radio" aria-checked="false" data-v="5" style="--pct:100%">
+        <span class="badge">5</span>
+        <span class="body"><span class="name">充沛</span><span class="desc">精力满格，身体轻、脑子清，做事带劲不费力</span></span>
+      </button>
+      <button class="opt" role="radio" aria-checked="false" data-v="4" style="--pct:80%">
+        <span class="badge">4</span>
+        <span class="body"><span class="name">够用</span><span class="desc">有劲，推得动事，不亢奋但不缺力气</span></span>
+      </button>
+      <button class="opt" role="radio" aria-checked="false" data-v="3" style="--pct:60%">
+        <span class="badge">3</span>
+        <span class="body"><span class="name">一般</span><span class="desc">不上不下，维持日常够用，想提速有点吃力</span></span>
+      </button>
+      <button class="opt" role="radio" aria-checked="false" data-v="2" style="--pct:40%">
+        <span class="badge">2</span>
+        <span class="body"><span class="name">发虚</span><span class="desc">没劲、容易累，做事要硬推，注意力发散</span></span>
+      </button>
+      <button class="opt" role="radio" aria-checked="false" data-v="1" style="--pct:20%">
+        <span class="badge">1</span>
+        <span class="body"><span class="name">枯竭</span><span class="desc">像被抽空，身体沉、脑子发懵，维持基本运转都费劲</span></span>
+      </button>
+    </div>
+
+    <div class="store">存成 &nbsp; <b>energy_score</b>: <span id="val">—</span></div>
+    <p class="note">新字段，无历史包袱：取 5=电量最满、1=枯竭，方向跟心情一致。</p>
+  </div>
+
+<script>
+  const opts = document.querySelectorAll(".opt");
+  const val = document.getElementById("val");
+  let score = "";
+  opts.forEach(o => {
+    o.addEventListener("click", () => {
+      const v = o.dataset.v;
+      const on = score === v;
+      score = on ? "" : v;
+      opts.forEach(x => x.setAttribute("aria-checked", String(!on && x === o)));
+      val.textContent = score || "—";
+    });
+  });
+</script>
+</body>
+</html>

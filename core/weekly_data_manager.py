@@ -3,6 +3,7 @@
 
 import pandas as pd
 import os
+import uuid
 from datetime import datetime, timedelta
 from . import config as cfg
 from . import weekly_texts as wt
@@ -357,13 +358,37 @@ def save_weekly_data(week_key, year, iso_week, monday, sunday,
     tasks_df = tasks_df[tasks_df[wt.COL_WT_PLAN].astype(str).str.strip() != ""]
     tasks_df["Week"] = week_key
 
+    # 读取旧任务：按「计划事项」文本继承 goal_id（保持时间轴关联稳定），其它周原样保留
+    df_old = None
+    old_goal_ids = {}
     if os.path.exists(paths["tasks"]):
         df_old = pd.read_csv(paths["tasks"], encoding='utf-8-sig')
         df_old["Week"] = df_old["Week"].astype(str)
+        if "goal_id" in df_old.columns:
+            week_old = df_old[df_old["Week"] == week_key]
+            for _, r in week_old.iterrows():
+                plan = str(r.get(wt.COL_WT_PLAN, "")).strip()
+                gid = str(r.get("goal_id", "")).strip()
+                if plan and gid and gid.lower() != "nan":
+                    old_goal_ids[plan] = gid
+
+    # 继承 / 保留 goal_id（前端未传则按文本继承；全新目标先留空，待时间轴首次加载补 uuid）
+    if "goal_id" not in tasks_df.columns:
+        tasks_df["goal_id"] = ""
+    tasks_df["goal_id"] = tasks_df["goal_id"].fillna("").astype(str)
+    for idx in tasks_df.index:
+        cur = tasks_df.at[idx, "goal_id"].strip()
+        if cur and cur.lower() != "nan":
+            continue
+        plan = str(tasks_df.at[idx, wt.COL_WT_PLAN]).strip()
+        tasks_df.at[idx, "goal_id"] = old_goal_ids.get(plan, "")
+
+    if df_old is not None:
         df_old = df_old[df_old["Week"] != week_key]
         df_final = pd.concat([df_old, tasks_df], ignore_index=True)
     else:
         df_final = tasks_df
+    df_final = df_final.fillna("")
     df_final.to_csv(paths["tasks"], index=False, encoding='utf-8-sig')
 
     # --- 4. 生成 Markdown ---
@@ -438,3 +463,167 @@ def generate_weekly_markdown(week_key, year, iso_week, monday, sunday,
     md_path = get_weekly_md_path(monday)
     with open(md_path, "w", encoding="utf-8-sig") as f:
         f.write(content)
+
+
+# ==========================================
+# 8. 需求46：每周事项时间轴
+# ==========================================
+
+TIMELINE_COLS = ["Week", "id", "goal_id", "周几", "内容", "完成"]
+
+
+def _gen_id(prefix):
+    return f"{prefix}_{uuid.uuid4().hex[:8]}"
+
+
+def get_weekly_timeline_path(year):
+    return os.path.join(cfg.PATH_WEEKLY_TIMELINE, f"weekly_timeline_{year}.csv")
+
+
+def get_weekly_lanes(week_key, year):
+    """返回某周的「泳道」= 周目标列表（每条带稳定 goal_id）。
+    若 weekly_tasks 中非空目标缺 goal_id，则补 uuid 并落库（一次性回填）。
+    返回 [{goal_id, text, category, status}, ...]
+    """
+    paths = get_weekly_file_paths(year)
+    if not os.path.exists(paths["tasks"]):
+        return []
+
+    df = pd.read_csv(paths["tasks"], encoding="utf-8-sig")
+    if "Week" not in df.columns or wt.COL_WT_PLAN not in df.columns:
+        return []
+    df["Week"] = df["Week"].astype(str)
+    if "goal_id" not in df.columns:
+        df["goal_id"] = ""
+    df["goal_id"] = df["goal_id"].fillna("").astype(str)
+
+    week_mask = df["Week"] == week_key
+    changed = False
+    for idx in df[week_mask].index:
+        plan = str(df.at[idx, wt.COL_WT_PLAN]).strip()
+        if not plan or plan.lower() == "nan":
+            continue
+        gid = df.at[idx, "goal_id"].strip()
+        if gid == "" or gid.lower() == "nan":
+            df.at[idx, "goal_id"] = _gen_id("g")
+            changed = True
+
+    if changed:
+        df = df.fillna("")
+        df.to_csv(paths["tasks"], index=False, encoding="utf-8-sig")
+
+    lanes = []
+    for idx in df[week_mask].index:
+        plan = str(df.at[idx, wt.COL_WT_PLAN]).strip()
+        if not plan or plan.lower() == "nan":
+            continue
+        def _clean(col):
+            if col not in df.columns:
+                return ""
+            v = df.at[idx, col]
+            if pd.isna(v):
+                return ""
+            s = str(v).strip()
+            return "" if s.lower() == "nan" else s
+        lanes.append({
+            "goal_id": df.at[idx, "goal_id"].strip(),
+            "text": plan,
+            "category": _clean(wt.COL_WT_CATEGORY),
+            "status": _clean(wt.COL_WT_STATUS),
+        })
+    return lanes
+
+
+def load_weekly_timeline(week_key, year):
+    """加载某周的时间轴卡片列表。"""
+    path = get_weekly_timeline_path(year)
+    if not os.path.exists(path):
+        return []
+    df = pd.read_csv(path, encoding="utf-8-sig")
+    if "Week" not in df.columns:
+        return []
+    df["Week"] = df["Week"].astype(str)
+    wk = df[df["Week"] == week_key]
+    items = []
+    for _, r in wk.iterrows():
+        items.append({c: ("" if pd.isna(r.get(c)) else str(r.get(c, ""))) for c in TIMELINE_COLS})
+    return items
+
+
+def save_weekly_timeline(week_key, year, items):
+    """保存整周时间轴卡片（Upsert by Week）。空内容卡片不落库。
+    返回实际落库的卡片列表（含生成好的 id）。"""
+    path = get_weekly_timeline_path(year)
+    rows = []
+    for it in items:
+        content = str(it.get("内容", "")).strip()
+        if not content:
+            continue
+        rows.append({
+            "Week": week_key,
+            "id": (str(it.get("id", "")).strip() or _gen_id("t")),
+            "goal_id": str(it.get("goal_id", "")).strip(),
+            "周几": str(it.get("周几", "")).strip(),
+            "内容": content,
+            "完成": str(it.get("完成", "")).strip(),
+        })
+    new_df = pd.DataFrame(rows, columns=TIMELINE_COLS)
+
+    if os.path.exists(path):
+        df_old = pd.read_csv(path, encoding="utf-8-sig")
+        df_old["Week"] = df_old["Week"].astype(str)
+        df_old = df_old[df_old["Week"] != week_key]
+        df_final = pd.concat([df_old, new_df], ignore_index=True)
+    else:
+        df_final = new_df
+    df_final = df_final.fillna("")
+    df_final.to_csv(path, index=False, encoding="utf-8-sig")
+    return rows
+
+
+def apply_goal_completion(week_key, year, timeline_items):
+    """按时间轴卡片完成情况回写 weekly_tasks 的 状态/实际完成。
+    规则（方案1）：仅影响**有卡片**的目标——其全部卡片完成→✅/完成，否则清空；
+    没有卡片的目标完全不动（保持手动）。
+    """
+    paths = get_weekly_file_paths(year)
+    if not os.path.exists(paths["tasks"]):
+        return
+
+    df = pd.read_csv(paths["tasks"], encoding="utf-8-sig")
+    if "goal_id" not in df.columns or "Week" not in df.columns:
+        return
+    df["Week"] = df["Week"].astype(str)
+    df["goal_id"] = df["goal_id"].fillna("").astype(str)
+    # 状态/实际完成列可能因整列为空被推断为 float，先转 str 以便写入 ✅/完成
+    for col in (wt.COL_WT_STATUS, wt.COL_WT_ACTUAL):
+        if col in df.columns:
+            df[col] = df[col].fillna("").astype(str)
+
+    total, done = {}, {}
+    for it in timeline_items:
+        gid = str(it.get("goal_id", "")).strip()
+        if not gid:
+            continue
+        total[gid] = total.get(gid, 0) + 1
+        if str(it.get("完成", "")).strip() == "✅":
+            done[gid] = done.get(gid, 0) + 1
+
+    week_mask = df["Week"] == week_key
+    changed = False
+    for idx in df[week_mask].index:
+        gid = df.at[idx, "goal_id"].strip()
+        if gid in total and total[gid] > 0:
+            all_done = done.get(gid, 0) == total[gid]
+            new_status = "✅" if all_done else ""
+            new_actual = "完成" if all_done else ""
+            if str(df.at[idx, wt.COL_WT_STATUS]) != new_status:
+                df.at[idx, wt.COL_WT_STATUS] = new_status
+                changed = True
+            if str(df.at[idx, wt.COL_WT_ACTUAL]) != new_actual:
+                df.at[idx, wt.COL_WT_ACTUAL] = new_actual
+                changed = True
+
+    if changed:
+        df = df.fillna("")
+        df.to_csv(paths["tasks"], index=False, encoding="utf-8-sig")

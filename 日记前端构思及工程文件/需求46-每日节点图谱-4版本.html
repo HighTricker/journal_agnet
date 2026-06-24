@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求 46 · 每日节点图谱 — 4 版本对比</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #00288e;
+            --on-primary: #fff;
+            --background: #f7f9fb;
+            --surface-lowest: #ffffff;
+            --surface-low: #f2f4f6;
+            --ov-20: rgba(196, 197, 213, 0.30);
+            --shadow-sm: 0 1px 3px rgba(0, 40, 142, 0.06);
+            --weekly-grad: linear-gradient(90deg, #064E3B 0%, #047857 50%, #059669 100%);
+
+            --label: #1c1c1e;
+            --label2: #8a8a8e;
+            --label3: #c4c4c8;
+            --sep: #e6e6ea;
+            --grouped: #f4f4f7;
+            --today: #ff3b30;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Manrope', -apple-system, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: var(--background); color: var(--label); line-height: 1.5;
+            padding: 40px 24px 90px;
+        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; user-select: none; vertical-align: middle; }
+        .num { font-variant-numeric: tabular-nums; }
+
+        .wrap { max-width: 1240px; margin: 0 auto; }
+        .page-head h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+        .page-head p { margin-top: 8px; max-width: 88ch; font-size: 14px; color: #444653; }
+        .locked { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .locked .pill { font-size: 12px; font-weight: 600; color: var(--primary); background: rgba(0,40,142,0.05); border: 1px solid rgba(0,40,142,0.10); padding: 5px 12px; border-radius: 999px; }
+        .legend { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
+        .legend .lab { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--label2); margin-right: 2px; }
+        .gchip { font-size: 12px; font-weight: 600; padding: 3px 11px 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+        .gchip .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .sec { margin-top: 46px; }
+        .sec > h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .sec > h2 .no { font-size: 12px; font-weight: 700; color: var(--on-primary); background: var(--primary); border-radius: 8px; padding: 2px 9px; }
+        .sec > h2 .rec { font-size: 11px; font-weight: 700; color: #fff; background: #047857; border-radius: 999px; padding: 3px 10px; }
+        .sec > .desc { font-size: 13.5px; color: #444653; margin: 8px 0 16px; max-width: 92ch; }
+
+        .stage { background: var(--surface-lowest); border: 1px solid var(--ov-20); border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm); }
+        .grab-hint { font-size: 11px; color: var(--label2); margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
+        .scroll { overflow-x: auto; cursor: grab; padding-bottom: 8px; }
+        .scroll.grab { cursor: grabbing; }
+        .scroll::-webkit-scrollbar { height: 8px; }
+        .scroll::-webkit-scrollbar-thumb { background: var(--label3); border-radius: 8px; }
+
+        /* 周目标卡 */
+        .goalcard { background: var(--weekly-grad); border-radius: 18px; padding: 16px 20px; box-shadow: 0 8px 24px rgba(4,120,87,0.22); }
+        .goalcard h3 { color: rgba(255,255,255,0.92); font-size: 12px; font-weight: 800; letter-spacing: 0.18em; margin-bottom: 12px; }
+        .goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+        .goal-item { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 11px; padding: 9px 12px; display: flex; align-items: center; gap: 9px; }
+        .goal-item .box { width: 17px; height: 17px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+        .goal-item.done .box { background: #fff; border-color: #fff; }
+        .goal-item.done .box .material-symbols-outlined { color: #047857; font-size: 13px; }
+        .goal-item .gtext { color: #fff; font-size: 13.5px; font-weight: 600; }
+        .goal-item.done .gtext { opacity: 0.6; text-decoration: line-through; }
+        .goal-item .prog { margin-left: auto; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.18); border-radius: 999px; padding: 2px 8px; }
+
+        /* iOS 圆圈勾选 */
+        .ck { width: 19px; height: 19px; border-radius: 50%; border: 1.5px solid var(--label3); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; transition: all .15s; }
+        .ck:hover { border-color: var(--g-fg); }
+        .ck.on { background: var(--g-fg); border-color: var(--g-fg); }
+        .ck.on .material-symbols-outlined { color: #fff; font-size: 13px; }
+        .done-text { color: var(--label2) !important; text-decoration: line-through; opacity: .75; }
+        .empty { color: var(--label3); font-size: 12px; font-style: italic; padding: 10px 0; text-align: center; }
+
+        /* 通用 day header */
+        .dh { text-align: center; }
+        .dh .dh-dow { font-size: 12px; font-weight: 600; color: var(--label2); }
+        .dh .dh-date { font-size: 18px; font-weight: 800; margin-top: 1px; }
+        .dh.today .dh-dow { color: var(--today); }
+        .dh.today .dh-date { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--today); color: #fff; font-size: 15px; }
+
+        /* ===== V1 七日节点轴 ===== */
+        .axis { display: flex; min-width: max-content; }
+        .station { width: 172px; }
+        .node-wrap { position: relative; height: 60px; display: flex; align-items: center; justify-content: center; }
+        .node-wrap::before, .node-wrap::after { content: ''; position: absolute; top: 50%; height: 2px; background: var(--sep); width: 50%; transform: translateY(-50%); }
+        .node-wrap::before { left: 0; } .node-wrap::after { right: 0; }
+        .station:first-child .node-wrap::before { display: none; }
+        .station:last-child .node-wrap::after { display: none; }
+        .node { position: relative; z-index: 1; width: 52px; height: 52px; border-radius: 50%; background: var(--surface-lowest); border: 2px solid var(--sep); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+        .node .n-dow { font-size: 9.5px; font-weight: 700; color: var(--label2); }
+        .node .n-date { font-size: 16px; font-weight: 800; line-height: 1; }
+        .node .n-cnt { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: var(--primary); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .station.today .node { border-color: var(--today); box-shadow: 0 0 0 4px rgba(255,59,48,0.12); }
+        .station.today .node .n-date { color: var(--today); }
+        .st-tasks { padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 8px; }
+        .chip { display: flex; align-items: center; gap: 8px; background: var(--surface-lowest); border: 1px solid var(--sep); border-radius: 10px; padding: 8px 10px; }
+        .chip .gdot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+        .chip .c-title { font-size: 13px; font-weight: 600; }
+
+        /* ===== V2 目标×日 矩阵 ===== */
+        .matrix { min-width: max-content; }
+        .mrow { display: grid; grid-template-columns: 148px repeat(7, 116px); }
+        .mrow.head .mcell { padding-bottom: 12px; }
+        .mcorner { display: flex; align-items: flex-end; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--label2); }
+        .mglabel { display: flex; align-items: center; gap: 8px; padding: 12px 10px 12px 0; border-top: 1px solid var(--sep); }
+        .mglabel .gdot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+        .mglabel .gname { font-size: 13px; font-weight: 700; }
+        .mcell { padding: 9px 6px; border-top: 1px solid var(--sep); display: flex; align-items: center; justify-content: center; }
+        .mrow.head .mcell { border-top: none; }
+        .mcell.todaycol { background: rgba(255,59,48,0.04); }
+        .mnode { width: 100%; display: flex; align-items: center; gap: 6px; background: var(--g-bg); border-radius: 9px; padding: 6px 8px; cursor: pointer; }
+        .mnode .m-title { font-size: 11.5px; font-weight: 600; color: var(--g-fg); line-height: 1.2; }
+        .mdash { width: 5px; height: 5px; border-radius: 50%; background: var(--label3); opacity: .5; }
+
+        /* ===== V3 七日清单卡 ===== */
+        .daycards { display: flex; gap: 12px; min-width: max-content; }
+        .dc { width: 186px; background: var(--surface-low); border: 1px solid var(--sep); border-radius: 14px; padding: 14px; }
+        .dc.today { border: 2px solid var(--today); background: rgba(255,59,48,0.03); }
+        .dc-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--sep); }
+        .dc-head .dc-dow { font-size: 14px; font-weight: 800; }
+        .dc.today .dc-dow { color: var(--today); }
+        .dc-head .dc-date { font-size: 12px; font-weight: 600; color: var(--label2); }
+        .dc-task { display: flex; align-items: center; gap: 9px; padding: 7px 0; }
+        .dc-task .gdot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+        .dc-task .dt-title { font-size: 13px; font-weight: 600; }
+
+        /* ===== V4 里程碑路线图 ===== */
+        .road { min-width: max-content; }
+        .road-head { display: grid; grid-template-columns: 140px repeat(7, 120px); margin-bottom: 6px; }
+        .lane { display: grid; grid-template-columns: 140px repeat(7, 120px); align-items: center; min-height: 64px; }
+        .lane-label { display: flex; align-items: center; gap: 8px; padding-right: 10px; }
+        .lane-label .gdot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; }
+        .lane-label .gname { font-size: 13px; font-weight: 700; }
+        .lane-track { grid-column: 2 / -1; position: relative; height: 64px; }
+        .lane-track .thread { position: absolute; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 999px; }
+        .mile { position: absolute; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .mile .mdotc { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 3px solid var(--g-fg); display: flex; align-items: center; justify-content: center; }
+        .mile.done .mdotc { background: var(--g-fg); }
+        .mile.done .mdotc .material-symbols-outlined { color: #fff; font-size: 12px; }
+        .mile .m-cap { position: absolute; top: 24px; white-space: nowrap; font-size: 11px; font-weight: 600; color: var(--label); background: var(--surface-lowest); padding: 1px 6px; border-radius: 6px; }
+        .road-todaycol { background: rgba(255,59,48,0.04); }
+
+        .footer-note { margin-top: 54px; background: #fff; border: 1px solid var(--ov-20); border-radius: 20px; padding: 22px 24px; box-shadow: var(--shadow-sm); }
+        .footer-note h2 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+        .footer-note p { font-size: 13.5px; color: #444653; }
+        .footer-note code { background: rgba(0,40,142,0.06); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>需求 46 · 每日节点图谱（4 版本）</h1>
+        <p><b>已彻底去掉小时/日程</b>（那个你有专门表格）。这里只回答一个问题：<b>这一周，哪一天该完成什么事</b>。单位是"天"，事情落在它该完成的那天上，形成一张可一眼看清的节点图谱。保留方案 C 风格：横向按天、可拖动滚动、干净 MD3。颜色只用来区分"是哪件事"（每个目标一个色），顶部周目标卡仍实时联动。</p>
+        <div class="locked">
+            <span class="pill">单位 = 天（无小时）</span>
+            <span class="pill">事情 ↔ 完成日</span>
+            <span class="pill">横向滚动 · 拖动</span>
+            <span class="pill">今日红色高亮</span>
+            <span class="pill">任务 ↔ 周目标联动</span>
+        </div>
+        <div class="legend" id="legend"><span class="lab">事项配色</span></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">联动</span> 周目标卡</h2>
+        <div class="goalcard"><h3>WEEKLY · 周度目标</h3><div class="goal-grid" id="goalGrid"></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">V1</span> 七日节点轴 <span class="rec">最贴"节点"</span></h2>
+        <p class="desc">一条横轴串起 7 个"日节点"（圆圈=那天，带数字角标=当天几件事），事情挂在对应那天下面。像地铁线路图——一眼看出"周三是 3 件事的节点"。今日节点红圈高亮。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div><div class="scroll" id="v1scroll"><div class="axis" id="v1"></div></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">V2</span> 目标 × 日 矩阵 <span class="rec">最像"图谱"</span></h2>
+        <p class="desc">行=每个周目标，列=7 天，格子里有节点=那件事那天要做。<b>横着读</b>=这件事散落在哪几天推进；<b>竖着读</b>=某一天压了几件事。空格=那天该目标没安排。最适合规划"任务分布"。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div><div class="scroll" id="v2scroll"><div class="matrix" id="v2"></div></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">V3</span> 七日清单卡</h2>
+        <p class="desc">最直白：7 张日卡，每张就是"这天要完成的事"清单。没有任何时间，纯粹的每日待办。今日卡红框。适合不想看图、只想看清单的人。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div><div class="scroll" id="v3scroll"><div class="daycards" id="v3"></div></div></div>
+    </div>
+
+    <div class="sec">
+        <h2><span class="no">V4</span> 里程碑路线图</h2>
+        <p class="desc">每个目标一条<b>彩色线</b>，串起它在各天的节点（里程碑）。一眼看出"读完《深度工作》"这件事是怎么跨周一、周四、周五、周日一步步推进的。最有"旅程/路线"的图谱感。</p>
+        <div class="stage"><div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div><div class="scroll" id="v4scroll"><div class="road" id="v4"></div></div></div>
+    </div>
+
+    <div class="footer-note">
+        <h2>下一步</h2>
+        <p>从 V1 / V2 / V3 / V4 挑一个（或混搭）。这个方向对了的话，我们再确认<b>数据怎么存</b>（上轮我推荐独立表 <code>weekly_timeline</code>，含 周/日期/内容/关联周目标/完成，没有小时字段）和"目标完成判定"，然后开发。</p>
+    </div>
+
+</div>
+
+<script>
+    const DAYS = [
+        { dow: '周一', date: '06-22' }, { dow: '周二', date: '06-23' }, { dow: '周三', date: '06-24' },
+        { dow: '周四', date: '06-25' }, { dow: '周五', date: '06-26' }, { dow: '周六', date: '06-27' }, { dow: '周日', date: '06-28' },
+    ];
+    const TODAY = 2;
+    const GC = {
+        g1: { name: '晨跑 5km', fg: '#2e6b4f', bg: '#e3efe8' },
+        g2: { name: '健身 ×2', fg: '#0e7490', bg: '#e0f2f7' },
+        g3: { name: '时间轴功能', fg: '#00288e', bg: '#e6ebf7' },
+        g4: { name: '读《深度工作》', fg: '#5b21b6', bg: '#ede9fe' },
+        g5: { name: '每日冥想', fg: '#92600a', bg: '#fdf0d5' },
+        g6: { name: '陪伴家人', fg: '#9d174d', bg: '#fce7ef' },
+        g7: { name: '周末爬山', fg: '#b45309', bg: '#fdf0e3' },
+    };
+    const GOALS = [
+        { id: 'g1', text: '每天晨跑 5km' }, { id: 'g2', text: '健身房 ×2' }, { id: 'g3', text: '完成日记时间轴功能' },
+        { id: 'g4', text: '读完《深度工作》' }, { id: 'g5', text: '每日冥想' }, { id: 'g6', text: '陪伴家人' }, { id: 'g7', text: '周末爬山' },
+    ];
+    const TASKS = [
+        { id: 't1', day: 0, goal: 'g1', title: '晨跑 5km' },
+        { id: 't2', day: 0, goal: 'g3', title: '写组件骨架' },
+        { id: 't3', day: 0, goal: 'g4', title: '读 p30–60' },
+        { id: 't4', day: 1, goal: 'g2', title: '健身房' },
+        { id: 't5', day: 1, goal: 'g3', title: '接入 API' },
+        { id: 't6', day: 2, goal: 'g1', title: '晨跑 5km' },
+        { id: 't7', day: 2, goal: 'g3', title: '出设计 demo' },
+        { id: 't8', day: 2, goal: 'g6', title: '给爸妈打电话' },
+        { id: 't9', day: 3, goal: 'g3', title: '联调' },
+        { id: 't10', day: 3, goal: 'g4', title: '读 p60–90' },
+        { id: 't11', day: 4, goal: 'g2', title: '健身房' },
+        { id: 't12', day: 4, goal: 'g4', title: '整理笔记' },
+        { id: 't13', day: 5, goal: 'g7', title: '爬山' },
+        { id: 't14', day: 6, goal: 'g4', title: '周复盘' },
+        { id: 't15', day: 6, goal: 'g5', title: '冥想总结' },
+    ];
+    const done = {}; TASKS.forEach(t => done[t.id] = false);
+    ['t1', 't2', 't3', 't4', 't5'].forEach(i => done[i] = true);
+
+    const goalsWithTasks = () => GOALS.filter(g => TASKS.some(t => t.goal === g.id));
+    const tasksOfDay = d => TASKS.filter(t => t.day === d);
+    const taskAt = (gid, d) => TASKS.find(t => t.goal === gid && t.day === d);
+    function toggle(id) { done[id] = !done[id]; renderAll(); }
+    function ck(id, gid) {
+        return `<div class="ck ${done[id] ? 'on' : ''}" style="--g-fg:${GC[gid].fg}" onclick="event.stopPropagation();toggle('${id}')">${done[id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div>`;
+    }
+
+    function renderLegend() {
+        const el = document.getElementById('legend');
+        GOALS.forEach(g => {
+            const c = GC[g.id];
+            el.insertAdjacentHTML('beforeend', `<span class="gchip" style="background:${c.bg};color:${c.fg}"><span class="dot" style="background:${c.fg}"></span>${g.text}</span>`);
+        });
+    }
+    function renderGoals() {
+        document.getElementById('goalGrid').innerHTML = GOALS.map(g => {
+            const ts = TASKS.filter(t => t.goal === g.id);
+            const dn = ts.filter(t => done[t.id]).length;
+            const isDone = ts.length > 0 && dn === ts.length;
+            return `<div class="goal-item ${isDone ? 'done' : ''}"><div class="box">${isDone ? '<span class="material-symbols-outlined">check</span>' : ''}</div><span class="gtext">${g.text}</span><span class="prog num">${dn}/${ts.length}</span></div>`;
+        }).join('');
+    }
+
+    /* V1 节点轴 */
+    function renderV1() {
+        document.getElementById('v1').innerHTML = DAYS.map((d, di) => {
+            const ts = tasksOfDay(di);
+            const chips = ts.map(t => `<div class="chip"><span class="gdot" style="background:${GC[t.goal].fg}"></span>${ck(t.id, t.goal)}<span class="c-title ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>`).join('') || `<div class="empty">—</div>`;
+            return `<div class="station ${di === TODAY ? 'today' : ''}">
+                <div class="node-wrap"><div class="node">${ts.length ? `<span class="n-cnt num">${ts.length}</span>` : ''}<span class="n-dow">${d.dow}</span><span class="n-date num">${d.date.split('-')[1]}</span></div></div>
+                <div class="st-tasks">${chips}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /* V2 矩阵 */
+    function renderV2() {
+        let html = `<div class="mrow head"><div class="mcell mcorner">目标 \\ 日</div>` +
+            DAYS.map((d, di) => `<div class="mcell ${di === TODAY ? 'todaycol' : ''}"><div class="dh ${di === TODAY ? 'today' : ''}"><div class="dh-dow">${d.dow}</div><div class="dh-date num">${d.date.split('-')[1]}</div></div></div>`).join('') + `</div>`;
+        goalsWithTasks().forEach(g => {
+            const c = GC[g.id];
+            html += `<div class="mrow"><div class="mglabel"><span class="gdot" style="background:${c.fg}"></span><span class="gname">${g.text}</span></div>` +
+                DAYS.map((d, di) => {
+                    const t = taskAt(g.id, di);
+                    const inner = t
+                        ? `<div class="mnode" style="--g-bg:${c.bg};--g-fg:${c.fg}" onclick="toggle('${t.id}')">${ck(t.id, g.id)}<span class="m-title ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>`
+                        : `<span class="mdash"></span>`;
+                    return `<div class="mcell ${di === TODAY ? 'todaycol' : ''}">${inner}</div>`;
+                }).join('') + `</div>`;
+        });
+        document.getElementById('v2').innerHTML = html;
+    }
+
+    /* V3 日卡 */
+    function renderV3() {
+        document.getElementById('v3').innerHTML = DAYS.map((d, di) => {
+            const ts = tasksOfDay(di);
+            const rows = ts.map(t => `<div class="dc-task"><span class="gdot" style="background:${GC[t.goal].fg}"></span>${ck(t.id, t.goal)}<span class="dt-title ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>`).join('') || `<div class="empty">无安排</div>`;
+            return `<div class="dc ${di === TODAY ? 'today' : ''}">
+                <div class="dc-head"><span class="dc-dow">${d.dow}</span><span class="dc-date num">${d.date.split('-')[1]}${di === TODAY ? ' 今天' : ''}</span></div>
+                ${rows}
+            </div>`;
+        }).join('');
+    }
+
+    /* V4 路线图 */
+    function renderV4() {
+        let html = `<div class="road-head"><div></div>` +
+            DAYS.map((d, di) => `<div class="dh ${di === TODAY ? 'today' : ''}"><div class="dh-dow">${d.dow}</div><div class="dh-date num">${d.date.split('-')[1]}</div></div>`).join('') + `</div>`;
+        goalsWithTasks().forEach(g => {
+            const c = GC[g.id];
+            const myTasks = TASKS.filter(t => t.goal === g.id).sort((a, b) => a.day - b.day);
+            const days = myTasks.map(t => t.day);
+            const first = Math.min(...days), last = Math.max(...days);
+            const pct = i => ((i + 0.5) / 7) * 100;
+            const thread = first !== last
+                ? `<div class="thread" style="background:${c.fg};opacity:.45;left:${pct(first)}%;width:${pct(last) - pct(first)}%"></div>`
+                : '';
+            const miles = myTasks.map(t => `
+                <div class="mile ${done[t.id] ? 'done' : ''}" style="--g-fg:${c.fg};left:${pct(t.day)}%" onclick="toggle('${t.id}')">
+                    <div class="mdotc">${done[t.id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div>
+                    <span class="m-cap ${done[t.id] ? 'done-text' : ''}">${t.title}</span>
+                </div>`).join('');
+            html += `<div class="lane"><div class="lane-label"><span class="gdot" style="background:${c.fg}"></span><span class="gname">${g.text}</span></div><div class="lane-track">${thread}${miles}</div></div>`;
+        });
+        document.getElementById('v4').innerHTML = html;
+    }
+
+    function enableDrag(el) {
+        let down = false, sx, sl;
+        el.addEventListener('mousedown', e => { if (e.target.closest('.ck,.mnode,.mile')) return; down = true; el.classList.add('grab'); sx = e.pageX; sl = el.scrollLeft; });
+        window.addEventListener('mouseup', () => { down = false; el.classList.remove('grab'); });
+        el.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); el.scrollLeft = sl - (e.pageX - sx); });
+    }
+
+    function renderAll() { renderGoals(); renderV1(); renderV2(); renderV3(); renderV4(); }
+    renderLegend(); renderAll();
+    ['v1scroll', 'v2scroll', 'v3scroll', 'v4scroll'].forEach(id => enableDrag(document.getElementById(id)));
+</script>
+</body>
+</html>

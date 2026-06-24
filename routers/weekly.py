@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import re
 
-from schemas.weekly import WeeklyInput
+from schemas.weekly import WeeklyInput, TimelineSaveInput
 from core import weekly_data_manager as wdm
 from core import weekly_texts as wt
 
@@ -80,6 +80,33 @@ def save_weekly(week_str: str, body: WeeklyInput):
         raise HTTPException(status_code=500, detail=f"保存失败：{str(e)}")
 
     return {"message": f"{week_key} 周记保存成功！"}
+
+
+# ==================== 需求46：每周事项时间轴 ====================
+@router.get("/weekly/{week_str}/timeline")
+def get_weekly_timeline(week_str: str):
+    week_key, year, iso_week, monday, sunday = _parse_week(week_str)
+    lanes = wdm.get_weekly_lanes(week_key, year)
+    tasks = wdm.load_weekly_timeline(week_key, year)
+    return {
+        "week": week_key,
+        "monday": monday.strftime("%Y-%m-%d"),
+        "lanes": lanes,
+        "tasks": tasks,
+    }
+
+
+@router.put("/weekly/{week_str}/timeline")
+def save_weekly_timeline(week_str: str, body: TimelineSaveInput):
+    week_key, year, iso_week, monday, sunday = _parse_week(week_str)
+    items = [t.model_dump() for t in body.tasks]
+    try:
+        saved = wdm.save_weekly_timeline(week_key, year, items)
+        wdm.apply_goal_completion(week_key, year, saved)
+        lanes = wdm.get_weekly_lanes(week_key, year)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"保存失败：{str(e)}")
+    return {"message": f"{week_key} 时间轴已保存", "tasks": saved, "lanes": lanes}
 
 
 # ==================== 3. 周数据聚合 ====================

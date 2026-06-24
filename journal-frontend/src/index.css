@@ -129,3 +129,16 @@ body {
     -ms-overflow-style: none; /* IE/Edge：隐藏滚动条 */
     scrollbar-width: none; /* Firefox：隐藏滚动条 */
 }
+
+/* ===== Toast 进入动画 ===== */
+/* 顶部居中弹出的 toast 通知，从顶部向下滑入 + 渐显（约 200ms） */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

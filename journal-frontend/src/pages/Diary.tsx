@@ -257,8 +257,12 @@ function Diary() {
                 <DiaryJournal
                     mood={diary.data.mood}
                     onMoodChange={diary.setMood}
+                    energy={diary.data.energy}
+                    onEnergyChange={diary.setEnergy}
                     sleepQuality={diary.data.sleepQuality}
                     onSleepQualityChange={diary.setSleepQuality}
+                    wakeCount={diary.data.wakeCount}
+                    onWakeCountChange={diary.setWakeCount}
                     sleepTime={diary.data.sleepTime}
                     onSleepTimeChange={diary.setSleepTime}
                     wakeTime={diary.data.wakeTime}

@@ -66,6 +66,16 @@ export const weeklyApi = {
 
     aggregation: (week: string) =>
         request<WeeklyAggregation>(`/weekly/${week}/aggregation`),
+
+    // 需求46：每周事项时间轴
+    getTimeline: (week: string) =>
+        request<TimelineResponse>(`/weekly/${week}/timeline`),
+
+    saveTimeline: (week: string, data: TimelineSaveRequest) =>
+        request<TimelineSaveResponse>(`/weekly/${week}/timeline`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
 }
 
 // ==================== 月记 ====================
@@ -125,10 +135,12 @@ export interface DiaryResponse {
 export interface DiarySaveRequest {
     summary: {
         Mood?: number | null
+        Energy_Score?: number | null
         Sleep_Score?: number | null
         Sleep_Bedtime?: string
         Sleep_Waketime?: string
         Sleep_Hours?: number | null
+        Sleep_Wake_Count?: number | null
         Focus_Count?: number | null
         Meditation_Minutes?: number | null
         AI_Time?: number | null
@@ -143,6 +155,24 @@ export interface DiarySaveRequest {
         Reflect_Thoughts?: string
         Reflect_Deep_Reflections?: string
         Reflect_Sleep_Dreams?: string
+        Fork_Trigger?: string
+        Fork_Should?: string
+        Fork_Actual?: string
+        Fork_Direction?: string
+        Fork_Trigger_2?: string
+        Fork_Should_2?: string
+        Fork_Actual_2?: string
+        Fork_Direction_2?: string
+        Fork_Trigger_3?: string
+        Fork_Should_3?: string
+        Fork_Actual_3?: string
+        Fork_Direction_3?: string
+        Good_Thing_1?: string
+        Good_Why_1?: string
+        Good_Thing_2?: string
+        Good_Why_2?: string
+        Good_Thing_3?: string
+        Good_Why_3?: string
     }
     tasks: Array<{
         计划事项: string
@@ -197,6 +227,39 @@ export interface WeeklyAggregation {
     Total_Masturbation: number | null
     Best_Mood_Day: string
     Worst_Mood_Day: string
+}
+
+// --- 需求46：每周事项时间轴 ---
+export interface TimelineLane {
+    goal_id: string
+    text: string       // 周目标文字（= 计划事项）
+    category: string   // 分类
+    status: string     // ✅ / 空
+}
+
+export interface TimelineTask {
+    id: string
+    goal_id: string
+    周几: string        // Mon..Sun
+    内容: string
+    完成: string        // ✅ / 空
+}
+
+export interface TimelineResponse {
+    week: string
+    monday: string      // YYYY-MM-DD（该周周一）
+    lanes: TimelineLane[]
+    tasks: TimelineTask[]
+}
+
+export interface TimelineSaveRequest {
+    tasks: TimelineTask[]
+}
+
+export interface TimelineSaveResponse {
+    message: string
+    tasks: TimelineTask[]
+    lanes: TimelineLane[]
 }
 
 // --- 月记 ---

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求 46 · 方案C 细化 — 4 个苹果日历风时间轴</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #00288e;
+            --on-primary: #fff;
+            --background: #f7f9fb;
+            --surface-lowest: #ffffff;
+            --ov-20: rgba(196, 197, 213, 0.30);
+            --shadow-sm: 0 1px 3px rgba(0, 40, 142, 0.06);
+            --weekly-grad: linear-gradient(90deg, #064E3B 0%, #047857 50%, #059669 100%);
+
+            /* ===== 苹果系语义色 ===== */
+            --label:   #1c1c1e;   /* 主文字 */
+            --label2:  #8a8a8e;   /* 次级灰（时刻/星期） */
+            --label3:  #c4c4c8;   /* 三级灰（占位/边框） */
+            --sep:     #e6e6ea;   /* 发丝分隔线 */
+            --grouped: #f2f2f7;   /* iOS 分组底色 */
+            --evt-bg:  rgba(0, 40, 142, 0.08);   /* 事项统一底色（App 藏蓝淡色） */
+            --evt-bg2: rgba(0, 40, 142, 0.12);
+            --evt-fg:  #00288e;                  /* 事项文字 */
+            --now:     #ff3b30;                  /* iOS 红 now-line */
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Manrope', -apple-system, 'SF Pro Text', 'Segoe UI', 'PingFang SC', sans-serif;
+            background: var(--background); color: var(--label); line-height: 1.5;
+            padding: 40px 24px 90px;
+        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; user-select: none; vertical-align: middle; }
+        .num { font-variant-numeric: tabular-nums; }
+
+        .wrap { max-width: 1240px; margin: 0 auto; }
+        .page-head h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+        .page-head p { margin-top: 8px; max-width: 86ch; font-size: 14px; color: #444653; }
+        .locked { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .locked .pill { font-size: 12px; font-weight: 600; color: var(--primary); background: rgba(0,40,142,0.05); border: 1px solid rgba(0,40,142,0.10); padding: 5px 12px; border-radius: 999px; }
+
+        .sec { margin-top: 46px; }
+        .sec > h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .sec > h2 .no { font-size: 12px; font-weight: 700; color: var(--on-primary); background: var(--primary); border-radius: 8px; padding: 2px 9px; }
+        .sec > h2 .rec { font-size: 11px; font-weight: 700; color: #fff; background: #047857; border-radius: 999px; padding: 3px 10px; }
+        .sec > .desc { font-size: 13.5px; color: #444653; margin: 8px 0 16px; max-width: 90ch; }
+        .storenote { margin-top: 12px; font-size: 12px; color: #6b6d78; line-height: 1.7; }
+
+        .stage { background: var(--surface-lowest); border: 1px solid var(--ov-20); border-radius: 20px; padding: 18px; box-shadow: var(--shadow-sm); }
+        .grab-hint { font-size: 11px; color: var(--label2); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+
+        /* ===== 顶部周目标卡（联动，压缩版） ===== */
+        .goalcard { background: var(--weekly-grad); border-radius: 18px; padding: 16px 20px; box-shadow: 0 8px 24px rgba(4,120,87,0.22); }
+        .goalcard h3 { color: rgba(255,255,255,0.92); font-size: 12px; font-weight: 800; letter-spacing: 0.18em; margin-bottom: 12px; }
+        .goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+        .goal-item { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 11px; padding: 9px 12px; display: flex; align-items: center; gap: 9px; }
+        .goal-item .box { width: 17px; height: 17px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+        .goal-item.done .box { background: #fff; border-color: #fff; }
+        .goal-item.done .box .material-symbols-outlined { color: #047857; font-size: 13px; }
+        .goal-item .gtext { color: #fff; font-size: 13.5px; font-weight: 600; }
+        .goal-item.done .gtext { opacity: 0.6; text-decoration: line-through; }
+        .goal-item .prog { margin-left: auto; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.18); border-radius: 999px; padding: 2px 8px; }
+
+        /* ===== iOS 圆圈勾选（提醒事项风） ===== */
+        .ck { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--label3); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; transition: all .15s; }
+        .ck:hover { border-color: var(--evt-fg); }
+        .ck.on { background: var(--evt-fg); border-color: var(--evt-fg); }
+        .ck.on .material-symbols-outlined { color: #fff; font-size: 14px; }
+        .done-text { color: var(--label2) !important; text-decoration: line-through; opacity: .7; }
+
+        /* 横向滚动通用 */
+        .scroll { overflow-x: auto; cursor: grab; padding-bottom: 8px; }
+        .scroll.grab { cursor: grabbing; }
+        .scroll::-webkit-scrollbar { height: 8px; }
+        .scroll::-webkit-scrollbar-thumb { background: var(--label3); border-radius: 8px; }
+
+        /* ========== 变体 C1：连续时刻表（苹果日历日视图） ========== */
+        .cal { display: flex; border: 1px solid var(--sep); border-radius: 14px; overflow: hidden; }
+        .cgutter { flex: 0 0 46px; background: var(--surface-lowest); border-right: 1px solid var(--sep); }
+        .chead-spacer { height: 46px; border-bottom: 1px solid var(--sep); }
+        .hgrid { position: relative; }
+        .hlab { position: absolute; right: 7px; transform: translateY(-7px); font-size: 11px; font-weight: 600; color: var(--label2); }
+        .cal .scroll { flex: 1; }
+        .cdays { display: flex; min-width: max-content; }
+        .cday { width: 138px; border-right: 1px solid var(--sep); }
+        .cday:last-child { border-right: none; }
+        .chead { height: 46px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid var(--sep); gap: 1px; }
+        .chead .ch-dow { font-size: 11px; font-weight: 600; color: var(--label2); }
+        .chead .ch-date { font-size: 17px; font-weight: 700; color: var(--label); }
+        .chead.today .ch-dow { color: var(--now); }
+        .chead.today .ch-date { background: var(--now); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .cgrid { position: relative; }
+        .evt { position: absolute; left: 4px; right: 4px; min-height: 30px; background: var(--evt-bg); border-radius: 8px; padding: 4px 7px 4px 8px; overflow: hidden; }
+        .evt.done { background: var(--grouped); }
+        .evt .evt-time { font-size: 9.5px; font-weight: 700; color: var(--evt-fg); opacity: .65; }
+        .evt .evt-title { font-size: 12px; font-weight: 600; color: var(--evt-fg); line-height: 1.25; padding-right: 18px; }
+        .evt .ck { position: absolute; top: 5px; right: 5px; width: 16px; height: 16px; }
+        .evt .ck.on .material-symbols-outlined { font-size: 11px; }
+        .nowline { position: absolute; left: 0; right: 0; height: 2px; background: var(--now); z-index: 3; }
+        .nowline .nowdot { position: absolute; left: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--now); }
+
+        /* ========== 变体 C2：iOS 日程列表 ========== */
+        .listdays { display: flex; gap: 0; min-width: max-content; }
+        .lday { width: 230px; padding: 0 14px; border-right: 1px solid var(--sep); }
+        .lday:last-child { border-right: none; }
+        .lhead { padding: 4px 0 12px; display: flex; align-items: baseline; gap: 8px; }
+        .lhead .ld-date { font-size: 22px; font-weight: 800; color: var(--label); }
+        .lhead .ld-dow { font-size: 12px; font-weight: 600; color: var(--label2); }
+        .lhead.today .ld-date { color: var(--now); }
+        .lrow { display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid var(--sep); align-items: center; }
+        .lrow .ltime { flex: 0 0 42px; text-align: right; font-size: 15px; font-weight: 600; color: var(--label2); }
+        .lrow .lbody { flex: 1; display: flex; align-items: center; gap: 9px; }
+        .lrow .lcard { flex: 1; background: var(--evt-bg); border-radius: 10px; padding: 9px 11px; font-size: 13.5px; font-weight: 600; color: var(--evt-fg); }
+        .lrow .lcard.done { background: var(--grouped); }
+        .lempty { color: var(--label3); font-size: 12.5px; font-style: italic; padding: 16px 0; }
+
+        /* ========== 变体 C3：时刻胶囊 ========== */
+        .capdays { display: flex; gap: 0; min-width: max-content; }
+        .capday { width: 220px; padding: 0 14px; border-right: 1px solid var(--sep); }
+        .capday:last-child { border-right: none; }
+        .caphead { text-align: center; padding: 2px 0 14px; }
+        .caphead .cd-dow { font-size: 12px; font-weight: 600; color: var(--label2); }
+        .caphead .cd-date { font-size: 18px; font-weight: 800; }
+        .caphead.today .cd-date { color: var(--now); }
+        .caprow { display: flex; align-items: center; gap: 10px; padding: 9px 0; }
+        .caprow .captime { background: var(--grouped); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 700; color: var(--label); flex: 0 0 auto; }
+        .caprow.today-now .captime { background: var(--now); color: #fff; }
+        .caprow .captitle { font-size: 13.5px; font-weight: 600; flex: 1; }
+
+        /* ========== 变体 C4：极简刻度线 ========== */
+        .tickdays { display: flex; gap: 0; min-width: max-content; }
+        .tickday { width: 200px; padding: 0 16px; border-right: 1px solid var(--sep); }
+        .tickday:last-child { border-right: none; }
+        .tickhead { padding: 2px 0 16px; }
+        .tickhead .tk-dow { font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--label2); }
+        .tickhead .tk-date { font-size: 16px; font-weight: 800; }
+        .tickhead.today .tk-date { color: var(--now); }
+        .tickspine { border-left: 1.5px solid var(--sep); padding-left: 18px; display: flex; flex-direction: column; gap: 16px; }
+        .ticknode { position: relative; }
+        .ticknode::before { content: ''; position: absolute; left: -23.5px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--label3); }
+        .ticknode.fill::before { background: var(--evt-fg); }
+        .tick-time { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: var(--label2); margin-bottom: 3px; }
+        .tick-line { display: flex; align-items: center; gap: 9px; }
+        .tick-title { font-size: 14px; font-weight: 600; }
+
+        /* 数据/收尾 */
+        .footer-note { margin-top: 54px; background: #fff; border: 1px solid var(--ov-20); border-radius: 20px; padding: 22px 24px; box-shadow: var(--shadow-sm); }
+        .footer-note h2 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+        .footer-note p, .footer-note li { font-size: 13.5px; color: #444653; }
+        .footer-note code { background: rgba(0,40,142,0.06); color: var(--primary); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="page-head">
+        <h1>需求 46 · 方案 C 细化 — 4 个苹果日历风时间轴</h1>
+        <p>以你选定的"方案 C（横向滚动 · 按天分栏）"为骨架。<b>已删除事项顶部彩条 + 事项内分类标签</b>，事项统一成单一色调（App 藏蓝淡色）。4 个变体的区别全在<b>"时间/小时"的呈现方式</b>上，借鉴苹果日历/日程：发丝分隔线、纤细等宽时刻、留白、红色当前时间线、iOS 圆圈勾选。顶部周目标卡仍实时联动（勾任务 → 目标进度变）。</p>
+        <div class="locked">
+            <span class="pill">横向滚动 · 按住拖动</span>
+            <span class="pill">无彩条 / 无分类标签</span>
+            <span class="pill">单色调事项</span>
+            <span class="pill">苹果系时刻排版</span>
+            <span class="pill">红色 now-line</span>
+        </div>
+    </div>
+
+    <!-- 顶部周目标卡 -->
+    <div class="sec">
+        <h2><span class="no">联动</span> 周目标卡（实时跟随勾选）</h2>
+        <div class="goalcard">
+            <h3>WEEKLY · 周度目标</h3>
+            <div class="goal-grid" id="goalGrid"></div>
+        </div>
+    </div>
+
+    <!-- 变体 C1 -->
+    <div class="sec">
+        <h2><span class="no">变体 C1</span> 连续时刻表 · 苹果日历日视图 <span class="rec">最像苹果</span></h2>
+        <p class="desc">最还原 iPhone/iPad 日历：左侧固定一条时刻轴（06–23 时），整片是发丝线小时网格，事项按真实时间"钉"在网格上。今日日期是红圆圈、并有红色当前时间线。日列横向滑动看整周。<b>时间感最强、最像苹果</b>，代价是空格较多、信息密度低。</p>
+        <div class="stage">
+            <div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住右侧网格区左右拖动</div>
+            <div class="cal">
+                <div class="cgutter" id="c1gutter"></div>
+                <div class="scroll" id="c1scroll"><div class="cdays" id="c1days"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 变体 C2 -->
+    <div class="sec">
+        <h2><span class="no">变体 C2</span> iOS 日程列表 <span class="rec">推荐·信息密度高</span></h2>
+        <p class="desc">仿 iOS 日历"列表/即将到来"视图：每天一栏，时刻在左侧（次级灰、等宽），事项是淡色圆角卡，发丝线分隔。<b>没有大片空白，紧凑好读</b>，比 C1 实用，又保留苹果的克制排版。日列横向滑动。</p>
+        <div class="stage">
+            <div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="c2scroll"><div class="listdays" id="c2days"></div></div>
+        </div>
+    </div>
+
+    <!-- 变体 C3 -->
+    <div class="sec">
+        <h2><span class="no">变体 C3</span> 时刻胶囊</h2>
+        <p class="desc">每条事项的时间做成苹果系"胶囊徽章"（圆角灰底、等宽数字），离当前最近的时刻胶囊变红（呼应 now）。事项文字跟在右侧。<b>时间像一颗颗药丸，轻盈、节奏感强</b>，适合任务不多时。</p>
+        <div class="stage">
+            <div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="c3scroll"><div class="capdays" id="c3days"></div></div>
+        </div>
+    </div>
+
+    <!-- 变体 C4 -->
+    <div class="sec">
+        <h2><span class="no">变体 C4</span> 极简刻度线</h2>
+        <p class="desc">最克制：每天一条细竖线 + 圆点节点，时刻是节点上方的小号等宽灰字，事项纯文字。<b>留白最多、最冷淡高级</b>，去掉一切卡片底色（只有完成态用灰）。适合喜欢"性冷淡"排版的人。</p>
+        <div class="stage">
+            <div class="grab-hint"><span class="material-symbols-outlined" style="font-size:15px;">swipe</span> 按住左右拖动</div>
+            <div class="scroll" id="c4scroll"><div class="tickdays" id="c4days"></div></div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <h2>下一步</h2>
+        <p>从 C1 / C2 / C3 / C4 里挑一个（也可混搭，比如"C2 的列表 + C1 的红色今日圆圈"）。定下样式后，我们再确认<b>数据存储</b>（上一轮我推荐独立表 <code>weekly_timeline</code>）和"目标完成判定"规则，然后才进开发。</p>
+    </div>
+
+</div>
+
+<script>
+    const DAYS = [
+        { dow: '周一', date: '06-22' }, { dow: '周二', date: '06-23' }, { dow: '周三', date: '06-24' },
+        { dow: '周四', date: '06-25' }, { dow: '周五', date: '06-26' }, { dow: '周六', date: '06-27' }, { dow: '周日', date: '06-28' },
+    ];
+    const TODAY = 2;
+    const NOW_H = 10, NOW_M = 30; // 演示用"当前时间" 10:30
+    const GOALS = [
+        { id: 'g1', text: '每天晨跑 5km' }, { id: 'g2', text: '健身房 ×2' }, { id: 'g3', text: '完成日记时间轴功能' },
+        { id: 'g4', text: '读完《深度工作》' }, { id: 'g5', text: '每日冥想' }, { id: 'g6', text: '陪伴家人' }, { id: 'g7', text: '周末爬山' },
+    ];
+    const TASKS = [
+        { id: 't1', day: 0, time: '07:00', goal: 'g1', title: '晨跑 5km' },
+        { id: 't2', day: 0, time: '09:00', goal: 'g3', title: '写时间轴组件' },
+        { id: 't3', day: 0, time: '21:00', goal: 'g4', title: '读 p30–60' },
+        { id: 't4', day: 1, time: '08:00', goal: 'g2', title: '健身房' },
+        { id: 't5', day: 1, time: '14:00', goal: 'g3', title: '接入后端 API' },
+        { id: 't6', day: 1, time: '22:00', goal: 'g5', title: '冥想 10min' },
+        { id: 't7', day: 2, time: '07:00', goal: 'g1', title: '晨跑 5km' },
+        { id: 't8', day: 2, time: '10:00', goal: 'g3', title: '写设计 demo' },
+        { id: 't9', day: 2, time: '20:00', goal: 'g6', title: '给爸妈打电话' },
+        { id: 't10', day: 3, time: '09:00', goal: 'g3', title: '联调时间轴' },
+        { id: 't11', day: 3, time: '21:00', goal: 'g4', title: '读 p60–90' },
+        { id: 't12', day: 4, time: '08:00', goal: 'g2', title: '健身房' },
+        { id: 't13', day: 4, time: '15:00', goal: 'g4', title: '整理读书笔记' },
+        { id: 't14', day: 5, time: '10:00', goal: 'g7', title: '爬山' },
+        { id: 't15', day: 6, time: '20:00', goal: 'g4', title: '周计划复盘' },
+    ];
+    const done = {}; TASKS.forEach(t => done[t.id] = false);
+    ['t1', 't2', 't3', 't4'].forEach(i => done[i] = true);
+
+    const START = 6, END = 23, HOURPX = 40, GRIDH = (END - START) * HOURPX;
+    const tasksOfDay = d => TASKS.filter(t => t.day === d).sort((a, b) => a.time.localeCompare(b.time));
+    const yOf = (h, m) => (h - START + m / 60) * HOURPX;
+    const yTime = t => { const [h, m] = t.split(':').map(Number); return yOf(h, m); };
+    function toggle(id) { done[id] = !done[id]; renderAll(); }
+    function ck(id, big) {
+        const cls = big ? 'ck' : 'ck';
+        return `<div class="${cls} ${done[id] ? 'on' : ''}" onclick="toggle('${id}')">${done[id] ? '<span class="material-symbols-outlined">check</span>' : ''}</div>`;
+    }
+
+    function renderGoals() {
+        document.getElementById('goalGrid').innerHTML = GOALS.map(g => {
+            const ts = TASKS.filter(t => t.goal === g.id);
+            const dn = ts.filter(t => done[t.id]).length;
+            const isDone = ts.length > 0 && dn === ts.length;
+            return `<div class="goal-item ${isDone ? 'done' : ''}"><div class="box">${isDone ? '<span class="material-symbols-outlined">check</span>' : ''}</div><span class="gtext">${g.text}</span><span class="prog num">${dn}/${ts.length}</span></div>`;
+        }).join('');
+    }
+
+    /* C1 连续时刻表 */
+    function renderC1() {
+        let labels = '';
+        for (let h = START; h <= END; h++) labels += `<div class="hlab num" style="top:${(h - START) * HOURPX}px">${String(h).padStart(2, '0')}</div>`;
+        document.getElementById('c1gutter').innerHTML = `<div class="chead-spacer"></div><div class="hgrid" style="height:${GRIDH}px">${labels}</div>`;
+
+        const gridBg = `repeating-linear-gradient(to bottom, transparent 0, transparent ${HOURPX - 1}px, var(--sep) ${HOURPX - 1}px, var(--sep) ${HOURPX}px)`;
+        document.getElementById('c1days').innerHTML = DAYS.map((d, di) => {
+            const evts = tasksOfDay(di).map(t => `
+                <div class="evt ${done[t.id] ? 'done' : ''}" style="top:${yTime(t.time)}px">
+                    <div class="evt-time num">${t.time}</div>
+                    <div class="evt-title ${done[t.id] ? 'done-text' : ''}">${t.title}</div>
+                    ${ck(t.id)}
+                </div>`).join('');
+            const now = di === TODAY ? `<div class="nowline" style="top:${yOf(NOW_H, NOW_M)}px"><span class="nowdot"></span></div>` : '';
+            return `<div class="cday">
+                <div class="chead ${di === TODAY ? 'today' : ''}"><span class="ch-dow">${d.dow}</span><span class="ch-date num">${d.date.split('-')[1]}</span></div>
+                <div class="cgrid" style="height:${GRIDH}px; background:${gridBg}">${now}${evts}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /* C2 iOS 列表 */
+    function renderC2() {
+        document.getElementById('c2days').innerHTML = DAYS.map((d, di) => {
+            const ts = tasksOfDay(di);
+            const rows = ts.length ? ts.map(t => `
+                <div class="lrow">
+                    <span class="ltime num">${t.time}</span>
+                    <div class="lbody">${ck(t.id)}<div class="lcard ${done[t.id] ? 'done' : ''} ${done[t.id] ? 'done-text' : ''}">${t.title}</div></div>
+                </div>`).join('') : `<div class="lempty">无安排</div>`;
+            return `<div class="lday">
+                <div class="lhead ${di === TODAY ? 'today' : ''}"><span class="ld-date num">${d.date.split('-')[1]}</span><span class="ld-dow">${d.dow}${di === TODAY ? ' · 今天' : ''}</span></div>
+                ${rows}
+            </div>`;
+        }).join('');
+    }
+
+    /* C3 时刻胶囊 */
+    function renderC3() {
+        document.getElementById('c3days').innerHTML = DAYS.map((d, di) => {
+            const ts = tasksOfDay(di);
+            // 找当天离 NOW 最近且 today 的胶囊高亮
+            let nearId = null;
+            if (di === TODAY) {
+                let best = 1e9;
+                ts.forEach(t => { const [h, m] = t.time.split(':').map(Number); const diff = Math.abs((h * 60 + m) - (NOW_H * 60 + NOW_M)); if (diff < best) { best = diff; nearId = t.id; } });
+            }
+            const rows = ts.length ? ts.map(t => `
+                <div class="caprow ${t.id === nearId ? 'today-now' : ''}">
+                    <span class="captime num">${t.time}</span>
+                    ${ck(t.id)}
+                    <span class="captitle ${done[t.id] ? 'done-text' : ''}">${t.title}</span>
+                </div>`).join('') : `<div class="lempty">无安排</div>`;
+            return `<div class="capday">
+                <div class="caphead ${di === TODAY ? 'today' : ''}"><div class="cd-dow">${d.dow}</div><div class="cd-date num">${d.date.split('-')[1]}</div></div>
+                ${rows}
+            </div>`;
+        }).join('');
+    }
+
+    /* C4 极简刻度线 */
+    function renderC4() {
+        document.getElementById('c4days').innerHTML = DAYS.map((d, di) => {
+            const ts = tasksOfDay(di);
+            const nodes = ts.length ? ts.map(t => `
+                <div class="ticknode ${done[t.id] ? 'fill' : ''}">
+                    <div class="tick-time num">${t.time}</div>
+                    <div class="tick-line">${ck(t.id)}<span class="tick-title ${done[t.id] ? 'done-text' : ''}">${t.title}</span></div>
+                </div>`).join('') : `<div class="lempty">无安排</div>`;
+            return `<div class="tickday">
+                <div class="tickhead ${di === TODAY ? 'today' : ''}"><div class="tk-dow">${d.dow}</div><div class="tk-date num">${d.date.split('-')[1]}</div></div>
+                <div class="tickspine">${nodes}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function enableDrag(el) {
+        let down = false, sx, sl;
+        el.addEventListener('mousedown', e => { down = true; el.classList.add('grab'); sx = e.pageX; sl = el.scrollLeft; });
+        window.addEventListener('mouseup', () => { down = false; el.classList.remove('grab'); });
+        el.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); el.scrollLeft = sl - (e.pageX - sx); });
+    }
+
+    function renderAll() { renderGoals(); renderC1(); renderC2(); renderC3(); renderC4(); }
+    renderAll();
+    ['c1scroll', 'c2scroll', 'c3scroll', 'c4scroll'].forEach(id => enableDrag(document.getElementById(id)));
+</script>
+</body>
+</html>

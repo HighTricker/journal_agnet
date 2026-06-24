@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { weeklyApi, monthlyApi } from '../api/client'
+import { useToast } from './useToast'
 import type { GoalItem } from '../mocks/diarySchedule'
 
 // ==================== 周号/月号计算 ====================
@@ -60,6 +61,7 @@ function updateTaskStatus(tasks: Array<Record<string, string>>, goalIndex: numbe
 // ==================== Hook ====================
 
 export function useCrossPageGoals(dateStr: string) {
+    const { showToast } = useToast()
     const [weeklyGoals, setWeeklyGoals] = useState<GoalItem[]>([])
     const [monthlyGoals, setMonthlyGoals] = useState<GoalItem[]>([])
 
@@ -180,7 +182,7 @@ export function useCrossPageGoals(dateStr: string) {
         setWeeklyGoals(newGoals)
         if (!weeklyCache) {
             // cache 未加载完时，传空 habits 会被后端覆盖为默认值——禁止
-            alert('周记数据还在加载，请稍后再试')
+            showToast('周记数据还在加载，请稍后再试', 'warning')
             return
         }
         try {
@@ -194,15 +196,15 @@ export function useCrossPageGoals(dateStr: string) {
             console.info('[周目标] 已保存', { week: weekKey, count: newGoals.length })
         } catch (err) {
             console.error('[周目标保存失败]', err)
-            alert(`周目标保存失败：${err instanceof Error ? err.message : '未知错误'}`)
+            showToast(`周目标保存失败：${err instanceof Error ? err.message : '未知错误'}`, 'error')
         }
-    }, [weeklyCache, weekKey])
+    }, [weeklyCache, weekKey, showToast])
 
     /* ---- 整体替换 月目标 ---- */
     const updateMonthlyGoals = useCallback(async (newGoals: GoalItem[]) => {
         setMonthlyGoals(newGoals)
         if (!monthlyCache) {
-            alert('月记数据还在加载，请稍后再试')
+            showToast('月记数据还在加载，请稍后再试', 'warning')
             return
         }
         try {
@@ -215,9 +217,9 @@ export function useCrossPageGoals(dateStr: string) {
             console.info('[月目标] 已保存', { month: monthKey, count: newGoals.length })
         } catch (err) {
             console.error('[月目标保存失败]', err)
-            alert(`月目标保存失败：${err instanceof Error ? err.message : '未知错误'}`)
+            showToast(`月目标保存失败：${err instanceof Error ? err.message : '未知错误'}`, 'error')
         }
-    }, [monthlyCache, monthKey])
+    }, [monthlyCache, monthKey, showToast])
 
     return {
         weeklyGoals,

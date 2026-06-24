@@ -27,6 +27,7 @@ PATH_SUMMARY = os.path.join(BASE_DIR, "data", "summary")
 PATH_WEEKLY_SUMMARY = os.path.join(BASE_DIR, "data", "weekly_summary")
 PATH_WEEKLY_HABITS = os.path.join(BASE_DIR, "data", "weekly_habits")
 PATH_WEEKLY_TASKS = os.path.join(BASE_DIR, "data", "weekly_tasks")
+PATH_WEEKLY_TIMELINE = os.path.join(BASE_DIR, "data", "weekly_timeline")  # 需求46：每周事项时间轴
 
 # --- 月记 CSV 数据存放位置 ---
 PATH_MONTHLY_SUMMARY = os.path.join(BASE_DIR, "data", "monthly_summary")
@@ -35,6 +36,6 @@ PATH_MONTHLY_TASKS = os.path.join(BASE_DIR, "data", "monthly_tasks")
 # --- 自动创建年度数据文件夹 ---
 # 注意：Markdown 文件夹会根据日期在 data_manager.py 中动态创建
 for path in [PATH_TASKS, PATH_TIME, PATH_SUMMARY,
-             PATH_WEEKLY_SUMMARY, PATH_WEEKLY_HABITS, PATH_WEEKLY_TASKS,
+             PATH_WEEKLY_SUMMARY, PATH_WEEKLY_HABITS, PATH_WEEKLY_TASKS, PATH_WEEKLY_TIMELINE,
              PATH_MONTHLY_SUMMARY, PATH_MONTHLY_TASKS]:
     os.makedirs(path, exist_ok=True)

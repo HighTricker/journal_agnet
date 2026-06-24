@@ -4,7 +4,7 @@
 
 ## 功能特性
 
-- **日记**：量化数据（心情/睡眠/番茄钟/静坐/AI 时间）+ 任务看板 + 48 个 30 分钟时间块 + 10 维反思
+- **日记**：量化数据（心情/精力/睡眠质量 5 档纯文字 + 起夜次数/番茄钟/静坐/AI 时间）+ 任务看板 + 48 个 30 分钟时间块 + 结构化反思（含今日分岔点、今天的三件好事）
 - **周记**：习惯追踪 + 周任务管理 + 7 个反思区块，自动聚合日记数据
 - **月记**：月任务 + 10 个反思区块 + 统计，自动聚合
 - **AI 导师**：多模型对话（Gemini / Qwen / DeepSeek / OpenAI / Anthropic），LangChain Agent + SSE 流式响应
@@ -105,7 +105,7 @@ A local-first personal quantified journaling system with separated frontend/back
 
 ## Features
 
-- **Daily Journal**: Quantified metrics + task board + 48 half-hour time blocks + 10-dimension reflection
+- **Daily Journal**: Quantified metrics (mood / energy / sleep on 5-point text scales, night-wake count, pomodoros, etc.) + task board + 48 half-hour time blocks + structured reflection (incl. "fork point" & "three good things")
 - **Weekly Review**: Habit tracking + weekly tasks + 7 reflection sections, auto-aggregated from daily data
 - **Monthly Review**: Monthly tasks + 10 reflection sections + statistics, auto-aggregated
 - **AI Mentor**: Multi-model chat (Gemini / Qwen / DeepSeek / OpenAI / Anthropic) via LangChain Agent + SSE streaming
